@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ransomware Ecosystem — Module 5 Lab</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1f2937; --border: #30363d;
+    --accent: #f97316; --accent2: #3b82f6; --green: #22c55e; --red: #ef4444;
+    --yellow: #eab308; --text: #e6edf3; --muted: #8b949e; --card: #1c2128;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; }
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+  #screen-intro { align-items: center; justify-content: center; padding: 24px; background: radial-gradient(ellipse at 60% 20%, #0a0d1a 0%, var(--bg) 70%); }
+  .intro-card { max-width: 680px; width: 100%; text-align: center; }
+  .logo { font-size: 48px; margin-bottom: 12px; }
+  .intro-card h1 { font-size: 26px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .intro-card .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 13px; }
+  .intro-card p { color: #c9d1d9; margin-bottom: 20px; font-size: 14px; }
+  .badge-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+  .badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 14px; font-size: 12px; color: var(--muted); }
+  .btn-primary { background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 12px 32px; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity .15s; }
+  .btn-primary:hover { opacity: .85; }
+  .sections-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; text-align: left; }
+  .section-chip { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+  .section-chip .chip-num { color: var(--accent); font-weight: 700; font-size: 12px; }
+  .section-chip .chip-title { font-size: 12px; color: var(--text); }
+
+  #screen-game { flex-direction: row; }
+  .sidebar { width: 220px; min-width: 220px; background: var(--surface); border-right: 1px solid var(--border); padding: 16px 12px; display: flex; flex-direction: column; gap: 16px; }
+  .sidebar-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .progress-track { display: flex; flex-direction: column; gap: 4px; }
+  .track-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; font-size: 12px; border: 1px solid transparent; }
+  .track-item.active { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+  .track-item.done { color: var(--green); }
+  .track-item.locked { color: var(--muted); }
+  .track-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+  .track-item.active .track-dot { background: var(--accent); }
+  .track-item.done .track-dot { background: var(--green); }
+  .score-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .score-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .score-val { font-size: 24px; font-weight: 800; color: var(--accent); }
+  .score-sub { font-size: 11px; color: var(--muted); }
+  .main-area { flex: 1; overflow-y: auto; padding: 24px; }
+
+  .section-header { margin-bottom: 20px; }
+  .section-tag { display: inline-block; background: var(--accent); color: #000; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+  .section-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .section-header p { color: #c9d1d9; font-size: 13px; }
+
+  .content-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  .content-card h3 { font-size: 14px; font-weight: 700; color: var(--accent2); margin-bottom: 10px; }
+  .content-card p { color: #c9d1d9; font-size: 13px; margin-bottom: 8px; }
+  .content-card ul { padding-left: 18px; color: #c9d1d9; font-size: 13px; }
+  .content-card li { margin-bottom: 5px; }
+
+  .info-banner { background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.3); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #fcd34d; margin-bottom: 14px; }
+  .warning-banner { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #fca5a5; margin-bottom: 14px; }
+
+  .regime-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .regime-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .regime-name { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .regime-deadline { display: inline-block; background: rgba(239,68,68,.2); border: 1px solid rgba(239,68,68,.4); border-radius: 4px; padding: 1px 8px; font-size: 11px; color: #fca5a5; margin-bottom: 6px; font-weight: 700; }
+  .regime-desc { font-size: 11px; color: #c9d1d9; line-height: 1.5; }
+
+  .timeline { display: flex; flex-direction: column; gap: 0; margin: 12px 0; }
+  .tl-item { display: flex; gap: 12px; }
+  .tl-left { display: flex; flex-direction: column; align-items: center; width: 36px; flex-shrink: 0; }
+  .tl-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); margin-top: 3px; flex-shrink: 0; }
+  .tl-line { width: 2px; background: var(--border); flex: 1; margin-top: 2px; }
+  .tl-item:last-child .tl-line { display: none; }
+  .tl-content { padding-bottom: 14px; }
+  .tl-time { font-size: 11px; font-weight: 700; color: var(--accent); }
+  .tl-text { font-size: 12px; color: #c9d1d9; }
+  .tl-regime { font-size: 10px; color: var(--accent2); font-weight: 600; margin-top: 2px; }
+
+  .quiz-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .quiz-q { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option-btn { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; text-align: left; color: var(--text); font-size: 13px; cursor: pointer; transition: all .15s; }
+  .option-btn:hover:not(:disabled) { border-color: var(--accent2); background: var(--surface); }
+  .option-btn.correct { border-color: var(--green) !important; background: rgba(34,197,94,.12) !important; color: var(--green) !important; }
+  .option-btn.wrong { border-color: var(--red) !important; background: rgba(239,68,68,.12) !important; color: var(--red) !important; }
+  .feedback { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 13px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.correct { background: rgba(34,197,94,.15); border: 1px solid var(--green); color: var(--green); }
+  .feedback.wrong { background: rgba(239,68,68,.1); border: 1px solid var(--red); color: #fca5a5; }
+
+  /* Multi-select */
+  .multiselect-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .multiselect-block .quiz-q { margin-bottom: 10px; }
+  .ms-hint { font-size: 11px; color: var(--muted); margin-bottom: 12px; font-style: italic; }
+  .checkbox-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .cb-item { display: flex; align-items: flex-start; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; cursor: pointer; transition: all .15s; }
+  .cb-item:hover { border-color: var(--accent2); }
+  .cb-item.selected { border-color: var(--accent2); background: rgba(59,130,246,.1); }
+  .cb-item.correct-pick { border-color: var(--green) !important; background: rgba(34,197,94,.12) !important; }
+  .cb-item.wrong-pick { border-color: var(--red) !important; background: rgba(239,68,68,.12) !important; }
+  .cb-item.missed { border-color: var(--yellow) !important; background: rgba(234,179,8,.1) !important; }
+  .cb-box { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 4px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+  .cb-item.selected .cb-box { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+  .cb-text { font-size: 13px; color: var(--text); }
+  .btn-submit { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-submit:disabled { opacity: .5; cursor: default; }
+
+  /* Matching */
+  .match-container { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .match-col-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+  .match-term { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 12px; cursor: pointer; margin-bottom: 6px; transition: all .15s; }
+  .match-term:hover { border-color: var(--accent2); }
+  .match-term.selected { border-color: var(--accent); background: rgba(249,115,22,.15); }
+  .match-term.matched-ok { border-color: var(--green); background: rgba(34,197,94,.12); color: var(--green); cursor: default; }
+  .match-term.matched-bad { border-color: var(--red); background: rgba(239,68,68,.12); color: #fca5a5; cursor: default; }
+  .match-slot { background: var(--card); border: 2px dashed var(--border); border-radius: 8px; padding: 9px 12px; font-size: 12px; margin-bottom: 6px; cursor: pointer; color: var(--muted); min-height: 38px; transition: all .15s; }
+  .match-slot.filled { border-style: solid; border-color: var(--accent2); color: var(--text); }
+  .match-slot.correct-slot { border-color: var(--green) !important; background: rgba(34,197,94,.08); color: var(--green) !important; }
+  .match-slot.wrong-slot { border-color: var(--red) !important; background: rgba(239,68,68,.08); color: #fca5a5 !important; }
+  .slot-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; font-weight: 600; }
+
+  /* Self-assessment */
+  .checklist { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .check-item { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; cursor: pointer; transition: all .15s; }
+  .check-item:hover { border-color: var(--accent2); }
+  .check-item.checked { border-color: var(--green); background: rgba(34,197,94,.06); }
+  .check-box { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .check-item.checked .check-box { background: var(--green); border-color: var(--green); color: #000; }
+  .check-text { font-size: 12px; color: var(--text); }
+  .checklist-status { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  .discuss-block { background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.3); border-radius: 10px; padding: 16px; margin-top: 16px; }
+  .discuss-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent2); margin-bottom: 8px; }
+  .discuss-q { font-size: 13px; color: #c9d1d9; margin-bottom: 10px; }
+  .discuss-input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: 13px; resize: vertical; min-height: 60px; font-family: inherit; }
+  .discuss-input:focus { outline: none; border-color: var(--accent2); }
+  .btn-reveal { background: var(--surface2); border: 1px solid var(--accent2); color: var(--accent2); border-radius: 6px; padding: 6px 14px; font-size: 12px; cursor: pointer; margin-top: 8px; }
+  .expert-answer { background: var(--card); border-left: 3px solid var(--accent2); padding: 10px 14px; margin-top: 10px; font-size: 12px; color: #c9d1d9; border-radius: 0 6px 6px 0; display: none; }
+  .expert-answer.show { display: block; }
+
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .btn-nav { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-nav:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-nav.next { background: var(--accent); color: #000; border-color: var(--accent); }
+  .btn-nav.next:hover { opacity: .85; }
+  .btn-nav:disabled { opacity: .4; cursor: default; }
+
+  .points-pop { position: fixed; top: 20px; right: 20px; background: var(--green); color: #000; font-weight: 800; font-size: 16px; border-radius: 8px; padding: 8px 16px; opacity: 0; transform: translateY(-10px); transition: all .3s; pointer-events: none; z-index: 999; }
+  .points-pop.show { opacity: 1; transform: translateY(0); }
+
+  #screen-results { align-items: center; justify-content: center; padding: 24px; background: radial-gradient(ellipse at 50% 10%, #000d1a 0%, var(--bg) 70%); }
+  .results-card { max-width: 620px; width: 100%; text-align: center; }
+  .results-card h1 { font-size: 28px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
+  .final-score { font-size: 72px; font-weight: 900; color: var(--accent); line-height: 1; margin: 16px 0; }
+  .grade-label { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .result-breakdown { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  .rb-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .rb-num { font-size: 22px; font-weight: 800; color: var(--accent2); }
+  .rb-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .key-lessons { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: left; margin-bottom: 20px; }
+  .key-lessons h3 { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+  .key-lessons li { font-size: 12px; color: #c9d1d9; margin-bottom: 6px; margin-left: 16px; }
+
+  @media (max-width: 700px) {
+    #screen-game { flex-direction: column; }
+    .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 10px; }
+    .sections-preview, .regime-grid, .match-container, .result-breakdown { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="points-pop" class="points-pop"></div>
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-card">
+    <div class="logo">⚖️</div>
+    <h1>Ransomware Ecosystem</h1>
+    <div class="subtitle">Module 5 — Legal &amp; Regulatory Playbook &nbsp;·&nbsp; Interactive Lab</div>
+    <p>Ransomware is a regulatory event in 2026, not just a technical one. The decisions that shape the legal outcome are made in the first 72 hours — when the technical team is most stretched and the legal team has the least information.</p>
+    <div class="badge-row">
+      <span class="badge">⏱ ~15 minutes</span>
+      <span class="badge">200 pts possible</span>
+      <span class="badge">6 sections</span>
+      <span class="badge">SOC / Legal</span>
+    </div>
+    <div class="sections-preview">
+      <div class="section-chip"><div class="chip-num">01</div><div class="chip-title">U.S. Federal Regime</div></div>
+      <div class="section-chip"><div class="chip-num">02</div><div class="chip-title">Sector &amp; State Laws</div></div>
+      <div class="section-chip"><div class="chip-num">03</div><div class="chip-title">European Regime</div></div>
+      <div class="section-chip"><div class="chip-num">04</div><div class="chip-title">Privilege &amp; Forensics</div></div>
+      <div class="section-chip"><div class="chip-num">05</div><div class="chip-title">72-Hour Decision Tree</div></div>
+      <div class="section-chip"><div class="chip-num">06</div><div class="chip-title">Readiness Assessment</div></div>
+    </div>
+    <button class="btn-primary" onclick="startGame()">Begin Lab</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="sidebar">
+    <div>
+      <div class="sidebar-title">Progress</div>
+      <div class="progress-track" id="progress-track"></div>
+    </div>
+    <div class="score-box">
+      <div class="score-label">Score</div>
+      <div class="score-val" id="score-display">0</div>
+      <div class="score-sub">/ 200 pts</div>
+    </div>
+  </div>
+  <div class="main-area" id="main-area"></div>
+</div>
+
+<!-- RESULTS -->
+<div id="screen-results" class="screen">
+  <div class="results-card">
+    <h1>Lab Complete</h1>
+    <div class="final-score" id="final-score">0</div>
+    <div class="grade-label" id="grade-label"></div>
+    <div class="result-breakdown">
+      <div class="rb-item"><div class="rb-num" id="rb-mcq">0</div><div class="rb-label">MCQ pts</div></div>
+      <div class="rb-item"><div class="rb-num" id="rb-activities">0</div><div class="rb-label">Activity pts</div></div>
+      <div class="rb-item"><div class="rb-num" id="rb-bonus">0</div><div class="rb-label">Bonus pts</div></div>
+    </div>
+    <div class="key-lessons">
+      <h3>🔑 Key Takeaways — Module 5</h3>
+      <ul>
+        <li>The SEC clock starts at <em>materiality determination</em>, not detection — document the process rigorously</li>
+        <li>OFAC strict liability means SDN screening is non-negotiable before any ransom payment</li>
+        <li>Legal counsel must <em>retain</em> the IR firm — not the CISO — to preserve work-product privilege</li>
+        <li>CIRCIA, GDPR, NYDFS, HIPAA, and SEC can all run simultaneously on the same incident</li>
+        <li>"Paying quietly" is a myth — ransom payments trigger their own mandatory reporting obligations</li>
+      </ul>
+    </div>
+    <button class="btn-primary" onclick="restartGame()">Restart Lab</button>
+  </div>
+</div>
+
+<script>
+const SECTIONS = [
+  'U.S. Federal Regime',
+  'Sector & State Laws',
+  'European Regime',
+  'Privilege & Forensics',
+  '72-Hour Decision Tree',
+  'Readiness Assessment'
+];
+
+let state = {
+  current: 0,
+  score: 0,
+  mcqPts: 0,
+  activityPts: 0,
+  bonusPts: 0,
+  sectionDone: [false,false,false,false,false,false],
+  quizAttempted: [false,false,false,false,false,false],
+  checklistChecked: 0
+};
+
+function showPop(pts) {
+  const p = document.getElementById('points-pop');
+  p.textContent = '+' + pts + ' pts';
+  p.classList.add('show');
+  setTimeout(() => p.classList.remove('show'), 1800);
+}
+
+function addScore(pts, type) {
+  state.score += pts;
+  if (type === 'mcq') state.mcqPts += pts;
+  else if (type === 'activity') state.activityPts += pts;
+  else if (type === 'bonus') state.bonusPts += pts;
+  document.getElementById('score-display').textContent = state.score;
+  showPop(pts);
+}
+
+function updateTrack() {
+  const track = document.getElementById('progress-track');
+  track.innerHTML = SECTIONS.map((s, i) => {
+    let cls = 'locked';
+    if (i === state.current) cls = 'active';
+    else if (state.sectionDone[i]) cls = 'done';
+    return `<div class="track-item ${cls}"><div class="track-dot"></div><span>${s}</span></div>`;
+  }).join('');
+}
+
+function startGame() {
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  renderSection(0);
+  updateTrack();
+}
+
+function restartGame() {
+  state = { current:0, score:0, mcqPts:0, activityPts:0, bonusPts:0, sectionDone:[false,false,false,false,false,false], quizAttempted:[false,false,false,false,false,false], checklistChecked:0 };
+  document.getElementById('score-display').textContent = '0';
+  document.getElementById('screen-results').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  renderSection(0);
+  updateTrack();
+}
+
+function navTo(idx) {
+  state.sectionDone[state.current] = true;
+  state.current = idx;
+  renderSection(idx);
+  updateTrack();
+  document.querySelector('.main-area').scrollTop = 0;
+}
+
+function finishGame() {
+  state.sectionDone[state.current] = true;
+  document.getElementById('screen-game').classList.remove('active');
+  document.getElementById('screen-results').classList.add('active');
+  document.getElementById('final-score').textContent = state.score;
+  document.getElementById('rb-mcq').textContent = state.mcqPts;
+  document.getElementById('rb-activities').textContent = state.activityPts;
+  document.getElementById('rb-bonus').textContent = state.bonusPts;
+  const g = document.getElementById('grade-label');
+  if (state.score >= 160) g.innerHTML = '<span style="color:var(--green)">Legal Strategist — you know the 72-hour playbook</span>';
+  else if (state.score >= 120) g.innerHTML = '<span style="color:var(--yellow)">Solid Foundation — close the privilege and state-law gaps</span>';
+  else if (state.score >= 80) g.innerHTML = '<span style="color:var(--accent)">Developing — revisit OFAC and CIRCIA obligations</span>';
+  else g.innerHTML = '<span style="color:var(--red)">Needs Review — return to the briefing</span>';
+}
+
+function mcq(id, correct, feedbackRight, feedbackWrong, pts, sectionIdx) {
+  const btns = document.querySelectorAll(`[data-mcq="${id}"]`);
+  btns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (this.disabled) return;
+      btns.forEach(b => b.disabled = true);
+      const chosen = this.dataset.val;
+      const fb = document.getElementById('fb-' + id);
+      if (chosen === correct) {
+        this.classList.add('correct');
+        fb.className = 'feedback show correct';
+        fb.textContent = '✓ ' + feedbackRight;
+        addScore(pts, 'mcq');
+      } else {
+        this.classList.add('wrong');
+        btns.forEach(b => { if (b.dataset.val === correct) b.classList.add('correct'); });
+        fb.className = 'feedback show wrong';
+        fb.textContent = '✗ ' + feedbackWrong;
+      }
+      if (!state.quizAttempted[sectionIdx]) {
+        state.quizAttempted[sectionIdx] = true;
+        document.getElementById('btn-next-' + sectionIdx).disabled = false;
+      }
+    });
+  });
+}
+
+function discuss(id) {
+  const btn = document.getElementById('reveal-' + id);
+  const ans = document.getElementById('expert-' + id);
+  if (btn) btn.addEventListener('click', () => { ans.classList.toggle('show'); btn.textContent = ans.classList.contains('show') ? 'Hide expert answer' : 'Reveal expert answer'; });
+}
+
+function renderSection(idx) {
+  const ma = document.getElementById('main-area');
+  ma.innerHTML = sections[idx]();
+  // wire up MCQs
+  const wires = sectionWires[idx];
+  if (wires) wires();
+  updateTrack();
+}
+
+// ─────────────────────────────────────────────
+// SECTION RENDERERS
+// ─────────────────────────────────────────────
+
+const sections = [
+
+// ── SECTION 1: U.S. Federal Regime ──
+() => `
+<div class="section-header">
+  <div class="section-tag">Section 1 of 6</div>
+  <h2>U.S. Federal Regime</h2>
+  <p>The major federal obligations triggered by a ransomware incident — SEC, CIRCIA, OFAC, and FinCEN.</p>
+</div>
+<div class="warning-banner">⚠️ This is study material, not legal advice. Engage breach counsel in any actual incident.</div>
+<div class="info-banner">🕐 Ransomware is a regulatory event. The decisions that shape the legal outcome are usually made in the first 72 hours — when the technical team is most stretched and the legal team has the least information.</div>
+
+<div class="regime-grid">
+  <div class="regime-card">
+    <div class="regime-name">SEC Form 8-K</div>
+    <div class="regime-deadline">4 business days</div>
+    <div class="regime-desc">Public companies disclose on Form 8-K within <strong>4 business days of determining materiality</strong>. Materiality is the trigger — not detection. Clock starts when the company determines the incident is material. Document the determination process; regulators scrutinize delay.</div>
+  </div>
+  <div class="regime-card">
+    <div class="regime-name">CIRCIA</div>
+    <div class="regime-deadline">72 hrs / 24 hrs</div>
+    <div class="regime-desc">Critical-infrastructure entities: report covered cyber incidents to CISA within <strong>72 hours</strong>; ransom payments within <strong>24 hours</strong>. Covers 16 CI sectors. Reports receive FOIA exemption. Coordinated reporting satisfies multiple federal requirements.</div>
+  </div>
+  <div class="regime-card">
+    <div class="regime-name">OFAC Sanctions</div>
+    <div class="regime-deadline">Strict liability</div>
+    <div class="regime-desc">Paying a sanctioned actor is a <strong>strict-liability violation</strong> — willfulness not required. Designated entities include Evil Corp, LockBit-linked individuals, North Korean state actors, Tornado Cash, Garantex. Every payment must be screened at payment time. Mitigating factors: timely LE reporting, cooperation, voluntary self-disclosure, compliance program.</div>
+  </div>
+  <div class="regime-card">
+    <div class="regime-name">FinCEN</div>
+    <div class="regime-deadline">SAR required</div>
+    <div class="regime-desc">Financial institutions facilitating suspected ransomware payments must file <strong>Suspicious Activity Reports (SARs)</strong>. Cyber IOCs (blockchain addresses, TTPs) should be included. FIN-2021-A004 advisory reinforces Bank Secrecy Act obligations.</div>
+  </div>
+</div>
+
+<div class="quiz-block">
+  <div class="quiz-q">1. Under SEC cybersecurity disclosure rules, when does the 4-business-day clock start?</div>
+  <div class="options">
+    <button class="option-btn" data-mcq="s1q1" data-val="A">A) On the day of initial detection of the incident</button>
+    <button class="option-btn" data-mcq="s1q1" data-val="B">B) On the day the company determines the incident is material</button>
+    <button class="option-btn" data-mcq="s1q1" data-val="C">C) On the day the ransom note is discovered</button>
+    <button class="option-btn" data-mcq="s1q1" data-val="D">D) On the day external forensics are engaged</button>
+  </div>
+  <div class="feedback" id="fb-s1q1"></div>
+</div>
+
+<div class="quiz-block">
+  <div class="quiz-q">2. Under OFAC's ransomware advisory, what makes paying a sanctioned threat actor a violation?</div>
+  <div class="options">
+    <button class="option-btn" data-mcq="s1q2" data-val="A">A) Only willful payments to sanctioned actors are violations</button>
+    <button class="option-btn" data-mcq="s1q2" data-val="B">B) Payment must exceed $10,000 to trigger OFAC liability</button>
+    <button class="option-btn" data-mcq="s1q2" data-val="C">C) Paying a sanctioned actor is a strict-liability violation — intent and willfulness are not required</button>
+    <button class="option-btn" data-mcq="s1q2" data-val="D">D) OFAC only regulates payments made in cryptocurrency</button>
+  </div>
+  <div class="feedback" id="fb-s1q2"></div>
+</div>
+
+<div class="discuss-block">
+  <div class="discuss-label">Discussion</div>
+  <div class="discuss-q">Your CISO says: "We haven't determined this is material yet, so we don't need to notify the board or start the SEC clock." What's the risk in that framing?</div>
+  <textarea class="discuss-input" placeholder="Write your thoughts..."></textarea>
+  <button class="btn-reveal" id="reveal-s1">Reveal expert answer</button>
+  <div class="expert-answer" id="expert-s1">The risk is conflating the materiality determination process with a clean binary outcome. The SEC expects companies to have a documented, timely process for reaching the materiality determination — and will scrutinize situations where that process was delayed artificially. If the incident is clearly significant (multiple systems encrypted, data exfiltrated, customer data involved) and the company takes three weeks to "determine" materiality, regulators may treat the delay as a disclosure failure. Additionally, the board has a governance interest in knowing about serious incidents independent of the SEC trigger.</div>
+</div>
+
+<div class="nav-row">
+  <button class="btn-nav" onclick="navTo(${state.current - 1})" ${state.current === 0 ? 'disabled' : ''}>← Back</button>
+  <button class="btn-nav next" id="btn-next-0" onclick="navTo(1)" ${state.quizAttempted[0] ? '' : 'disabled'}>Next →</button>
+</div>`,
+
+// ── SECTION 2: Sector & State Laws ──
+() => `
+<div class="section-header">
+  <div class="section-tag">Section 2 of 6</div>
+  <h2>Sector-Specific &amp; State Regimes</h2>
+  <p>Multiple overlapping regimes may apply simultaneously — federal sector rules plus all 50 state laws.</p>
+</div>
+
+<div class="content-card">
+  <h3>Sector-Specific U.S. Obligations</h3>
+  <ul>
+    <li><strong>HIPAA Breach Notification:</strong> HHS + individual notification within 60 days; media notification for breaches affecting &gt;500 individuals in a state</li>
+    <li><strong>NYDFS 23 NYCRR 500:</strong> 72-hour notification for NY-licensed financial firms; CISO certification post-2023 amendments</li>
+    <li><strong>FTC Safeguards Rule:</strong> FTC notification for &gt;500 consumers' NPI at financial institutions (effective 2024)</li>
+    <li><strong>TSA Pipeline Directives:</strong> Pipeline operators — specific incident reporting and security controls post-Colonial Pipeline</li>
+    <li><strong>DFARS 252.204-7012:</strong> DoD contractors — 72-hour reporting via DIBNet for covered contractor systems</li>
+  </ul>
+</div>
+
+<div class="content-card">
+  <h3>U.S. State Regimes</h3>
+  <p>All 50 states have breach-notification laws with varying deadlines and thresholds. Mass-victim incidents typically trigger 30–50 simultaneous state notifications — coordinated counsel is essential.</p>
+  <p>Several states prohibit government entities from paying ransom (NC, FL, TN). California (CCPA/CPRA), Virginia, Colorado, and others have privacy regimes with additional breach implications.</p>
+</div>
+
+<div class="quiz-block">
+  <div class="quiz-q">3. For a HIPAA-covered entity hit by ransomware, what are the key notification obligations?</div>
+  <div class="options">
+    <button class="option-btn" data-mcq="s2q1" data-val="A">A) Only notify HHS if more than 10,000 records are affected</button>
+    <button class="option-btn" data-mcq="s2q1" data-val="B">B) Notify HHS, affected individuals (within 60 days), and media for breaches affecting &gt;500 individuals in a state</button>
+    <button class="option-btn" data-mcq="s2q1" data-val="C">C) Notification is voluntary under HIPAA — only required if data is confirmed exfiltrated</button>
+    <button class="option-btn" data-mcq="s2q1" data-val="D">D) HIPAA only applies if the threat actor is a domestic entity</button>
+  </div>
+  <div class="feedback" id="fb-s2q1"></div>
+</div>
+
+<div class="quiz-block">
+  <div class="quiz-q">4. A ransomware incident hits a company doing business in 35 U.S. states. How many state breach-notification regimes may need to be complied with?</div>
+  <div class="options">
+    <button class="option-btn" data-mcq="s2q2" data-val="A">A) Only the state where the company is headquartered</button>
+    <button class="option-btn" data-mcq="s2q2" data-val="B">B) Only states where affected customers are located</button>
+    <button class="option-btn" data-mcq="s2q2" data-val="C">C) Potentially all 35 states simultaneously — each has its own law with different timelines</button>
+    <button class="option-btn" data-mcq="s2q2" data-val="D">D) State laws don't apply if federal CIRCIA reporting is done</button>
+  </div>
+  <div class="feedback" id="fb-s2q2"></div>
+</div>
+
+<div class="discuss-block">
+  <div class="discuss-label">Discussion</div>
+  <div class="discuss-q">Your org operates across healthcare (HIPAA), financial services (NYDFS), and a DoD contract (DFARS). Ransomware hits at T+0. By T+72 hours, what notifications may already be overdue?</div>
+  <textarea class="discuss-input" placeholder="Write your thoughts..."></textarea>
+  <button class="btn-reveal" id="reveal-s2">Reveal expert answer</button>
+  <div class="expert-answer" id="expert-s2">At T+72: CIRCIA reporting to CISA (72-hour window, if in critical infrastructure sectors). NYDFS 23 NYCRR 500 notification (72-hour window from determination). DFARS DIBNet report if DoD contractor systems are involved. HIPAA: clock runs from discovery — 60 days is long but initial breach counsel engagement and documentation must start now. State notifications: timeline varies (some states 30–72 hours, others up to 90 days). The practical answer: engage breach counsel immediately, identify which regimes apply, and run a parallel notification workstream separate from the technical IR effort. Most organizations are surprised by how many regimes simultaneously apply.</div>
+</div>
+
+<div class="nav-row">
+  <button class="btn-nav" onclick="navTo(0)">← Back</button>
+  <button class="btn-nav next" id="btn-next-1" onclick="navTo(2)" ${state.quizAttempted[1] ? '' : 'disabled'}>Next →</button>
+</div>`,
+
+// ── SECTION 3: European Regime ──
+() => `
+<div class="section-header">
+  <div class="section-tag">Section 3 of 6</div>
+  <h2>European Regime — GDPR, NIS2, DORA</h2>
+  <p>EU obligations that may trigger simultaneously with U.S. federal requirements for any org with European operations or customers.</p>
+</div>
+
+<div class="content-card">
+  <h3>GDPR Articles 33–34</h3>
+  <p>Notification to the supervisory authority within <strong>72 hours of becoming aware</strong> of a personal data breach (Article 33). Data subjects notified "without undue delay" if high risk (Article 34). Ransomware with exfiltration triggers GDPR by default. Encryption-only events without exfiltration may also be notifiable depending on DPA guidance. Penalties: up to €20M or 4% of global annual turnover.</p>
+</div>
+
+<div class="content-card">
+  <h3>NIS2 Directive</h3>
+  <p>Essential and important entities in critical sectors: <strong>24-hour early warning</strong> to national authority, followed by full incident report within <strong>72 hours</strong>. Expanded scope vs. NIS1 — more sectors and tighter obligations. Member-State transposition underway as of 2026.</p>
+</div>
+
+<div class="content-card">
+  <h3>DORA — Digital Operational Resilience Act</h3>
+  <p>Financial sector — banks, insurers, investment firms, crypto-asset service providers. ICT-related major incidents: <strong>initial report within 4 hours</strong> to competent authority, detailed follow-up report required. Applies to financial entities operating in EU member states.</p>
+</div>
+
+<div class="quiz-block">
+  <div class="quiz-q">5. Under GDPR Article 33, when must a personal data breach be reported to the supervisory authority?</div>
+  <div class="options">
+    <button class="option-btn" data-mcq="s3q1" data-val="A">A) Within 30 days of discovery</button>
+    <button class="option-btn" data-mcq="s3q1" data-val="B">B) Only if more than 100 records are affected</button>
+    <button class="option-btn" data-mcq="s3q1" data-val="C">C) Within 72 hours of becoming aware of the breach</button>
+    <button class="option-btn" data-mcq="s3q1" data-val="D">D) Within 4 business days of determining materiality</button>
+  </div>
+  <div class="feedback" id="fb-s3q1"></div>
+</div>
+
+<div class="quiz-block">
+  <div class="quiz-q">6. A company with EU customers is encrypted by ransomware. Attackers exfiltrate customer data before encryption. Under GDPR, the notification obligation is triggered by:</div>
+  <div class="options">
+    <button class="option-btn" data-mcq="s3q2" data-val="A">A) The encryption event only</button>
+    <button class="option-btn" data-mcq="s3q2" data-val="B">B) The ransom note discovery</button>
+    <button class="option-btn" data-mcq="s3q2" data-val="C">C) The exfiltration of personal data — ransomware with exfiltration triggers GDPR notification by default</button>
+    <button class="option-btn" data-mcq="s3q2" data-val="D">D) The public announcement by the threat actor group</button>
+  </div>
+  <div class="feedback" id="fb-s3q2"></div>
+</div>
+
+<div class="discuss-block">
+  <div class="discuss-label">Discussion</div>
+  <div class="discuss-q">Your EU operations are subject to GDPR. The CISO says "we'll wait to notify until we know for sure data was taken." What's the problem with that stance?</div>
+  <textarea class="discuss-input" placeholder="Write your thoughts..."></textarea>
+  <button class="btn-reveal" id="reveal-s3">Reveal expert answer</button>
+  <div class="expert-answer" id="expert-s3">GDPR notification is triggered by "becoming aware of" the breach — not by confirming the full scope of exfiltration. In a ransomware incident where exfiltration tooling is present in the environment (as it is in most modern double-extortion attacks), the DPA will expect prompt notification within 72 hours of discovery, with the investigation still ongoing. Waiting for confirmation is the wrong mental model: you notify based on what you know and likely risk, then update. Delaying until "we know for sure" risks missing the 72-hour window and inviting regulatory scrutiny. Some DPAs have also taken the position that encryption-only events are notifiable as a loss of availability of personal data.</div>
+</div>
+
+<div class="nav-row">
+  <button class="btn-nav" onclick="navTo(1)">← Back</button>
+  <button class="btn-nav next" id="btn-next-2" onclick="navTo(3)" ${state.quizAttempted[2] ? '' : 'disabled'}>Next →</button>
+</div>`,
+
+// ── SECTION 4: Privilege & Forensics ──
+() => `
+<div class="section-header">
+  <div class="section-tag">Section 4 of 6</div>
+  <h2>Privilege &amp; the Forensic Report</h2>
+  <p>How the IR engagement is structured determines whether the forensic report is protected from discovery.</p>
+</div>
+
+<div class="content-card">
+  <h3>Attorney-Client Privilege &amp; Work Product</h3>
+  <p>A forensic report produced independently (not under legal direction) is <strong>discoverable</strong>. A report produced at counsel's direction, for the purpose of providing legal advice, may be protected as work product. The difference often comes down to who signed the IR engagement letter.</p>
+  <ul>
+    <li><strong>Correct structure:</strong> Legal counsel retains the IR firm. Investigation directed for the purpose of providing legal advice. Communications flow through counsel.</li>
+    <li><strong>Wrong structure:</strong> CISO hires IR firm directly. Investigation runs independently. Report lands in the CISO's inbox.</li>
+    <li><strong>What's NOT privileged:</strong> Factual remediation actions, system logs, anything shared with regulators or insurers outside of privilege.</li>
+  </ul>
+</div>
+
+<div class="content-card">
+  <h3>Pre-Incident Preparation</h3>
+  <p>The time to establish the privilege structure is <em>before</em> the incident. A pre-negotiated breach counsel retainer with documented day-1 protocols — including a template IR engagement letter — means the structure is in place when the clock is ticking.</p>
+</div>
+
+<div class="content-card">
+  <h3>Match: Privilege Status</h3>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Match each item to its privilege status. Click a term on the left, then click the correct slot on the right.</p>
+  <div class="match-container" id="match-s4">
+    <div>
+      <div class="match-col-title">Item</div>
+      <div class="match-term" id="mt-s4-0" data-idx="0">Report produced independently by IR firm (CISO hired)</div>
+      <div class="match-term" id="mt-s4-1" data-idx="1">Report produced by IR firm at counsel's direction</div>
+      <div class="match-term" id="mt-s4-2" data-idx="2">Factual remediation actions taken post-incident</div>
+      <div class="match-term" id="mt-s4-3" data-idx="3">Communications flowing through outside counsel</div>
+    </div>
+    <div>
+      <div class="match-col-title">Privilege Status</div>
+      <div class="match-slot" id="ms-s4-0" data-idx="0"><div class="slot-label">Slot A</div><span class="slot-val">Click term then slot</span></div>
+      <div class="match-slot" id="ms-s4-1" data-idx="1"><div class="slot-label">Slot B</div><span class="slot-val">Click term then slot</span></div>
+      <div class="match-slot" id="ms-s4-2" data-idx="2"><div class="slot-label">Slot C</div><span class="slot-val">Click term then slot</span></div>
+      <div class="match-slot" id="ms-s4-3" data-idx="3"><div class="slot-label">Slot D</div><span class="slot-val">Click term then slot</span></div>
+    </div>
+  </div>
+  <button class="btn-submit" id="match-s4-submit" onclick="scoreMatchS4()">Submit Matches</button>
+  <div class="feedback" id="fb-match-s4"></div>
+</div>
+
+<div class="quiz-block">
+  <div class="quiz-q">7. To maximise privilege protection over a ransomware forensic investigation, what is the correct engagement structure?</div>
+  <div class="options">
+    <button class="option-btn" data-mcq="s4q1" data-val="A">A) The IR firm is hired directly by the CISO and reports to the CIO</button>
+    <button class="option-btn" data-mcq="s4q1" data-val="B">B) Legal counsel retains the IR firm, and the investigation is directed for the purpose of providing legal advice</button>
+    <button class="option-btn" data-mcq="s4q1" data-val="C">C) The IR firm is hired by cyber insurance and reports to the broker</button>
+    <button class="option-btn" data-mcq="s4q1" data-val="D">D) Privilege attaches automatically to any forensic report</button>
+  </div>
+  <div class="feedback" id="fb-s4q1"></div>
+</div>
+
+<div class="quiz-block">
+  <div class="quiz-q">8. Which of the following is NOT protected by attorney-client privilege in a ransomware incident?</div>
+  <div class="options">
+    <button class="option-btn" data-mcq="s4q2" data-val="A">A) Legal memos discussing litigation risk</button>
+    <button class="option-btn" data-mcq="s4q2" data-val="B">B) Forensic investigation reports directed by outside counsel</button>
+    <button class="option-btn" data-mcq="s4q2" data-val="C">C) Factual remediation actions taken to restore systems — these are operational, not legal advice</button>
+    <button class="option-btn" data-mcq="s4q2" data-val="D">D) Counsel's advice on whether to pay the ransom</button>
+  </div>
+  <div class="feedback" id="fb-s4q2"></div>
+</div>
+
+<div class="discuss-block">
+  <div class="discuss-label">Discussion</div>
+  <div class="discuss-q">Your IR firm produced a forensic timeline that plaintiff's counsel in a class action is demanding in discovery. The CISO hired the IR firm before breach counsel was engaged. What is the likely outcome, and what would you have done differently?</div>
+  <textarea class="discuss-input" placeholder="Write your thoughts..."></textarea>
+  <button class="btn-reveal" id="reveal-s4">Reveal expert answer</button>
+  <div class="expert-answer" id="expert-s4">The likely outcome is that the forensic report is discoverable — work-product protection requires that the document be prepared "in anticipation of litigation" and flow through legal counsel. If the CISO hired the IR firm directly and the engagement didn't run through breach counsel, privilege arguments are weak. What to do differently: establish a pre-incident legal retainer with breach counsel, document day-1 protocols so legal counsel immediately takes over the IR engagement, and ensure all investigation communications flow through counsel. Even if litigation doesn't materialize, this costs nothing and preserves optionality. It's standard practice for organizations with mature IR programs.</div>
+</div>
+
+<div class="nav-row">
+  <button class="btn-nav" onclick="navTo(2)">← Back</button>
+  <button class="btn-nav next" id="btn-next-3" onclick="navTo(4)" ${state.quizAttempted[3] ? '' : 'disabled'}>Next →</button>
+</div>`,
+
+// ── SECTION 5: 72-Hour Decision Tree ──
+() => `
+<div class="section-header">
+  <div class="section-tag">Section 5 of 6</div>
+  <h2>The 72-Hour Decision Tree</h2>
+  <p>The key decisions and notifications that must happen in the first 72 hours of a ransomware incident.</p>
+</div>
+
+<div class="content-card">
+  <h3>Notification Timeline</h3>
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-time">T+0</div><div class="tl-text">Confirm incident scope. Activate incident command. Legal counsel notified immediately.</div><div class="tl-regime">→ Privilege structure activated</div></div></div>
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-time">T+1 hour</div><div class="tl-text">Materiality determination process started (SEC). OFAC SDN screening initiated if payment is on the table. Insurance carrier notified per policy requirements.</div><div class="tl-regime">→ SEC clock consideration / OFAC screening</div></div></div>
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-time">T+4 hours</div><div class="tl-text">CIRCIA early warning assessment — is this a covered entity / covered incident? DORA initial report if EU financial entity.</div><div class="tl-regime">→ CIRCIA / DORA assessment</div></div></div>
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-time">T+24 hours</div><div class="tl-text">Ransom payment report to CISA if payment made (CIRCIA). NYDFS notification if NY financial firm. DFARS DIBNet report if DoD contractor.</div><div class="tl-regime">→ CIRCIA payment report / NYDFS / DFARS</div></div></div>
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-time">T+48 hours</div><div class="tl-text">GDPR / NIS2 notification if EU personal data involved. State breach counsel coordination underway.</div><div class="tl-regime">→ GDPR 72-hr window closing / State law review</div></div></div>
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div></div><div class="tl-content"><div class="tl-time">T+72 hours</div><div class="tl-text">CIRCIA full incident report. GDPR supervisory authority notification deadline. SEC materiality determination may already have triggered clock. All major 72-hour windows closing.</div><div class="tl-regime">→ Multiple deadlines converge</div></div></div>
+  </div>
+</div>
+
+<div class="multiselect-block">
+  <div class="quiz-q">You are the IR lead at T+4 hours. Encrypted systems confirmed, ransom note from a known group, exfiltration tooling found in logs. Which actions are appropriate RIGHT NOW?</div>
+  <div class="ms-hint">Select all that apply — partial credit available.</div>
+  <div class="checkbox-options" id="ms-s5">
+    <div class="cb-item" data-val="correct" onclick="toggleCB(this)"><div class="cb-box">✓</div><div class="cb-text">Notify legal/breach counsel to take over IR engagement for privilege purposes</div></div>
+    <div class="cb-item" data-val="correct" onclick="toggleCB(this)"><div class="cb-box">✓</div><div class="cb-text">Begin OFAC SDN screening against the threat actor group if payment is being considered</div></div>
+    <div class="cb-item" data-val="correct" onclick="toggleCB(this)"><div class="cb-box">✓</div><div class="cb-text">Assess whether the organisation qualifies as a CIRCIA covered entity in a critical infrastructure sector</div></div>
+    <div class="cb-item" data-val="correct" onclick="toggleCB(this)"><div class="cb-box">✓</div><div class="cb-text">Notify cyber insurer per policy requirements — late notice can affect coverage</div></div>
+    <div class="cb-item" data-val="wrong" onclick="toggleCB(this)"><div class="cb-box"></div><div class="cb-text">Wait for full forensic confirmation before engaging legal counsel</div></div>
+    <div class="cb-item" data-val="wrong" onclick="toggleCB(this)"><div class="cb-box"></div><div class="cb-text">Publish a holding statement on the company website immediately without legal review</div></div>
+  </div>
+  <button class="btn-submit" id="ms-s5-submit" onclick="scoreMS5()">Submit Answers</button>
+  <div class="feedback" id="fb-ms-s5"></div>
+</div>
+
+<div class="discuss-block">
+  <div class="discuss-label">Discussion</div>
+  <div class="discuss-q">The CEO asks: "Can we just pay the ransom quietly and not tell anyone?" Walk them through what "quiet" actually means legally.</div>
+  <textarea class="discuss-input" placeholder="Write your thoughts..."></textarea>
+  <button class="btn-reveal" id="reveal-s5">Reveal expert answer</button>
+  <div class="expert-answer" id="expert-s5">There is no "quiet" in 2026. A ransom payment triggers: CIRCIA ransom payment report to CISA within 24 hours (if covered entity); FinCEN SAR obligations for any financial institution involved; OFAC SDN screening obligation with strict liability for violations; potential SEC 8-K if materiality threshold is met; state breach notification laws if PII was involved; insurance carrier notification per policy terms. Beyond legal reporting, leak sites, dark web chatter, and customer/partner data exposure create discovery risk regardless of internal decision. "Quiet" is a risk-transfer fantasy — paying doesn't buy silence, and the legal obligations exist independently of whether the payment is publicly disclosed.</div>
+</div>
+
+<div class="nav-row">
+  <button class="btn-nav" onclick="navTo(3)">← Back</button>
+  <button class="btn-nav next" id="btn-next-4" onclick="navTo(5)" ${state.quizAttempted[4] ? '' : 'disabled'}>Next →</button>
+</div>`,
+
+// ── SECTION 6: Readiness Assessment ──
+() => `
+<div class="section-header">
+  <div class="section-tag">Section 6 of 6</div>
+  <h2>Regulatory Readiness Assessment</h2>
+  <p>Match reporting obligations to their deadlines, then assess your pre-incident readiness posture.</p>
+</div>
+
+<div class="content-card">
+  <h3>Reporting Obligations Matching Game</h3>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Match each obligation to its correct deadline/timeframe. Click a term on the left, then click the correct slot on the right.</p>
+  <div class="match-container" id="match-s6">
+    <div>
+      <div class="match-col-title">Obligation</div>
+      <div class="match-term" id="mt-s6-0" data-idx="0">CIRCIA cyber incident report</div>
+      <div class="match-term" id="mt-s6-1" data-idx="1">CIRCIA ransom payment report</div>
+      <div class="match-term" id="mt-s6-2" data-idx="2">SEC Form 8-K disclosure</div>
+      <div class="match-term" id="mt-s6-3" data-idx="3">GDPR supervisory authority notification</div>
+      <div class="match-term" id="mt-s6-4" data-idx="4">HIPAA HHS breach notification</div>
+    </div>
+    <div>
+      <div class="match-col-title">Deadline</div>
+      <div class="match-slot" id="ms-s6-0" data-idx="0"><div class="slot-label">A</div><span class="slot-val">72 hours to CISA</span></div>
+      <div class="match-slot" id="ms-s6-1" data-idx="1"><div class="slot-label">B</div><span class="slot-val">24 hours to CISA</span></div>
+      <div class="match-slot" id="ms-s6-2" data-idx="2"><div class="slot-label">C</div><span class="slot-val">4 business days from materiality</span></div>
+      <div class="match-slot" id="ms-s6-3" data-idx="3"><div class="slot-label">D</div><span class="slot-val">72 hours from awareness</span></div>
+      <div class="match-slot" id="ms-s6-4" data-idx="4"><div class="slot-label">E</div><span class="slot-val">60 days from discovery</span></div>
+    </div>
+  </div>
+  <button class="btn-submit" id="match-s6-submit" onclick="scoreMatchS6()">Submit Matches</button>
+  <div class="feedback" id="fb-match-s6"></div>
+</div>
+
+<div class="quiz-block">
+  <div class="quiz-q">9. What is the most effective pre-incident step to prepare for ransomware regulatory obligations?</div>
+  <div class="options">
+    <button class="option-btn" data-mcq="s6q1" data-val="A">A) Memorising all state breach notification deadlines</button>
+    <button class="option-btn" data-mcq="s6q1" data-val="B">B) Retaining breach counsel before an incident occurs, with documented day-1 activation protocols</button>
+    <button class="option-btn" data-mcq="s6q1" data-val="C">C) Building a dedicated compliance portal</button>
+    <button class="option-btn" data-mcq="s6q1" data-val="D">D) Subscribing to a threat intelligence feed</button>
+  </div>
+  <div class="feedback" id="fb-s6q1"></div>
+</div>
+
+<div class="quiz-block">
+  <div class="quiz-q">10. A ransomware actor is identified as affiliated with a North Korean state-sponsored group. A payment is being considered. What is the immediate legal implication?</div>
+  <div class="options">
+    <button class="option-btn" data-mcq="s6q2" data-val="A">A) No special concern — state-sponsored actors are not on the SDN list</button>
+    <button class="option-btn" data-mcq="s6q2" data-val="B">B) OFAC strict-liability risk is high — North Korean state-affiliated ransomware actors are designated on the SDN list, making any payment a potential sanctions violation</button>
+    <button class="option-btn" data-mcq="s6q2" data-val="C">C) The payment can proceed as long as a professional negotiator is used</button>
+    <button class="option-btn" data-mcq="s6q2" data-val="D">D) Only the negotiator faces OFAC liability, not the victim organisation</button>
+  </div>
+  <div class="feedback" id="fb-s6q2"></div>
+</div>
+
+<div class="content-card">
+  <h3>Pre-Incident Readiness Checklist</h3>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Self-assessment — check all items your organisation currently has in place. 7+ items = bonus points.</p>
+  <div class="checklist" id="checklist-s6">
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-text">Breach counsel retained pre-incident with day-1 protocol documented</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-text">OFAC SDN screening capability and process documented for payment decisions</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-text">Regulatory applicability matrix built (which regimes apply to us, with deadlines)</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-text">Insurance policy reviewed — notification timing requirements known</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-text">IR firm engagement template structured to preserve attorney-client privilege</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-text">Disclosure timeline tracker template ready to activate on day 1</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-text">Board briefing template prepared for the 72-hour window</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-text">State notification coordination process identified (counsel familiar with all applicable states)</div></div>
+  </div>
+  <div class="checklist-status" id="checklist-status-s6">0 / 8 items checked</div>
+  <button class="btn-submit" id="checklist-s6-submit" onclick="scoreChecklist()">Submit Self-Assessment</button>
+  <div class="feedback" id="fb-checklist-s6"></div>
+</div>
+
+<div class="discuss-block">
+  <div class="discuss-label">Discussion</div>
+  <div class="discuss-q">Build your regulatory notification playbook for a mid-size healthcare organisation (1,200 employees, HIPAA-covered, operating in 12 states, no federal contracts). What are the first three things you need on paper before the incident happens?</div>
+  <textarea class="discuss-input" placeholder="Write your thoughts..."></textarea>
+  <button class="btn-reveal" id="reveal-s6">Reveal expert answer</button>
+  <div class="expert-answer" id="expert-s6">Three essentials: (1) Regulatory applicability matrix — document which regimes apply (HIPAA, state breach laws in all 12 states, CCPA if any CA residents affected, insurance policy notification requirements) with deadlines for each. (2) Breach counsel retainer with day-1 protocol — pre-negotiated engagement, IR firm list, template engagement letters that preserve privilege. (3) Disclosure timeline tracker — a live document that activates on day-1 with the regime, deadline, responsible owner, and status for every applicable notification. These three artifacts turn a chaotic first 72 hours into a managed process. Without them, you're making those decisions under fire.</div>
+</div>
+
+<div class="nav-row">
+  <button class="btn-nav" onclick="navTo(4)">← Back</button>
+  <button class="btn-nav next" id="btn-next-5" onclick="finishGame()" ${state.quizAttempted[5] ? '' : 'disabled'}>Finish Lab →</button>
+</div>`
+
+];
+
+// ─────────────────────────────────────────────
+// SECTION WIRE-UPS
+// ─────────────────────────────────────────────
+
+const sectionWires = [
+  // Section 1
+  () => {
+    mcq('s1q1','B','Materiality is the trigger — not detection. Companies must document their materiality determination process; regulators scrutinize delay.','The SEC clock starts at materiality determination, not at detection. Document the process carefully.',10,0);
+    mcq('s1q2','C','Strict liability means you can violate OFAC even without knowing the actor is sanctioned. SDN screening at payment time is non-negotiable.','OFAC strict liability: intent and willfulness are not required. The violation occurs regardless of knowledge.',10,0);
+    discuss('s1');
+  },
+  // Section 2
+  () => {
+    mcq('s2q1','B','HIPAA requires HHS notification, individual notification within 60 days, and media notification for breaches affecting >500 individuals in a state.','HIPAA has mandatory breach notification obligations regardless of whether data is confirmed exfiltrated.',10,1);
+    mcq('s2q2','C','Each state has its own notification law with different timelines. Multi-state incidents require coordinated breach counsel across all applicable states.','State breach notification laws apply based on where affected individuals reside, not where the company is headquartered.',10,1);
+    discuss('s2');
+  },
+  // Section 3
+  () => {
+    mcq('s3q1','C','72 hours is the GDPR clock — from when you "become aware." A delayed discovery because systems weren\'t monitored can still start the clock earlier than expected.','GDPR Article 33: 72 hours from becoming aware of the personal data breach.',10,2);
+    mcq('s3q2','C','Ransomware with exfiltration triggers GDPR notification by default. The clock runs from when you become aware, not when exfiltration is confirmed.','The exfiltration of personal data triggers GDPR — not the encryption event or ransom note.',10,2);
+    discuss('s3');
+  },
+  // Section 4
+  () => {
+    wireMatchS4();
+    mcq('s4q1','B','Legal counsel retaining the IR firm — and directing the investigation for the purpose of providing legal advice — is the correct structure to maximise privilege protection.','Privilege attaches when the IR firm is retained by legal counsel for the purpose of providing legal advice.',10,3);
+    mcq('s4q2','C','Factual remediation actions are operational — they are not protected by attorney-client privilege and are discoverable.','Attorney-client privilege protects legal advice and work product — not operational remediation actions.',10,3);
+    discuss('s4');
+  },
+  // Section 5
+  () => {
+    discuss('s5');
+  },
+  // Section 6
+  () => {
+    wireMatchS6();
+    mcq('s6q1','B','A pre-incident breach counsel retainer with documented day-1 protocols is the single highest-impact preparation step for regulatory readiness.','Pre-incident retainer of breach counsel with documented day-1 protocols is the foundation of regulatory readiness.',10,5);
+    mcq('s6q2','B','North Korean state-affiliated ransomware actors (Lazarus Group, etc.) are designated on the SDN list. Any payment creates strict-liability OFAC exposure.','North Korean state-sponsored actors are OFAC-designated. Any payment — regardless of facilitator — creates sanctions liability.',10,5);
+    discuss('s6');
+  }
+];
+
+// ─────────────────────────────────────────────
+// MATCHING GAME — Section 4 (Privilege)
+// ─────────────────────────────────────────────
+// Correct mapping: term idx → slot idx (terms and slots are pre-labelled with answers, so mapping is 0→0,1→1,2→2,3→3)
+let s4Selected = null;
+let s4Assignments = {};
+let s4Scored = false;
+
+function wireMatchS4() {
+  const correct = { 0: 'Discoverable', 1: 'May be privileged (work product)', 2: 'Not privileged', 3: 'Protected under work product' };
+  const slotLabels = ['Discoverable', 'May be privileged (work product)', 'Not privileged', 'Protected under work product'];
+  // Set slot display text
+  [0,1,2,3].forEach(i => {
+    const slot = document.getElementById('ms-s4-' + i);
+    if (slot) slot.querySelector('.slot-val').textContent = slotLabels[i];
+  });
+  [0,1,2,3].forEach(i => {
+    const term = document.getElementById('mt-s4-' + i);
+    const slot = document.getElementById('ms-s4-' + i);
+    if (term) term.addEventListener('click', () => {
+      if (s4Scored) return;
+      document.querySelectorAll('[id^="mt-s4-"]').forEach(t => t.classList.remove('selected'));
+      term.classList.add('selected');
+      s4Selected = i;
+    });
+    if (slot) slot.addEventListener('click', () => {
+      if (s4Scored || s4Selected === null) return;
+      s4Assignments[s4Selected] = i;
+      slot.querySelector('.slot-val').textContent = document.getElementById('mt-s4-' + s4Selected).textContent;
+      slot.classList.add('filled');
+      document.getElementById('mt-s4-' + s4Selected).classList.remove('selected');
+      s4Selected = null;
+    });
+  });
+}
+
+function scoreMatchS4() {
+  if (s4Scored) return;
+  s4Scored = true;
+  // correct: term 0→slot 0, term 1→slot 1, term 2→slot 2, term 3→slot 3
+  let correct = 0;
+  [0,1,2,3].forEach(termIdx => {
+    const assignedSlot = s4Assignments[termIdx];
+    const slot = document.getElementById('ms-s4-' + (assignedSlot !== undefined ? assignedSlot : -1));
+    if (assignedSlot === termIdx) {
+      correct++;
+      document.getElementById('mt-s4-' + termIdx).classList.add('matched-ok');
+      if (slot) slot.classList.add('correct-slot');
+    } else {
+      document.getElementById('mt-s4-' + termIdx).classList.add('matched-bad');
+      if (slot) slot.classList.add('wrong-slot');
+    }
+  });
+  const pts = correct === 4 ? 20 : correct === 3 ? 10 : 0;
+  const fb = document.getElementById('fb-match-s4');
+  fb.className = 'feedback show ' + (pts > 0 ? 'correct' : 'wrong');
+  fb.textContent = correct === 4 ? '✓ Perfect — all 4 privilege classifications correct! +20 pts' : correct === 3 ? `✓ ${correct}/4 correct — +10 pts. Correct mapping: independently-hired IR report = discoverable; counsel-directed report = may be privileged; remediation actions = not privileged; counsel communications = protected.` : `✗ ${correct}/4 correct. Correct mapping: independently-hired IR report = discoverable; counsel-directed report = may be privileged; remediation actions = not privileged; counsel communications = protected.`;
+  if (pts > 0) addScore(pts, 'activity');
+  if (!state.quizAttempted[3]) {
+    state.quizAttempted[3] = true;
+    const nb = document.getElementById('btn-next-3');
+    if (nb) nb.disabled = false;
+  }
+  document.getElementById('match-s4-submit').disabled = true;
+}
+
+// ─────────────────────────────────────────────
+// MULTI-SELECT — Section 5
+// ─────────────────────────────────────────────
+let ms5Scored = false;
+
+function toggleCB(el) {
+  if (ms5Scored) return;
+  el.classList.toggle('selected');
+  const box = el.querySelector('.cb-box');
+  box.textContent = el.classList.contains('selected') ? '✓' : '';
+}
+
+function scoreMS5() {
+  if (ms5Scored) return;
+  ms5Scored = true;
+  const items = document.querySelectorAll('#ms-s5 .cb-item');
+  let correctPicked = 0, wrongPicked = 0, missed = 0;
+  items.forEach(item => {
+    const isCorrect = item.dataset.val === 'correct';
+    const isSelected = item.classList.contains('selected');
+    if (isCorrect && isSelected) { correctPicked++; item.classList.add('correct-pick'); }
+    else if (!isCorrect && isSelected) { wrongPicked++; item.classList.add('wrong-pick'); }
+    else if (isCorrect && !isSelected) { missed++; item.classList.add('missed'); }
+  });
+  const pts = (correctPicked === 4 && wrongPicked === 0) ? 20 : (correctPicked >= 3 && wrongPicked === 0) ? 10 : 0;
+  const fb = document.getElementById('fb-ms-s5');
+  fb.className = 'feedback show ' + (pts > 0 ? 'correct' : 'wrong');
+  fb.textContent = pts === 20 ? `✓ All 4 correct actions identified! +20 pts` : pts === 10 ? `Partial credit — ${correctPicked}/4 correct, ${wrongPicked} incorrect selected. +10 pts` : `${correctPicked}/4 correct, ${wrongPicked} incorrect selected. The 4 correct actions: notify legal counsel, OFAC SDN screening, CIRCIA assessment, and insurer notification.`;
+  if (pts > 0) addScore(pts, 'activity');
+  document.getElementById('ms-s5-submit').disabled = true;
+  if (!state.quizAttempted[4]) {
+    state.quizAttempted[4] = true;
+    const nb = document.getElementById('btn-next-4');
+    if (nb) nb.disabled = false;
+  }
+}
+
+// ─────────────────────────────────────────────
+// MATCHING GAME — Section 6 (Deadlines)
+// ─────────────────────────────────────────────
+let s6Selected = null;
+let s6Assignments = {};
+let s6Scored = false;
+
+function wireMatchS6() {
+  // Slots have pre-filled correct answers displayed as labels
+  // Terms 0-4 correctly map to slots 0-4 (same order)
+  [0,1,2,3,4].forEach(i => {
+    const term = document.getElementById('mt-s6-' + i);
+    const slot = document.getElementById('ms-s6-' + i);
+    if (term) term.addEventListener('click', () => {
+      if (s6Scored) return;
+      document.querySelectorAll('[id^="mt-s6-"]').forEach(t => t.classList.remove('selected'));
+      term.classList.add('selected');
+      s6Selected = i;
+    });
+    if (slot) slot.addEventListener('click', () => {
+      if (s6Scored || s6Selected === null) return;
+      s6Assignments[s6Selected] = i;
+      // show term text in slot
+      const termText = document.getElementById('mt-s6-' + s6Selected).textContent;
+      slot.innerHTML = `<div class="slot-label">${slot.querySelector('.slot-label').textContent}</div><span class="slot-val">${termText}</span>`;
+      slot.classList.add('filled');
+      document.getElementById('mt-s6-' + s6Selected).classList.remove('selected');
+      s6Selected = null;
+    });
+  });
+}
+
+function scoreMatchS6() {
+  if (s6Scored) return;
+  s6Scored = true;
+  let correct = 0;
+  [0,1,2,3,4].forEach(termIdx => {
+    const assignedSlot = s6Assignments[termIdx];
+    if (assignedSlot === termIdx) {
+      correct++;
+      document.getElementById('mt-s6-' + termIdx).classList.add('matched-ok');
+      document.getElementById('ms-s6-' + termIdx).classList.add('correct-slot');
+    } else {
+      document.getElementById('mt-s6-' + termIdx).classList.add('matched-bad');
+      if (assignedSlot !== undefined) document.getElementById('ms-s6-' + assignedSlot).classList.add('wrong-slot');
+    }
+  });
+  const pts = correct === 5 ? 20 : correct >= 4 ? 10 : 0;
+  const fb = document.getElementById('fb-match-s6');
+  fb.className = 'feedback show ' + (pts > 0 ? 'correct' : 'wrong');
+  fb.textContent = correct === 5 ? `✓ All 5 deadlines matched correctly! +20 pts` : pts === 10 ? `${correct}/5 correct — +10 pts. Review: CIRCIA incident=72hr, CIRCIA payment=24hr, SEC 8-K=4 biz days, GDPR=72hr, HIPAA=60 days.` : `${correct}/5 correct. CIRCIA incident=72hr, CIRCIA payment=24hr, SEC 8-K=4 biz days, GDPR=72hr, HIPAA=60 days.`;
+  if (pts > 0) addScore(pts, 'activity');
+  document.getElementById('match-s6-submit').disabled = true;
+  if (!state.quizAttempted[5]) {
+    state.quizAttempted[5] = true;
+    const nb = document.getElementById('btn-next-5');
+    if (nb) nb.disabled = false;
+  }
+}
+
+// ─────────────────────────────────────────────
+// CHECKLIST — Section 6
+// ─────────────────────────────────────────────
+let checklistScored = false;
+
+function toggleCheck(el) {
+  if (checklistScored) return;
+  el.classList.toggle('checked');
+  const box = el.querySelector('.check-box');
+  box.textContent = el.classList.contains('checked') ? '✓' : '';
+  const checked = document.querySelectorAll('#checklist-s6 .check-item.checked').length;
+  document.getElementById('checklist-status-s6').textContent = checked + ' / 8 items checked';
+}
+
+function scoreChecklist() {
+  if (checklistScored) return;
+  checklistScored = true;
+  const checked = document.querySelectorAll('#checklist-s6 .check-item.checked').length;
+  const pts = checked >= 7 ? 20 : checked >= 5 ? 10 : 0;
+  const fb = document.getElementById('fb-checklist-s6');
+  fb.className = 'feedback show ' + (pts > 0 ? 'correct' : 'wrong');
+  fb.textContent = checked >= 7 ? `✓ Strong readiness posture — ${checked}/8 controls in place. +20 bonus pts` : checked >= 5 ? `Developing posture — ${checked}/8 controls in place. +10 pts. Focus on breach counsel retainer and regulatory applicability matrix first.` : `${checked}/8 controls. Significant gaps in pre-incident regulatory readiness. Prioritise breach counsel retainer, OFAC screening process, and regulatory matrix.`;
+  if (pts > 0) addScore(pts, 'bonus');
+  document.getElementById('checklist-s6-submit').disabled = true;
+  if (!state.quizAttempted[5]) {
+    state.quizAttempted[5] = true;
+    const nb = document.getElementById('btn-next-5');
+    if (nb) nb.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
