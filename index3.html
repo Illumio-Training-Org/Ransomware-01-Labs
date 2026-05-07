@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ransomware Ecosystem — Module 3 Lab</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1f2937; --border: #30363d;
+    --accent: #f97316; --accent2: #3b82f6; --green: #22c55e; --red: #ef4444;
+    --yellow: #eab308; --text: #e6edf3; --muted: #8b949e; --card: #1c2128;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; }
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+  #screen-intro { align-items: center; justify-content: center; padding: 24px; background: radial-gradient(ellipse at 60% 20%, #0a1205 0%, var(--bg) 70%); }
+  .intro-card { max-width: 680px; width: 100%; text-align: center; }
+  .logo { font-size: 48px; margin-bottom: 12px; }
+  .intro-card h1 { font-size: 26px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .intro-card .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 13px; }
+  .intro-card p { color: #c9d1d9; margin-bottom: 20px; font-size: 14px; }
+  .badge-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+  .badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 14px; font-size: 12px; color: var(--muted); }
+  .btn-primary { background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 12px 32px; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity .15s; }
+  .btn-primary:hover { opacity: .85; }
+  .btn-secondary { background: transparent; color: var(--accent2); border: 1px solid var(--accent2); border-radius: 8px; padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-secondary:hover { background: var(--accent2); color: #fff; }
+  .sections-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; text-align: left; }
+  .section-chip { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+  .section-chip .chip-num { color: var(--accent); font-weight: 700; font-size: 12px; }
+  .section-chip .chip-title { font-size: 12px; color: var(--text); }
+  #screen-game { flex-direction: row; }
+  .sidebar { width: 220px; min-width: 220px; background: var(--surface); border-right: 1px solid var(--border); padding: 16px 12px; display: flex; flex-direction: column; gap: 16px; }
+  .sidebar-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .progress-track { display: flex; flex-direction: column; gap: 4px; }
+  .track-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; font-size: 12px; border: 1px solid transparent; }
+  .track-item.active { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+  .track-item.done { color: var(--green); }
+  .track-item.locked { color: var(--muted); }
+  .track-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+  .track-item.active .track-dot { background: var(--accent); }
+  .track-item.done .track-dot { background: var(--green); }
+  .score-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .score-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .score-val { font-size: 24px; font-weight: 800; color: var(--accent); }
+  .score-sub { font-size: 11px; color: var(--muted); }
+  .main-area { flex: 1; overflow-y: auto; padding: 24px; }
+  .section-header { margin-bottom: 20px; }
+  .section-tag { display: inline-block; background: var(--accent); color: #000; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+  .section-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .section-header p { color: #c9d1d9; font-size: 13px; }
+  .content-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  .content-card h3 { font-size: 14px; font-weight: 700; color: var(--accent2); margin-bottom: 10px; }
+  .content-card p { color: #c9d1d9; font-size: 13px; margin-bottom: 8px; }
+  .content-card ul { padding-left: 18px; color: #c9d1d9; font-size: 13px; }
+  .content-card li { margin-bottom: 5px; }
+  .quiz-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .quiz-q { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option-btn { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; text-align: left; color: var(--text); font-size: 13px; cursor: pointer; transition: all .15s; }
+  .option-btn:hover:not(:disabled) { border-color: var(--accent2); background: var(--surface); }
+  .option-btn.correct { border-color: var(--green) !important; background: rgba(34,197,94,.12) !important; color: var(--green) !important; }
+  .option-btn.wrong { border-color: var(--red) !important; background: rgba(239,68,68,.12) !important; color: var(--red) !important; }
+  .feedback { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 13px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.correct { background: rgba(34,197,94,.15); border: 1px solid var(--green); color: var(--green); }
+  .feedback.wrong { background: rgba(239,68,68,.1); border: 1px solid var(--red); color: #fca5a5; }
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .btn-nav { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-nav:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-nav.next { background: var(--accent); color: #000; border-color: var(--accent); }
+  .btn-nav.next:hover { opacity: .85; }
+  .discuss-block { background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.3); border-radius: 10px; padding: 16px; margin-top: 16px; }
+  .discuss-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent2); margin-bottom: 8px; }
+  .discuss-q { font-size: 13px; color: #c9d1d9; margin-bottom: 10px; }
+  .discuss-input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: 13px; resize: vertical; min-height: 60px; font-family: inherit; }
+  .discuss-input:focus { outline: none; border-color: var(--accent2); }
+  .btn-reveal { background: var(--surface2); border: 1px solid var(--accent2); color: var(--accent2); border-radius: 6px; padding: 6px 14px; font-size: 12px; cursor: pointer; margin-top: 8px; }
+  .expert-answer { background: var(--card); border-left: 3px solid var(--accent2); padding: 10px 14px; margin-top: 10px; font-size: 12px; color: #c9d1d9; border-radius: 0 6px 6px 0; display: none; }
+  .expert-answer.show { display: block; }
+  .info-banner { background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.3); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #fcd34d; margin-bottom: 14px; }
+  .points-pop { position: fixed; top: 20px; right: 20px; background: var(--green); color: #000; font-weight: 800; font-size: 16px; border-radius: 8px; padding: 8px 16px; opacity: 0; transform: translateY(-10px); transition: all .3s; pointer-events: none; z-index: 999; }
+  .points-pop.show { opacity: 1; transform: translateY(0); }
+  #screen-results { align-items: center; justify-content: center; padding: 24px; background: radial-gradient(ellipse at 50% 10%, #001a0a 0%, var(--bg) 70%); }
+  .results-card { max-width: 620px; width: 100%; text-align: center; }
+  .results-card h1 { font-size: 28px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
+  .final-score { font-size: 72px; font-weight: 900; color: var(--accent); line-height: 1; margin: 16px 0; }
+  .grade-label { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .result-breakdown { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  .rb-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .rb-num { font-size: 22px; font-weight: 800; color: var(--accent2); }
+  .rb-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .key-lessons { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: left; margin-bottom: 20px; }
+  .key-lessons h3 { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+  .key-lessons li { font-size: 12px; color: #c9d1d9; margin-bottom: 6px; margin-left: 16px; }
+  /* Phase boxes */
+  .phase-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+  .phase-num { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-bottom: 4px; }
+  .phase-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .phase-desc { font-size: 12px; color: #c9d1d9; }
+  /* RACI activity */
+  .raci-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .raci-decision { flex: 1; min-width: 200px; font-size: 12px; color: #c9d1d9; }
+  .raci-options { display: flex; gap: 6px; flex-wrap: wrap; }
+  .raci-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; transition: all .15s; color: var(--muted); }
+  .raci-btn:hover { border-color: var(--accent2); color: var(--text); }
+  .raci-btn.raci-selected { border-color: var(--accent2); background: rgba(59,130,246,.15); color: var(--accent2); }
+  .raci-btn.raci-correct { border-color: var(--green); background: rgba(34,197,94,.12); color: var(--green); }
+  .raci-btn.raci-wrong { border-color: var(--red); background: rgba(239,68,68,.1); color: var(--red); }
+  .template-box { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 12px; color: #79c0ff; font-family: 'Courier New', monospace; margin: 8px 0; white-space: pre-wrap; }
+  @media (max-width: 700px) {
+    #screen-game { flex-direction: column; }
+    .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 10px; }
+    .sections-preview { grid-template-columns: 1fr; }
+    .result-breakdown { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="points-pop" class="points-pop">+10 pts</div>
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-card">
+    <div class="logo">💬</div>
+    <h1>Negotiation Playbook</h1>
+    <div class="subtitle">Module 3 — Tactics, Scripts &amp; Decision Frames &nbsp;·&nbsp; Interactive Lab</div>
+    <p>The pay/no-pay decision, the anatomy of a professional negotiation, operator pressure tactics, OFAC sanctions screening, communication scripts, and the professional negotiator's role — all from the Module 3 briefing.</p>
+    <div class="sections-preview">
+      <div class="section-chip"><div class="chip-num">PART 1</div><div class="chip-title">⚖️ The Pay/No-Pay Decision</div></div>
+      <div class="section-chip"><div class="chip-num">PART 2</div><div class="chip-title">📋 Anatomy of a Negotiation</div></div>
+      <div class="section-chip"><div class="chip-num">PART 3</div><div class="chip-title">🎭 Operator Playbooks</div></div>
+      <div class="section-chip"><div class="chip-num">PART 4</div><div class="chip-title">🚫 Sanctions Screening</div></div>
+      <div class="section-chip"><div class="chip-num">PART 5</div><div class="chip-title">📝 Scripts &amp; Decision Aids</div></div>
+      <div class="section-chip"><div class="chip-num">PART 6</div><div class="chip-title">🔍 Professional Negotiator &amp; After-Action</div></div>
+    </div>
+    <div class="badge-row">
+      <div class="badge">⏱ ~20 min</div>
+      <div class="badge">6 sections</div>
+      <div class="badge">Score tracked</div>
+      <div class="badge">Max 200 pts</div>
+    </div>
+    <button class="btn-primary" onclick="startGame()">Start Lab →</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="sidebar">
+    <div>
+      <div class="sidebar-title">Progress</div>
+      <div class="progress-track" id="progress-track"></div>
+    </div>
+    <div>
+      <div class="score-box">
+        <div class="score-label">Score</div>
+        <div class="score-val" id="score-display">0</div>
+        <div class="score-sub">/ 200 pts</div>
+      </div>
+    </div>
+  </div>
+  <div class="main-area" id="main-area"></div>
+</div>
+
+<!-- RESULTS -->
+<div id="screen-results" class="screen">
+  <div class="results-card">
+    <div class="logo">🏆</div>
+    <h1>Lab Complete</h1>
+    <div class="final-score" id="final-score">0</div>
+    <div class="grade-label" id="grade-label"></div>
+    <div class="result-breakdown">
+      <div class="rb-item"><div class="rb-num" id="rb-correct">0</div><div class="rb-label">Points earned</div></div>
+      <div class="rb-item"><div class="rb-num">6</div><div class="rb-label">Sections completed</div></div>
+      <div class="rb-item"><div class="rb-num" id="rb-pct">0%</div><div class="rb-label">Score rate</div></div>
+    </div>
+    <div class="key-lessons">
+      <h3>🔑 Key takeaways from Module 3</h3>
+      <ul>
+        <li><strong>Backup confidence</strong> is the single biggest determinant of bargaining power — if you can recover, the negotiation is only about leak suppression.</li>
+        <li>OFAC strict-liability applies even without knowledge or intent — <strong>screen the wallet before every payment</strong>.</li>
+        <li>Operators routinely grant <strong>30–70% reductions</strong> when victim posture is credible — slow down, document, don't panic.</li>
+        <li>"Paying does not buy silence in 2026" — <strong>plan for disclosure regardless</strong> of payment decision.</li>
+        <li>The <strong>9 pre-incident questions</strong> should be settled now, not during an active incident.</li>
+        <li>Professional negotiators provide threat intelligence, tempo, compliance, and <strong>insulation</strong> — not just chat typing.</li>
+      </ul>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn-secondary" onclick="restartGame()">↺ Restart Lab</button>
+      <button class="btn-primary" onclick="alert('Proceed to Module 4: Recovery Architecture.')">Module 4 →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var score = 0;
+var currentSection = 0;
+var sections = [
+  { label: 'Pay/No-Pay Decision', icon: '⚖️' },
+  { label: 'Anatomy of a Negotiation', icon: '📋' },
+  { label: 'Operator Playbooks', icon: '🎭' },
+  { label: 'Sanctions Screening', icon: '🚫' },
+  { label: 'Scripts & Decision Aids', icon: '📝' },
+  { label: 'Professional Negotiator', icon: '🔍' },
+];
+var _raciAnswers = {};
+var _raciScored = false;
+
+function startGame() { showScreen('screen-game'); renderSidebar(); renderSection(0); }
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+
+function renderSidebar() {
+  var track = document.getElementById('progress-track');
+  track.innerHTML = sections.map(function(s, i) {
+    var cls = i === currentSection ? 'active' : i < currentSection ? 'done' : 'locked';
+    return '<div class="track-item ' + cls + '"><div class="track-dot"></div><span>' + s.icon + ' ' + s.label + '</span></div>';
+  }).join('');
+  document.getElementById('score-display').textContent = score;
+}
+
+function addPoints(pts) {
+  score += pts;
+  document.getElementById('score-display').textContent = score;
+  var pop = document.getElementById('points-pop');
+  pop.textContent = '+' + pts + ' pts';
+  pop.classList.add('show');
+  setTimeout(function(){ pop.classList.remove('show'); }, 1500);
+}
+
+function nextSection() {
+  currentSection++;
+  if (currentSection >= sections.length) { showResults(); return; }
+  renderSidebar();
+  renderSection(currentSection);
+  document.querySelector('.main-area').scrollTop = 0;
+}
+
+function prevSection() {
+  if (currentSection > 0) { currentSection--; renderSidebar(); renderSection(currentSection); document.querySelector('.main-area').scrollTop = 0; }
+}
+
+function answerQ(qid, btn, correct, msg) {
+  var opts = btn.parentElement.querySelectorAll('.option-btn');
+  opts.forEach(function(b){ b.disabled = true; });
+  var fb = document.getElementById(qid + '-feedback');
+  if (!fb) return;
+  if (correct) {
+    btn.classList.add('correct');
+    fb.innerHTML = '✅ ' + msg;
+    fb.className = 'feedback show correct';
+    addPoints(10);
+  } else {
+    btn.classList.add('wrong');
+    fb.innerHTML = '❌ ' + msg;
+    fb.className = 'feedback show wrong';
+  }
+}
+
+function toggleExpert(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('show');
+}
+
+function showResults() {
+  showScreen('screen-results');
+  document.getElementById('final-score').textContent = score;
+  var pct = Math.round((score / 200) * 100);
+  document.getElementById('rb-correct').textContent = score;
+  document.getElementById('rb-pct').textContent = pct + '%';
+  var grade, col;
+  if (pct >= 80) { grade = '🏆 Expert'; col = '#22c55e'; }
+  else if (pct >= 60) { grade = '🎖️ Proficient'; col = '#3b82f6'; }
+  else if (pct >= 40) { grade = '📘 Developing'; col = '#eab308'; }
+  else { grade = '🔄 Needs review'; col = '#ef4444'; }
+  var gl = document.getElementById('grade-label');
+  gl.textContent = grade; gl.style.color = col;
+}
+
+function restartGame() {
+  score = 0; currentSection = 0; _raciAnswers = {}; _raciScored = false;
+  showScreen('screen-game'); renderSidebar(); renderSection(0);
+}
+
+function renderSection(idx) {
+  var renderers = [renderS1, renderS2, renderS3, renderS4, renderS5, renderS6];
+  document.getElementById('main-area').innerHTML = renderers[idx]();
+}
+
+// ── S1: Pay/No-Pay Decision ───────────────────────────────────────────────────
+function renderS1() {
+  return '<div class="section-header"><div class="section-tag">Part 1 of 6</div><h2>⚖️ The Pay/No-Pay Decision</h2><p>Module 3 frames the pay/no-pay decision around six structured inputs — not intuition, not panic, not the size of the ransom demand.</p></div>'
+  + '<div class="content-card"><h3>Six Inputs to the Decision</h3>'
+  + '<ol style="padding-left:18px;color:#c9d1d9;font-size:13px;">'
+  + '<li style="margin-bottom:8px;"><strong>Recovery posture</strong> — Backup confidence is the single biggest determinant of bargaining power. If you can rebuild without paying, the negotiation is purely about leak suppression.</li>'
+  + '<li style="margin-bottom:8px;"><strong>Leak risk</strong> — What categories were exfiltrated? Some data categories trigger regulatory notification regardless of payment, collapsing the leverage argument.</li>'
+  + '<li style="margin-bottom:8px;"><strong>Sanctions</strong> — OFAC SDN check required before any payment. Evil Corp (2019), certain LockBit-linked individuals (2024), North Korean state actors, sanctioned mixers (Tornado Cash, Sinbad). Strict liability — intent not required.</li>'
+  + '<li style="margin-bottom:8px;"><strong>Regulatory obligations</strong> — SEC 4-day, CIRCIA, NIS2, GDPR, HIPAA. These exist whether you pay or not. Payment doesn\'t reset the disclosure clock.</li>'
+  + '<li style="margin-bottom:8px;"><strong>Insurance</strong> — Sub-limit, coinsurance, panel firms, prior-approval requirement, misrepresentation risk on the renewal application.</li>'
+  + '<li style="margin-bottom:8px;"><strong>Reputation and trust</strong> — Payment doesn\'t buy silence. Operators leak anyway, exit-scam, re-extort, or sell the data. Change Healthcare is the canonical example.</li>'
+  + '</ol></div>'
+  + '<div class="info-banner">⚠️ "Paying does not buy silence in 2026. Even a paid ransom does not guarantee data deletion. Plan for disclosure regardless of payment decision." — Module 3</div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Which of the six inputs to the pay/no-pay decision is described as "the single biggest determinant of bargaining power"?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q1a\',this,false,\'Insurance affects the financial calculation but the briefing identifies backup confidence as the primary bargaining lever.\')">A: Insurance coverage available</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q1a\',this,true,\'Correct. Module 3 states: "Backup-confidence is the single biggest determinant of bargaining power. If you can rebuild without paying, the negotiation is purely about leak suppression." Everything else flows from whether you actually need the decryptor.\')">B: Recovery posture — specifically backup confidence ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q1a\',this,false,\'Reputation matters but it doesn\'t determine your negotiating position the way recovery posture does.\')">C: Reputation risk from media coverage</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q1a\',this,false,\'Demand size affects the math but your recovery capability determines whether you\'re a motivated buyer or a reluctant one.\')">D: The ransom demand size relative to revenue</button>'
+  + '</div><div class="feedback" id="q1a-feedback"></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 The Module 3 briefing argues that paying a ransom "does not buy silence in 2026." Why?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q1b\',this,false,\'Regulators are one factor, but the briefing\'s argument is specifically about operator behaviour.\')">A: Regulators always find out regardless</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q1b\',this,true,\'Correct. The briefing explicitly notes: "Even a paid ransom does not buy silence in 2026 — operators leak data anyway, exit-scam, or simply hold it for re-extortion." The Change Healthcare case is the canonical example: ALPHV exit-scammed after payment; RansomHub re-extorted the same data. Plan for disclosure regardless of payment decision.\')">B: Operators leak data anyway, exit-scam, re-extort, or the data is sold downstream ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q1b\',this,false,\'Blockchain analytics can trace payments but that\'s not the reason payment doesn\'t buy silence.\')">C: All cryptocurrency transactions are publicly traceable in real time</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q1b\',this,false,\'Insurers don\'t automatically notify regulators — FinCEN SARs are required in some cases but that\'s not the point here.\')">D: Insurance companies notify regulators when they pay ransoms</button>'
+  + '</div><div class="feedback" id="q1b-feedback"></div></div>'
+  + '<div class="discuss-block"><div class="discuss-label">💬 Discussion — Section 1</div>'
+  + '<div class="discuss-q">Write down your organisation\'s position on each of the six inputs right now — before an incident. Which input do you have the least confidence in — and what would it take to resolve that uncertainty before you need to act?</div>'
+  + '<textarea class="discuss-input" placeholder="Rate your organisation on each of the six inputs..."></textarea>'
+  + '<button class="btn-reveal" onclick="toggleExpert(\'exp1\')">Reveal expert perspective</button>'
+  + '<div class="expert-answer" id="exp1">The pre-incident decision frames from Module 3: "We will not pay if we have known-good backups and no high-sensitivity exfil" (most defensible default). "We will not pay sanctioned actors under any circumstance" (legal default). "We will pay only with insurance approval, breach-counsel direction, and board sign-off" (process-bound default). The least-confident input for most organisations is typically (a) actual backup restore confidence — most haven\'t tested it end-to-end — and (b) what was actually exfiltrated. Both should be resolved pre-incident.</div>'
+  + '</div>'
+  + '<div class="nav-row"><span></span><button class="btn-nav next" onclick="nextSection()">Anatomy of a Negotiation →</button></div>';
+}
+
+// ── S2: Anatomy of a Negotiation ─────────────────────────────────────────────
+function renderS2() {
+  return '<div class="section-header"><div class="section-tag">Part 2 of 6</div><h2>📋 Anatomy of a Negotiation</h2><p>Professional ransomware negotiation follows a structured four-phase sequence. Deviating from the sequence is where most amateur negotiations fail.</p></div>'
+  + '<div class="phase-card"><div class="phase-num">Phase 1 — Discovery / Stabilisation (T+0 to T+24h)</div><div class="phase-desc">Confirm scope. Engage IR + counsel. Identify actor brand. Open controlled chat — gate on legal review. Do not make any commitments. Stall is professional, not weakness.</div></div>'
+  + '<div class="phase-card"><div class="phase-num">Phase 2 — Information Gathering / Proof of Life (T+24h to T+72h)</div><div class="phase-desc">Request sample decryptor (decrypt 2–3 small non-sensitive files). Request file tree of stolen data. Probe operator identity and brand. Stall the clock — request 48h extension "to consult lawyers and accountants." Operators expect this and usually grant it.</div></div>'
+  + '<div class="phase-card"><div class="phase-num">Phase 3 — Bargaining (T+72h to T+10d)</div><div class="phase-desc">Opening counter at 5–15% of demand with documented justification. Avoid round numbers ($847,000 sounds like analysis; $1,000,000 sounds like an opening bid). Establish credibility. Use operator\'s own incentives. Be willing to walk.</div></div>'
+  + '<div class="phase-card"><div class="phase-num">Phase 4 — Settlement / Payment / Aftermath</div><div class="phase-desc">Decryptor reverse-engineered before production run. Post-payment validation. Publish-back risk — operators re-extort, exit-scam, sell data. Document everything for regulatory and litigation purposes.</div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 When opening a counter-offer in Phase 3, Module 3 advises: "Avoid round numbers — $847,000 sounds like the result of analysis; $1,000,000 sounds like a starting bid." What is the strategic logic?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q2a\',this,false,\'This is about negotiation psychology, not exchange compliance.\')">A: Round numbers trigger automated fraud detection at crypto exchanges</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q2a\',this,true,\'Correct. A precise counter-offer signals that the number was derived from documented financial analysis (revenue, cash position, business-interruption budget). A round number signals an opening bid with arbitrary margin. Operators read the chat for signals about how motivated the victim is and how much room exists — precision projects preparation and limits expectations.\')">B: Precise numbers signal that financial analysis was done — implying less room to move and more credibility ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q2a\',this,false,\'OFAC guidance doesn\'t specify number format — this is negotiation strategy.\')">C: Round numbers are excluded by OFAC sanctions guidelines</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q2a\',this,false,\'There are no automated rejection systems — human negotiators are on the other end.\')">D: Operators have automated systems that reject round-number offers</button>'
+  + '</div><div class="feedback" id="q2a-feedback"></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Post-payment, Module 3 advises that decryptors should be reverse-engineered before being run on production. Why?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q2b\',this,false,\'Algorithm verification is possible but not the primary risk.\')">A: To verify the operator\'s claimed encryption algorithm</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q2b\',this,true,\'Correct. Module 3 states: "Free decryption tools provided by operators have repeatedly contained bugs that destroy data." Additionally, decryptors can contain backdoors or persistence mechanisms. Best practice: reverse-engineer the binary, test on a non-production copy of a small encrypted dataset, validate results before running on production.\')">B: Operator-provided decryptors have repeatedly contained bugs that destroy data — and may contain backdoors ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q2b\',this,false,\'No licence is required — the risk is technical and safety-related.\')">C: Running decryptors requires a special cryptographic licence</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q2b\',this,false,\'Decryptors are platform-specific to whatever was encrypted — this is not the reason to reverse-engineer.\')">D: Operators only provide decryptors that work on Linux systems</button>'
+  + '</div><div class="feedback" id="q2b-feedback"></div></div>'
+  + '<div class="discuss-block"><div class="discuss-label">💬 Discussion — Section 2</div>'
+  + '<div class="discuss-q">You are at T+48h. Recovery will take 3 weeks from backup. Exfil scope is unclear — possibly 200GB of customer contracts and employee PII. The operator\'s opening demand is $3.2M. Walk through Phase 2 tasks in order — what do you do before you counter-offer?</div>'
+  + '<textarea class="discuss-input" placeholder="List the Phase 2 actions in order before any counter-offer..."></textarea>'
+  + '<button class="btn-reveal" onclick="toggleExpert(\'exp2\')">Reveal expert perspective</button>'
+  + '<div class="expert-answer" id="exp2">Phase 2 before counter-offer: (1) Request sample decryptor — decrypt 2-3 small non-sensitive files to validate they actually have working decryption; (2) Request file tree of stolen data — corroborate exfil scope; identify whether PII and contracts are confirmed taken; (3) Probe operator identity — brand + affiliate signals inform sanctions screening priority and historical payment ratios; (4) Stall for time — request 48h extension to "consult lawyers and accountants"; operators expect this and usually grant it; use this time to complete your forensic scope review. Do NOT counter-offer until you know what you\'re actually negotiating about — the exfil scope changes the leverage calculation entirely.</div>'
+  + '</div>'
+  + '<div class="nav-row"><button class="btn-nav" onclick="prevSection()">← Pay/No-Pay</button><button class="btn-nav next" onclick="nextSection()">Operator Playbooks →</button></div>';
+}
+
+// ── S3: Operator Playbooks ────────────────────────────────────────────────────
+function renderS3() {
+  return '<div class="section-header"><div class="section-tag">Part 3 of 6</div><h2>🎭 Operator Playbooks</h2><p>Operators follow recognisable scripts. Knowing the playbook is the first step to not being controlled by it.</p></div>'
+  + '<div class="content-card"><h3>Standard Operator Opening</h3>'
+  + '<ul>'
+  + '<li>Demand anchored at <strong>1–5% of estimated annual revenue</strong> — based on D&amp;B / ZoomInfo / exfiltrated financials</li>'
+  + '<li>72-hour or 7-day deadline — routinely extended when negotiation is active and professional</li>'
+  + '<li>Proof-of-life offer: demonstrate decryption of 2–3 small files to prove capability</li>'
+  + '</ul></div>'
+  + '<div class="content-card"><h3>Pressure Tactics</h3>'
+  + '<ul>'
+  + '<li><strong>Selective leaks during negotiation</strong> — post a sample to the DLS to increase urgency</li>'
+  + '<li><strong>Direct contact with executives / family members</strong> — personal mobile messages, identifying names</li>'
+  + '<li><strong>Customer / partner / regulator notification threats</strong> — "We will email your customers at 17:00"</li>'
+  + '<li><strong>DDoS</strong> — third extortion layer for some operators (REvil, LockBit)</li>'
+  + '<li><strong>Media engagement</strong> — LockBit / ALPHV engaged journalists during negotiations</li>'
+  + '</ul></div>'
+  + '<div class="content-card"><h3>Concession Patterns</h3>'
+  + '<ul>'
+  + '<li>30–70% reductions common when victim posture is credible and professional</li>'
+  + '<li>Discount for fast payment (24–72h) — speed has value to operators</li>'
+  + '<li>Sometimes split decryption / data-deletion as separate line items</li>'
+  + '<li>Operators rarely walk away from active professional negotiations — they monetise what they can</li>'
+  + '</ul></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Operator deadlines (typically "72 hours or we leak") are described in Module 3 as:</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q3a\',this,false,\'Operators routinely extend deadlines when the negotiation is active and professional — they are not hard limits.\')">A: Hard limits that the operator always enforces</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q3a\',this,true,\'Correct. Module 3 states: "Deadlines are routinely extended; treat them as anchoring tactics, not hard limits." An operator in active professional negotiation with a credible counterpart almost always grants extensions — they monetize what they can, when they can.\')">B: Anchoring tactics that are routinely extended when negotiation is active and professional ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q3a\',this,false,\'There is no legal enforceability — these are pressure tactics from a criminal.\')">C: Legally enforceable contracts under the law of whichever jurisdiction the operator is in</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q3a\',this,false,\'The timeline is managed by human operators — some leak on deadline, many extend when professional engagement continues.\')">D: Automated systems that trigger data leaks when the timer expires</button>'
+  + '</div><div class="feedback" id="q3a-feedback"></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Operators discount more for fast payment than for delayed payment. What is the strategic implication for a victim organisation with strong backups?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q3b\',this,false,\'Strong backups mean you don\'t need the decryptor — paying quickly is a negotiating mistake.\')">A: Pay quickly to maximise the discount</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q3b\',this,true,\'Correct. If you have strong backups and are recovering, time works in your favour. The operator wants fast payment; you are recovering in parallel. Each day of delay costs the operator negotiating leverage and increases your recovery completion. The briefing\'s framing: "Speed has value to them" — which means slowness has value to you.\')">B: Use the operator\'s preference for speed as leverage — stall strategically to reduce the demand while recovery from backup proceeds ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q3b\',this,false,\'You don\'t have leverage to demand discounts on demand — you leverage your walk-away position.\')">C: Demand a further discount for each day the operator extends the deadline</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q3b\',this,false,\'A walk-away may be right, but stalling while recovering first extracts more information and more time. Walk-away is a Phase 3 decision, not a Phase 1 default.\')">D: Walk away immediately since recovery is possible</button>'
+  + '</div><div class="feedback" id="q3b-feedback"></div></div>'
+  + '<div class="discuss-block"><div class="discuss-label">💬 Discussion — Section 3</div>'
+  + '<div class="discuss-q">An operator contacts your CEO directly at her personal mobile number at 11pm. The message identifies a specific board member by name and threatens to send "embarrassing internal emails" to the press in 6 hours. How do you respond — and what should have been prepared before this call?</div>'
+  + '<textarea class="discuss-input" placeholder="What does the CEO say? What pre-incident preparation would have helped?"></textarea>'
+  + '<button class="btn-reveal" onclick="toggleExpert(\'exp3\')">Reveal expert perspective</button>'
+  + '<div class="expert-answer" id="exp3">Module 3 identifies direct executive contact as a standard pressure tactic. Pre-prepared responses: executives should have a scripted response ("All communications go through our legal team — here is the contact path"), a notification path to IR counsel, and should NOT discuss the incident, confirm or deny details, or negotiate personally. This should be covered in the pre-incident preparation (Section 7.2 question: "How do we handle direct contact attempts to executives or family members?"). Post-call: document the call, inform IR counsel immediately, assess whether the threatened leak is credible based on known exfil scope.</div>'
+  + '</div>'
+  + '<div class="nav-row"><button class="btn-nav" onclick="prevSection()">← Anatomy</button><button class="btn-nav next" onclick="nextSection()">Sanctions Screening →</button></div>';
+}
+
+// ── S4: Sanctions Screening ───────────────────────────────────────────────────
+function renderS4() {
+  return '<div class="section-header"><div class="section-tag">Part 4 of 6</div><h2>🚫 Sanctions Screening</h2><p>OFAC strict-liability is one of the most underappreciated risks in ransomware response. Intent is irrelevant — the screening process is what determines exposure.</p></div>'
+  + '<div class="content-card"><h3>OFAC Strict-Liability</h3>'
+  + '<p>Willfulness is NOT required. Paying a sanctioned actor is a violation even if you did not know they were sanctioned. Designated entities include:</p>'
+  + '<ul>'
+  + '<li><strong>Evil Corp / Yakubets</strong> — designated 2019; includes affiliated entities and wallets</li>'
+  + '<li><strong>LockBit-linked individuals</strong> — designated 2024 following Operation Cronos</li>'
+  + '<li><strong>North Korean state actors</strong> — Lazarus Group, APT38, HIDDEN COBRA</li>'
+  + '<li><strong>Sanctioned mixers</strong> — Tornado Cash (Aug 2022), Sinbad (Nov 2023)</li>'
+  + '<li><strong>Sanctioned exchanges</strong> — Garantex (Apr 2022), Suex (Sep 2021)</li>'
+  + '</ul></div>'
+  + '<div class="content-card"><h3>Screening Process</h3>'
+  + '<ol style="padding-left:18px;color:#c9d1d9;font-size:13px;">'
+  + '<li style="margin-bottom:6px;">Identify brand → Cross-check SDN list for known affiliations</li>'
+  + '<li style="margin-bottom:6px;">Cross-check destination wallet — Chainalysis / TRM / Elliptic clustering analysis</li>'
+  + '<li style="margin-bottom:6px;">Document all findings with timestamps</li>'
+  + '<li style="margin-bottom:6px;">If positive or ambiguous → escalate to OFAC counsel immediately</li>'
+  + '</ol>'
+  + '<p style="margin-top:8px;"><strong>Mitigating factors</strong> (reduce penalty but do not eliminate liability): timely law enforcement reporting, full cooperation, voluntary self-disclosure, compliance program, professional negotiator with screening protocols.</p></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 OFAC strict-liability means that paying a sanctioned actor is a violation even if:</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q4a\',this,false,\'Insurance approval does not override OFAC sanctions — the carrier themselves could also be exposed.\')">A: Your insurance carrier approved the payment</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q4a\',this,true,\'Correct. "Strict liability" means willfulness and intent are NOT required. If the destination wallet or actor is sanctioned, payment is a violation — regardless of whether you knew. This is why pre-payment screening is non-optional. Mitigating factors (cooperation, disclosure) reduce penalties but don\'t eliminate liability.\')">B: You did not know the actor was sanctioned and had no intent to violate sanctions ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q4a\',this,false,\'There is no OFAC reporting threshold for ransomware payments — strict liability applies regardless of amount.\')">C: The ransom amount is below the OFAC reporting threshold</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q4a\',this,false,\'Currency type is irrelevant to OFAC jurisdiction — crypto transactions are fully within scope.\')">D: The payment was made in cryptocurrency rather than USD</button>'
+  + '</div><div class="feedback" id="q4a-feedback"></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Blockchain analytics screening (Chainalysis/TRM/Elliptic) goes beyond simply checking the SDN list. What additional capability does it provide?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q4b\',this,false,\'Blockchain analytics cannot reliably identify physical location — it tracks wallet clustering and fund flows.\')">A: It identifies the physical location of the ransomware operator</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q4b\',this,true,\'Correct. SDN list checks are necessary but insufficient — a wallet one hop from a sanctioned mixer may not be listed but carries exposure. Clustering analysis traces fund flows and associations to build a risk picture. Module 3 states: "Run a blockchain-analytics screen for clustering with sanctioned addresses" — this is what caught the sanctioned mixer link in Northwind\'s Module 6 Scenario 4.\')">B: Wallet-level clustering — identifying whether the destination wallet is associated with sanctioned entities even if not directly listed ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q4b\',this,false,\'Blockchain analytics firms observe and report — they cannot freeze transactions on public blockchains.\')">C: It freezes the cryptocurrency before it reaches the attacker</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q4b\',this,false,\'The firm provides data and analysis — reporting decisions are made by the victim and counsel.\')">D: It automatically reports the payment to law enforcement</button>'
+  + '</div><div class="feedback" id="q4b-feedback"></div></div>'
+  + '<div class="discuss-block"><div class="discuss-label">💬 Discussion — Section 4</div>'
+  + '<div class="discuss-q">At T+96h you are ready to pay $900k (carrier approved, board sign-off obtained). Your IR firm\'s blockchain analyst reports the destination wallet has a clustering association with a sanctioned mixer — not a direct SDN hit, but a second-degree association. What do you do next?</div>'
+  + '<textarea class="discuss-input" placeholder="Step-by-step: what happens in the next 2 hours?"></textarea>'
+  + '<button class="btn-reveal" onclick="toggleExpert(\'exp4\')">Reveal expert perspective</button>'
+  + '<div class="expert-answer" id="exp4">Module 3 and Module 6 Scenario 4 address exactly this: (1) Halt payment immediately — the ambiguous screen must be resolved before payment; (2) Engage OFAC counsel — the licensing path exists for ambiguous cases; (3) Consider voluntary self-disclosure to OFAC — a mitigating factor that reduces penalty exposure; (4) Engage FBI via IC3 — another mitigating factor; (5) Counsel drafts a message to the operator that does not commit to payment but does not close the channel — measured language to preserve optionality. Do not pay until the screen is resolved under counsel guidance. Ambiguity in the screen is itself a reason to pause, not to proceed.</div>'
+  + '</div>'
+  + '<div class="nav-row"><button class="btn-nav" onclick="prevSection()">← Operator Playbooks</button><button class="btn-nav next" onclick="nextSection()">Scripts &amp; Decision Aids →</button></div>';
+}
+
+// ── S5: Scripts & Decision Aids ───────────────────────────────────────────────
+function renderS5() {
+  _raciAnswers = {};
+  _raciScored = false;
+  var raciItems = [
+    { id:'r1', text:'Engage IR firm + breach counsel', correct:'CEO' },
+    { id:'r2', text:'Open negotiation channel with operator', correct:'CEO' },
+    { id:'r3', text:'Authorise payment up to insurance sub-limit', correct:'CEO' },
+    { id:'r4', text:'Authorise payment above insurance sub-limit', correct:'Board' },
+    { id:'r5', text:'Issue public disclosure statement', correct:'CEO' },
+    { id:'r6', text:'Walk away from negotiation', correct:'CEO' },
+  ];
+  var roles = ['CEO','CFO','CISO','Board'];
+  var raciHTML = raciItems.map(function(item) {
+    var btns = roles.map(function(role) {
+      return '<button class="raci-btn" id="raci-' + item.id + '-' + role + '" onclick="selectRaci(\'' + item.id + '\',\'' + role + '\',\'' + item.correct + '\')">' + role + '</button>';
+    }).join('');
+    return '<div class="raci-row"><div class="raci-decision"><strong>' + item.text + '</strong></div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;width:100%;">Who is Accountable?</div><div class="raci-options">' + btns + '</div></div>';
+  }).join('');
+  return '<div class="section-header"><div class="section-tag">Part 5 of 6</div><h2>📝 Communication Scripts &amp; Decision Aids</h2><p>Module 3 provides ready-to-use templates and a RACI table for the six key payment-decision moments.</p></div>'
+  + '<div class="content-card"><h3>Key Communication Templates</h3>'
+  + '<p style="font-size:12px;color:var(--muted);margin-bottom:6px;">Opening message to operator:</p>'
+  + '<div class="template-box">Case reference: [CASE-ID]. We are reviewing your message and require: (1) A sample decryptor for 2–3 small files of our choosing; (2) A file tree confirming scope of data held; (3) Confirmation of your demand in writing. We will respond within 24 hours. All communications must go through this channel.</div>'
+  + '<p style="font-size:12px;color:var(--muted);margin-bottom:6px;margin-top:12px;">Push-back on demand:</p>'
+  + '<div class="template-box">We are not in a position to consider the figure as stated. Our internal review process is ongoing. We would need to see a realistic figure to continue productive discussions.</div>'
+  + '<p style="font-size:12px;color:var(--muted);margin-bottom:6px;margin-top:12px;">Walk-away message:</p>'
+  + '<div class="template-box">We have completed our evaluation. We are not in a position to pay at this time. We understand the consequences and may re-engage if circumstances change.</div>'
+  + '</div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 RACI Challenge: For each key incident decision below, click the role that is Accountable (the A in RACI — single owner, cannot delegate).</div>'
+  + '<div style="margin-bottom:12px;">' + raciHTML + '</div>'
+  + '<button class="btn-reveal" onclick="scoreRaci()" style="margin-top:8px;">Check RACI answers →</button>'
+  + '<div class="feedback" id="raci-feedback"></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 The walk-away message template includes the phrase "may re-engage if circumstances change." Why is this wording deliberate?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q5b\',this,false,\'There is no legal requirement — the wording is strategic.\')">A: It is legally required to leave an exit clause</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q5b\',this,true,\'Correct. A permanent walk-away message that closes the channel entirely may not serve the victim\'s interests if the operator reduces the demand substantially, or if circumstances change (e.g. recovery fails, additional exfil scope discovered). Measured professional language that doesn\'t burn the bridge is counsel-directed strategy — not weakness.\')">B: It keeps the channel open in case the operator reduces the demand or new information changes the calculus ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q5b\',this,false,\'The opposite is true — a credible walk-away reduces pressure tactics by removing the expectation of payment.\')">C: It signals willingness to pay, which reduces operator pressure tactics</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q5b\',this,false,\'OFAC has no such requirement.\')">D: OFAC requires organisations to document their intent to potentially re-engage</button>'
+  + '</div><div class="feedback" id="q5b-feedback"></div></div>'
+  + '<div class="discuss-block"><div class="discuss-label">💬 Discussion — Section 5</div>'
+  + '<div class="discuss-q">Draft your own organisation\'s version of the Module 3 "Pre-incident questions to settle now" (Section 7.2). For each of the 9 questions in the module, write your current answer. For any question where you write "I don\'t know", that is a gap to close before the incident.</div>'
+  + '<textarea class="discuss-input" style="min-height:100px;" placeholder="List all 9 questions with your current answers. Mark gaps as I don\'t know..."></textarea>'
+  + '<button class="btn-reveal" onclick="toggleExpert(\'exp5\')">Reveal the 9 questions</button>'
+  + '<div class="expert-answer" id="exp5">The 9 pre-incident questions: (1) Who has ultimate authority to authorise payment — documented where? (2) Maximum we will pay ($ and % of demand)? (3) Circumstances where we walk away regardless? (4) IR firm + breach counsel on retainer — after-hours contact tested? (5) Negotiation firm — insurance panel-approved? (6) Board notification path during active incident? (7) SEC/regulator disclosure timeline + drafter? (8) Press handler + pre-approved holding statements? (9) Protocol for direct operator contact to executives? Most organisations can answer 3-4 of 9 immediately. The gaps are the pre-incident work.</div>'
+  + '</div>'
+  + '<div class="nav-row"><button class="btn-nav" onclick="prevSection()">← Sanctions</button><button class="btn-nav next" onclick="nextSection()">Professional Negotiator →</button></div>';
+}
+
+// ── S6: Professional Negotiator & After-Action ────────────────────────────────
+function renderS6() {
+  return '<div class="section-header"><div class="section-tag">Part 6 of 6</div><h2>🔍 The Professional Negotiator &amp; After-Action</h2><p>The professional negotiator brings capabilities that go far beyond typing in a chat window — and the after-action is where institutional knowledge is built.</p></div>'
+  + '<div class="content-card"><h3>What the Professional Negotiator Brings</h3>'
+  + '<ul>'
+  + '<li><strong>Threat intelligence</strong> — chat history with the brand/affiliate; historical payment ratios; known tactics</li>'
+  + '<li><strong>Tempo</strong> — tone and pacing calibrated to operator expectations. Amateur negotiations capitulate too fast or escalate emotionally.</li>'
+  + '<li><strong>Compliance</strong> — OFAC/AML built into the negotiation workflow. Wallet screening before any counter-offer.</li>'
+  + '<li><strong>Insulation</strong> — the negotiator doesn\'t work for the victim\'s executive team. Absorbs CEO panic and board impatience before it leaks into the chat.</li>'
+  + '</ul></div>'
+  + '<div class="content-card"><h3>Reading the Chat</h3>'
+  + '<ul>'
+  + '<li><strong>Translation lag ≠ ignorance</strong> — operators use translation software; lag doesn\'t mean confusion</li>'
+  + '<li><strong>Mid-negotiation tone change</strong> — usually signals affiliate hand-off to a more senior negotiator, not escalation</li>'
+  + '<li><strong>Moscow time-zone patterns</strong> — working hours reflect UTC+3; weekend gaps are predictable</li>'
+  + '<li><strong>Anchoring signals</strong> — watch for sudden urgency that doesn\'t correlate with the timeline; usually a tactic</li>'
+  + '</ul></div>'
+  + '<div class="content-card"><h3>After-Action Capture</h3>'
+  + '<p>The after-action report captures the institutional knowledge that prevents repeating the same decisions under pressure. Key categories: full chat transcript, every decision point with who/when/what/evidence, time-to-decision measurements, operator behaviour anomalies, post-payment delivery validation, playbook updates.</p></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 Why is the professional negotiator\'s independence from the victim\'s executive team described as an advantage?</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q6a\',this,false,\'Fee structure is not the advantage — insulation is.\')">A: It allows them to charge higher fees</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q6a\',this,true,\'Correct. Module 3 states the negotiator\'s independence makes "some kinds of pressure — CEO panic, board impatience — easier to absorb without it leaking into the chat." Emotional signals in the chat (urgency, desperation) are read by operators as willingness to pay more. A professional negotiator maintains calibrated tone regardless of internal pressure.\')">B: It insulates the negotiation from CEO panic and board impatience that could leak into the chat and weaken the position ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q6a\',this,false,\'Professional negotiators are explicitly named in the OFAC advisory as subjects of sanctions risk — they are MORE exposed, not less.\')">C: They are not subject to OFAC regulations</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q6a\',this,false,\'Professional negotiators still operate under counsel\'s direction and require the same governance approvals.\')">D: They can negotiate without board or legal approval</button>'
+  + '</div><div class="feedback" id="q6a-feedback"></div></div>'
+  + '<div class="quiz-block"><div class="quiz-q">🎯 A mid-negotiation tone change — from one communication style to another — most likely signals:</div>'
+  + '<div class="options">'
+  + '<button class="option-btn" onclick="answerQ(\'q6b\',this,false,\'Operators rarely terminate without a final demand — a tone change is more diagnostic.\')">A: The operator has decided to terminate negotiations</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q6b\',this,true,\'Correct. Module 3 states: "Affiliate hand-off — mid-negotiation tone changes can indicate an affiliate handing the conversation to a more senior negotiator. Don\'t read the change as escalation by default." Experienced negotiators use this signal to calibrate their approach — a senior operator negotiator may be more flexible or may apply different pressure.\')">B: An affiliate hand-off to a more senior negotiator on the operator side — not necessarily escalation ✓</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q6b\',this,false,\'Translation lag/grammar errors are separate signals — a tone change is a staffing signal.\')">C: A translation error in their automated chat system</button>'
+  + '<button class="option-btn" onclick="answerQ(\'q6b\',this,false,\'This would surface differently — typically through stalling on proof-of-life requests.\')">D: The attacker has lost their encryption keys and cannot deliver</button>'
+  + '</div><div class="feedback" id="q6b-feedback"></div></div>'
+  + '<div class="discuss-block"><div class="discuss-label">💬 Final Discussion</div>'
+  + '<div class="discuss-q">Design your organisation\'s after-action report template for a ransomware negotiation — whether you paid or not. What nine categories does Module 3 say to capture, and which one do you think your organisation would most likely fail to preserve?</div>'
+  + '<textarea class="discuss-input" placeholder="List the 9 after-action categories and identify the one most at risk of being lost..."></textarea>'
+  + '<button class="btn-reveal" onclick="toggleExpert(\'exp6\')">Reveal expert perspective</button>'
+  + '<div class="expert-answer" id="exp6">Module 3\'s nine after-action categories: (1) Full chat transcript; (2) Every decision point — who/when/what/evidence; (3) Time-to-decision measurements; (4) Operator behaviour anomalies; (5) Post-payment delivery validation; (6) Lessons for next time. Most commonly lost: the chat transcript (often held by IR firm but not transferred to client), and time-to-decision measurements (nobody thinks to timestamp the materiality determination until the SEC asks). The playbook should specify that the IR firm contractually delivers the full transcript as part of the retainer deliverables.</div>'
+  + '</div>'
+  + '<div class="nav-row"><button class="btn-nav" onclick="prevSection()">← Scripts</button><button class="btn-nav next" onclick="nextSection()">🏁 See Results →</button></div>';
+}
+
+// ── RACI interaction ──────────────────────────────────────────────────────────
+function selectRaci(itemId, role, correct) {
+  if (_raciScored) return;
+  var roles = ['CEO','CFO','CISO','Board'];
+  roles.forEach(function(r) {
+    var btn = document.getElementById('raci-' + itemId + '-' + r);
+    if (btn) btn.className = 'raci-btn';
+  });
+  var selected = document.getElementById('raci-' + itemId + '-' + role);
+  if (selected) selected.classList.add('raci-selected');
+  _raciAnswers[itemId] = { selected: role, correct: correct };
+}
+
+function scoreRaci() {
+  if (_raciScored) return;
+  _raciScored = true;
+  var correct = 0;
+  var items = ['r1','r2','r3','r4','r5','r6'];
+  items.forEach(function(id) {
+    var ans = _raciAnswers[id];
+    if (!ans) return;
+    var selectedBtn = document.getElementById('raci-' + id + '-' + ans.selected);
+    var correctBtn = document.getElementById('raci-' + id + '-' + ans.correct);
+    if (ans.selected === ans.correct) {
+      if (selectedBtn) { selectedBtn.className = 'raci-btn raci-correct'; }
+      correct++;
+    } else {
+      if (selectedBtn) { selectedBtn.className = 'raci-btn raci-wrong'; }
+      if (correctBtn) { correctBtn.className = 'raci-btn raci-correct'; }
+    }
+  });
+  var fb = document.getElementById('raci-feedback');
+  if (correct >= 4) {
+    fb.innerHTML = '✅ ' + correct + '/6 correct. The CEO is Accountable for most operational decisions during an incident. Board is Accountable when payment exceeds the insurance sub-limit — the financial exposure at that level requires board authority.';
+    fb.className = 'feedback show correct';
+    addPoints(15);
+  } else {
+    fb.innerHTML = '❌ ' + correct + '/6 correct. In the Module 3 RACI: CEO is Accountable for engaging IR, opening negotiation, payment up to sub-limit, public disclosure, and walk-away. Board is Accountable for payment above sub-limit. CFO is Responsible for financial approval; CISO is Responsible for technical scope.';
+    fb.className = 'feedback show wrong';
+  }
+}
+</script>
+</body>
+</html>

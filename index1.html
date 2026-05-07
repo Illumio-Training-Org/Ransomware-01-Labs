@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ransomware Ecosystem — Module 1 Lab</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1f2937; --border: #30363d;
+    --accent: #f97316; --accent2: #3b82f6; --green: #22c55e; --red: #ef4444;
+    --yellow: #eab308; --text: #e6edf3; --muted: #8b949e; --card: #1c2128;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; }
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* INTRO */
+  #screen-intro { align-items: center; justify-content: center; padding: 24px; background: radial-gradient(ellipse at 60% 20%, #1a0a02 0%, var(--bg) 70%); }
+  .intro-card { max-width: 680px; width: 100%; text-align: center; }
+  .logo { font-size: 48px; margin-bottom: 12px; }
+  .intro-card h1 { font-size: 26px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .intro-card .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 13px; }
+  .intro-card p { color: #c9d1d9; margin-bottom: 20px; font-size: 14px; }
+  .badge-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+  .badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 14px; font-size: 12px; color: var(--muted); }
+  .btn-primary { background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 12px 32px; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity .15s; }
+  .btn-primary:hover { opacity: .85; }
+  .btn-secondary { background: transparent; color: var(--accent2); border: 1px solid var(--accent2); border-radius: 8px; padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-secondary:hover { background: var(--accent2); color: #fff; }
+  .sections-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; text-align: left; }
+  .section-chip { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+  .section-chip .chip-num { color: var(--accent); font-weight: 700; font-size: 12px; }
+  .section-chip .chip-title { font-size: 12px; color: var(--text); }
+
+  /* GAME */
+  #screen-game { flex-direction: row; }
+  .sidebar { width: 220px; min-width: 220px; background: var(--surface); border-right: 1px solid var(--border); padding: 16px 12px; display: flex; flex-direction: column; gap: 16px; }
+  .sidebar-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .progress-track { display: flex; flex-direction: column; gap: 4px; }
+  .track-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; font-size: 12px; border: 1px solid transparent; }
+  .track-item.active { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+  .track-item.done { color: var(--green); }
+  .track-item.locked { color: var(--muted); }
+  .track-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+  .track-item.active .track-dot { background: var(--accent); }
+  .track-item.done .track-dot { background: var(--green); }
+  .score-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .score-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .score-val { font-size: 24px; font-weight: 800; color: var(--accent); }
+  .score-sub { font-size: 11px; color: var(--muted); }
+  .main-area { flex: 1; overflow-y: auto; padding: 24px; }
+
+  /* SECTION HEADER */
+  .section-header { margin-bottom: 20px; }
+  .section-tag { display: inline-block; background: var(--accent); color: #000; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+  .section-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .section-header p { color: #c9d1d9; font-size: 13px; }
+
+  /* CONTENT CARD */
+  .content-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  .content-card h3 { font-size: 14px; font-weight: 700; color: var(--accent2); margin-bottom: 10px; }
+  .content-card p { color: #c9d1d9; font-size: 13px; margin-bottom: 8px; }
+  .content-card ul { padding-left: 18px; color: #c9d1d9; font-size: 13px; }
+  .content-card li { margin-bottom: 5px; }
+
+  /* TIMELINE */
+  .timeline { display: flex; flex-direction: column; gap: 0; margin: 12px 0; }
+  .tl-item { display: flex; gap: 12px; }
+  .tl-left { display: flex; flex-direction: column; align-items: center; width: 36px; flex-shrink: 0; }
+  .tl-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); margin-top: 3px; flex-shrink: 0; }
+  .tl-line { width: 2px; background: var(--border); flex: 1; margin-top: 2px; }
+  .tl-item:last-child .tl-line { display: none; }
+  .tl-content { padding-bottom: 14px; }
+  .tl-year { font-size: 11px; font-weight: 700; color: var(--accent); }
+  .tl-text { font-size: 12px; color: #c9d1d9; }
+
+  /* QUIZ */
+  .quiz-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .quiz-q { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option-btn { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; text-align: left; color: var(--text); font-size: 13px; cursor: pointer; transition: all .15s; }
+  .option-btn:hover:not(:disabled) { border-color: var(--accent2); background: var(--surface); }
+  .option-btn.correct { border-color: var(--green) !important; background: rgba(34,197,94,.12) !important; color: var(--green) !important; }
+  .option-btn.wrong { border-color: var(--red) !important; background: rgba(239,68,68,.12) !important; color: var(--red) !important; }
+  .feedback { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 13px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.correct { background: rgba(34,197,94,.15); border: 1px solid var(--green); color: var(--green); }
+  .feedback.wrong { background: rgba(239,68,68,.1); border: 1px solid var(--red); color: #fca5a5; }
+
+  /* ACTOR CARDS */
+  .actor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .actor-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; transition: all .2s; min-height: 120px; }
+  .actor-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .actor-card.flipped { border-color: var(--accent2); }
+  .actor-front, .actor-back { }
+  .actor-card.flipped .actor-front { display: none; }
+  .actor-card.flipped .actor-back { display: block; }
+  .actor-card:not(.flipped) .actor-back { display: none; }
+  .actor-name { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .actor-era { font-size: 10px; color: var(--muted); margin-bottom: 8px; }
+  .actor-tag { display: inline-block; background: var(--surface2); border-radius: 4px; padding: 1px 6px; font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+  .actor-desc { font-size: 11px; color: #c9d1d9; line-height: 1.4; }
+  .flip-hint { font-size: 10px; color: var(--muted); margin-top: 8px; }
+
+  /* MATCHING */
+  .match-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 12px; cursor: pointer; transition: all .15s; display: inline-block; margin: 3px; }
+  .match-item:hover { border-color: var(--accent2); }
+  .match-item.selected { border-color: var(--accent); background: rgba(249,115,22,.15); }
+  .match-item.matched { border-color: var(--green); background: rgba(34,197,94,.12); color: var(--green); cursor: default; }
+  .role-slot { background: var(--card); border: 2px dashed var(--border); border-radius: 8px; padding: 8px 12px; font-size: 12px; min-height: 38px; transition: border-color .15s; margin-bottom: 8px; cursor: pointer; color: var(--muted); }
+  .role-slot.filled { border-style: solid; border-color: var(--green); background: rgba(34,197,94,.08); color: var(--text); }
+  .role-slot.wrong-fill { border-color: var(--red); background: rgba(239,68,68,.08); }
+  .slot-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+
+  /* STAT CARDS */
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .stat-num { font-size: 24px; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* DEFENCE BUILDER */
+  .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .control-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px; cursor: pointer; transition: all .15s; display: flex; gap: 8px; align-items: flex-start; }
+  .control-item:hover { border-color: var(--accent2); }
+  .control-item.selected { border-color: var(--accent2); background: rgba(59,130,246,.12); }
+  .control-check { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 4px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; }
+  .control-item.selected .control-check { background: var(--accent2); border-color: var(--accent2); }
+  .control-text { font-size: 12px; }
+  .control-name { font-weight: 600; color: var(--text); }
+  .control-desc { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .control-cost { font-size: 10px; color: var(--accent); margin-top: 2px; }
+  .budget-bar-wrap { background: var(--surface2); border-radius: 6px; height: 10px; overflow: hidden; width: 200px; }
+  .budget-bar { height: 100%; background: var(--accent2); border-radius: 6px; transition: width .3s; }
+
+  /* NAV */
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .btn-nav { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-nav:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-nav.next { background: var(--accent); color: #000; border-color: var(--accent); }
+  .btn-nav.next:hover { opacity: .85; }
+
+  /* DISCUSSION */
+  .discuss-block { background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.3); border-radius: 10px; padding: 16px; margin-top: 16px; }
+  .discuss-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent2); margin-bottom: 8px; }
+  .discuss-q { font-size: 13px; color: #c9d1d9; margin-bottom: 10px; }
+  .discuss-input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: 13px; resize: vertical; min-height: 60px; font-family: inherit; }
+  .discuss-input:focus { outline: none; border-color: var(--accent2); }
+  .btn-reveal { background: var(--surface2); border: 1px solid var(--accent2); color: var(--accent2); border-radius: 6px; padding: 6px 14px; font-size: 12px; cursor: pointer; margin-top: 8px; }
+  .expert-answer { background: var(--card); border-left: 3px solid var(--accent2); padding: 10px 14px; margin-top: 10px; font-size: 12px; color: #c9d1d9; border-radius: 0 6px 6px 0; display: none; }
+  .expert-answer.show { display: block; }
+
+  /* RESULTS */
+  #screen-results { align-items: center; justify-content: center; padding: 24px; background: radial-gradient(ellipse at 50% 10%, #001a0a 0%, var(--bg) 70%); }
+  .results-card { max-width: 620px; width: 100%; text-align: center; }
+  .results-card h1 { font-size: 28px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
+  .final-score { font-size: 72px; font-weight: 900; color: var(--accent); line-height: 1; margin: 16px 0; }
+  .grade-label { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .result-breakdown { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  .rb-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .rb-num { font-size: 22px; font-weight: 800; color: var(--accent2); }
+  .rb-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .key-lessons { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: left; margin-bottom: 20px; }
+  .key-lessons h3 { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+  .key-lessons li { font-size: 12px; color: #c9d1d9; margin-bottom: 6px; margin-left: 16px; }
+
+  /* MISC */
+  .info-banner { background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.3); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #fcd34d; margin-bottom: 14px; }
+  .tag-pill { display: inline-block; background: var(--surface2); border-radius: 12px; padding: 2px 10px; font-size: 11px; color: var(--muted); margin: 2px; }
+  .incident-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; cursor: pointer; transition: all .15s; }
+  .incident-card:hover { border-color: var(--accent); }
+  .incident-card.expanded { border-color: var(--accent2); }
+  .incident-title { display: flex; justify-content: space-between; align-items: center; }
+  .incident-name { font-size: 13px; font-weight: 700; }
+  .incident-year { font-size: 11px; color: var(--accent); font-weight: 700; }
+  .incident-body { font-size: 12px; color: #c9d1d9; margin-top: 10px; display: none; border-top: 1px solid var(--border); padding-top: 10px; }
+  .incident-body.show { display: block; }
+  .lesson-box { background: rgba(234,179,8,.08); border: 1px solid rgba(234,179,8,.25); border-radius: 6px; padding: 8px 12px; margin-top: 8px; font-size: 12px; color: var(--yellow); }
+  .points-pop { position: fixed; top: 20px; right: 20px; background: var(--green); color: #000; font-weight: 800; font-size: 16px; border-radius: 8px; padding: 8px 16px; opacity: 0; transform: translateY(-10px); transition: all .3s; pointer-events: none; z-index: 999; }
+  .points-pop.show { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 700px) {
+    #screen-game { flex-direction: column; }
+    .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 10px; }
+    .control-grid { grid-template-columns: 1fr; }
+    .sections-preview { grid-template-columns: 1fr; }
+    .result-breakdown { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="points-pop" class="points-pop">+10 pts</div>
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-card">
+    <div class="logo">🔐</div>
+    <h1>Ransomware Ecosystem</h1>
+    <div class="subtitle">Module 1 — Foundations &amp; Ecosystem Map &nbsp;·&nbsp; Interactive Lab</div>
+    <p>You've read the briefing. Now prove you own it. Six interactive challenges built directly from Module 1 — origins, attack anatomy, notable incidents, mitigation, and the dual ecosystem that makes ransomware a multi-billion-dollar industry.</p>
+    <div class="sections-preview">
+      <div class="section-chip"><div class="chip-num">PART 1</div><div class="chip-title">📅 Origins &amp; Evolution (1989→now)</div></div>
+      <div class="section-chip"><div class="chip-num">PART 2</div><div class="chip-title">⚙️ Kill Chain &amp; Detection</div></div>
+      <div class="section-chip"><div class="chip-num">PART 3</div><div class="chip-title">💥 Notable Incidents</div></div>
+      <div class="section-chip"><div class="chip-num">PART 4</div><div class="chip-title">🛡️ Build Your Defence</div></div>
+      <div class="section-chip"><div class="chip-num">PART 5</div><div class="chip-title">🕸️ The Attacker Ecosystem</div></div>
+      <div class="section-chip"><div class="chip-num">PART 6</div><div class="chip-title">🏢 The Defender Industry</div></div>
+    </div>
+    <div class="badge-row">
+      <div class="badge">⏱ ~15 min</div>
+      <div class="badge">6 challenges</div>
+      <div class="badge">Score tracked</div>
+      <div class="badge">Discussion prompts included</div>
+    </div>
+    <button class="btn-primary" onclick="startGame()">Start Lab →</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="sidebar">
+    <div>
+      <div class="sidebar-title">Progress</div>
+      <div class="progress-track" id="progress-track"></div>
+    </div>
+    <div>
+      <div class="score-box">
+        <div class="score-label">Score</div>
+        <div class="score-val" id="score-display">0</div>
+        <div class="score-sub">/ 200 pts</div>
+      </div>
+    </div>
+  </div>
+  <div class="main-area" id="main-area"></div>
+</div>
+
+<!-- RESULTS -->
+<div id="screen-results" class="screen">
+  <div class="results-card">
+    <div class="logo">🏆</div>
+    <h1>Lab Complete</h1>
+    <div class="final-score" id="final-score">0</div>
+    <div class="grade-label" id="grade-label"></div>
+    <div class="result-breakdown">
+      <div class="rb-item"><div class="rb-num" id="rb-correct">0</div><div class="rb-label">Points earned</div></div>
+      <div class="rb-item"><div class="rb-num">6</div><div class="rb-label">Sections completed</div></div>
+      <div class="rb-item"><div class="rb-num" id="rb-pct">0%</div><div class="rb-label">Score rate</div></div>
+    </div>
+    <div class="key-lessons">
+      <h3>🔑 Key takeaways from Module 1</h3>
+      <ul>
+        <li>Ransomware is an <strong>economic phenomenon</strong> — every design choice on both sides is shaped by margin, friction, and risk.</li>
+        <li>The RaaS model separates <strong>operators, affiliates, and IABs</strong> — disrupting one layer doesn't kill the supply chain.</li>
+        <li>Double extortion (Maze, 2019) made backups alone insufficient — <strong>data leaks are a separate crisis</strong>.</li>
+        <li>Most effective controls: <strong>phishing-resistant MFA, tested immutable backups, EDR everywhere, segmentation</strong>.</li>
+        <li>The harder problem is <strong>governance, not technology</strong> — as you'll explore in Module 6: Tabletop Scenarios.</li>
+      </ul>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn-secondary" onclick="restartGame()">↺ Restart Lab</button>
+      <button class="btn-primary" onclick="alert('Proceed to Module 2: Adversary Tradecraft in your Instruqt track.')">Module 2 →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+var score = 0;
+var currentSection = 0;
+var MAX_SCORE = 200;
+var sections = [
+  { label: 'Origins & Evolution', icon: '📅' },
+  { label: 'Kill Chain', icon: '⚙️' },
+  { label: 'Notable Incidents', icon: '💥' },
+  { label: 'Build Your Defence', icon: '🛡️' },
+  { label: 'Attacker Ecosystem', icon: '🕸️' },
+  { label: 'Defender Industry', icon: '🏢' },
+];
+var _s4selected = new Set();
+var _s4controls = [];
+var _selectedChip = null;
+var _matchedSlots = new Set();
+var _matchPlacements = {};
+
+// ── CORE ───────────────────────────────────────────────────────────────────
+function startGame() { showScreen('screen-game'); renderSidebar(); renderSection(0); }
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+
+function renderSidebar() {
+  var track = document.getElementById('progress-track');
+  track.innerHTML = sections.map(function(s, i) {
+    var cls = i === currentSection ? 'active' : i < currentSection ? 'done' : 'locked';
+    return '<div class="track-item ' + cls + '"><div class="track-dot"></div><span>' + s.icon + ' ' + s.label + '</span></div>';
+  }).join('');
+  document.getElementById('score-display').textContent = score;
+}
+
+function addPoints(pts) {
+  score += pts;
+  document.getElementById('score-display').textContent = score;
+  var pop = document.getElementById('points-pop');
+  pop.textContent = '+' + pts + ' pts';
+  pop.classList.add('show');
+  setTimeout(function(){ pop.classList.remove('show'); }, 1500);
+}
+
+function nextSection() {
+  currentSection++;
+  if (currentSection >= sections.length) { showResults(); return; }
+  renderSidebar();
+  renderSection(currentSection);
+  document.querySelector('.main-area').scrollTop = 0;
+}
+
+function prevSection() {
+  if (currentSection > 0) { currentSection--; renderSidebar(); renderSection(currentSection); document.querySelector('.main-area').scrollTop = 0; }
+}
+
+function showResults() {
+  showScreen('screen-results');
+  document.getElementById('final-score').textContent = score;
+  var pct = Math.round((score / MAX_SCORE) * 100);
+  document.getElementById('rb-correct').textContent = score;
+  document.getElementById('rb-pct').textContent = pct + '%';
+  var grade, colour;
+  if (pct >= 80) { grade = '🏆 Expert — Incident Commander material'; colour = '#22c55e'; }
+  else if (pct >= 60) { grade = '🎖️ Proficient — Solid foundation'; colour = '#3b82f6'; }
+  else if (pct >= 40) { grade = '📘 Developing — Re-read and retry'; colour = '#eab308'; }
+  else { grade = '🔄 Needs review — Return to the briefing'; colour = '#ef4444'; }
+  var gl = document.getElementById('grade-label');
+  gl.textContent = grade;
+  gl.style.color = colour;
+}
+
+function restartGame() {
+  score = 0; currentSection = 0; _s4selected = new Set(); _selectedChip = null; _matchedSlots = new Set(); _matchPlacements = {};
+  showScreen('screen-game'); renderSidebar(); renderSection(0);
+}
+
+function renderSection(idx) {
+  var renderers = [renderS1, renderS2, renderS3, renderS4, renderS5, renderS6];
+  document.getElementById('main-area').innerHTML = renderers[idx]();
+}
+
+// ── SECTION 1: Origins ─────────────────────────────────────────────────────
+function renderS1() {
+  return `<div class="section-header">
+    <div class="section-tag">Part 1 of 6</div>
+    <h2>📅 Origins &amp; Evolution of Ransomware</h2>
+    <p>From a floppy disk in 1989 to a multi-billion-dollar criminal industry — map the turning points that explain why the ecosystem looks the way it does today.</p>
+  </div>
+  <div class="content-card">
+    <h3>The Five Eras</h3>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">1989</div><div class="tl-text"><strong>PC Cyborg / AIDS Trojan</strong> — Dr. Joseph Popp, 20,000 floppy disks to WHO conference attendees. Symmetric substitution "encryption", $189 ransom to a Panama PO box. Crude — but established the template: coercive demand, pseudonymous payment, large victim pool.</div></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">1990s–2012</div><div class="tl-text"><strong>Dormant era &amp; crypto arrives</strong> — Payment friction (Western Union, SMS vouchers) held back growth. GpCode experimented with RSA. "Police locker" scams (Reveton) locked screens without encrypting — added social engineering without real crypto.</div></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">2013–2016</div><div class="tl-text"><strong>CryptoLocker &amp; Bitcoin</strong> — AES-256 + RSA-2048 hybrid encryption; Bitcoin payment channel; working decryption portal. ~$3M before Operation Tovar. Bitcoin was the underrated enabler — and the structural weakness law enforcement later exploited.</div></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">2016–2019</div><div class="tl-text"><strong>Big Game Hunting</strong> — SamSam and Ryuk target enterprises: one $5M hospital payment &gt; ten thousand $300 consumer payments. WannaCry (North Korea/NHS) and NotPetya (Russia/GRU, $10B+ damage) reset board-level attention worldwide.</div></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">2019–present</div><div class="tl-text"><strong>RaaS &amp; Double Extortion</strong> — Maze (2019) introduced exfiltrate-then-encrypt. RaaS: operators build platform + leak site, affiliates break in, 70/80 split. Criminal supply chain with IABs, infostealers, negotiators, laundering services.</div></div></div>
+    </div>
+  </div>
+  <div class="quiz-block">
+    <div class="quiz-q">🎯 What single innovation did Maze introduce in 2019 that made backups alone an insufficient defence?</div>
+    <div class="options">
+      <button class="option-btn" onclick="answerQ('q1a',this,false,'FIDO2 is an authentication standard — not a Maze innovation.')">Introducing FIDO2-bypassing authentication attacks</button>
+      <button class="option-btn" onclick="answerQ('q1a',this,true,'Correct. Double extortion — exfiltrating data before encrypting, then threatening public release — meant a clean restore no longer ended the crisis. Victims faced a separate decision about whether to pay to suppress the leak.')">Double extortion: exfiltrating data before encrypting, then threatening public release</button>
+      <button class="option-btn" onclick="answerQ('q1a',this,false,'Intermittent encryption existed before Maze — it was not their defining innovation.')">Intermittent encryption to maximise throughput on large file shares</button>
+      <button class="option-btn" onclick="answerQ('q1a',this,false,'The affiliate revenue-sharing model predates Maze — it was not their specific 2019 innovation.')">Formalising the affiliate 70/30 revenue split</button>
+    </div>
+    <div class="feedback" id="q1a-feedback"></div>
+  </div>
+  <div class="quiz-block">
+    <div class="quiz-q">🎯 Bitcoin enabled ransomware at scale — but also handed defenders a structural lever. What is it?</div>
+    <div class="options">
+      <button class="option-btn" onclick="answerQ('q1b',this,false,'Bitcoin is actually slower for large transactions than wire transfers.')">It was faster to transfer than wire transfers</button>
+      <button class="option-btn" onclick="answerQ('q1b',this,true,'Exactly. Bitcoin provided a global, pseudonymous, automatable payment channel — enabling ransomware at scale. But the permanent public ledger is what blockchain analytics firms, defenders, and law enforcement use to trace payments, map the criminal economy, and seize funds.')">Pseudonymous payment channel — but the permanent public ledger became the tool defenders and law enforcement use to trace and seize funds</button>
+      <button class="option-btn" onclick="answerQ('q1b',this,false,'Bitcoin is pseudonymous — the public ledger means it is NOT anonymous.')">Truly anonymous with no transaction traceability</button>
+      <button class="option-btn" onclick="answerQ('q1b',this,false,'Bitcoin price volatility is actually a disadvantage for criminals.')">Its price volatility automatically increased ransom value</button>
+    </div>
+    <div class="feedback" id="q1b-feedback"></div>
+  </div>
+  <div class="discuss-block">
+    <div class="discuss-label">💬 Discussion Prompt — Section 1</div>
+    <div class="discuss-q">The Conti leaks (2022) revealed HR, payroll, sprint planning, and employee onboarding inside a criminal operation. What does that tell you about where effective defensive pressure should be applied — on infrastructure, or on the economics of the operation?</div>
+    <textarea class="discuss-input" placeholder="Write your thoughts before revealing the expert view…"></textarea>
+    <button class="btn-reveal" onclick="toggleExpert('exp1')">Reveal expert perspective</button>
+    <div class="expert-answer" id="exp1">The Module 1 briefing argues: <em>"pressure on profit margins — slower laundering, recovered ransoms, reputational damage on leak sites — is more durable than pressure on infrastructure."</em> When an operation has HR and payroll, seizing one server cluster is a business disruption, not a kill. The most durable pressure targets the economic model: blockchain analytics tracking payments, multinational sanctions against laundering services, and decryptor releases that damage the brand's reputation with affiliates.</div>
+  </div>
+  <div class="nav-row"><span></span><button class="btn-nav next" onclick="nextSection()">Kill Chain →</button></div>`;
+}
+
+// ── SECTION 2: Kill Chain ──────────────────────────────────────────────────
+function renderS2() {
+  return `<div class="section-header">
+    <div class="section-tag">Part 2 of 6</div>
+    <h2>⚙️ Kill Chain &amp; Detection-Friendly Behaviours</h2>
+    <p>Modern ransomware follows a recognisable eight-stage kill chain. Defenders who only alert on encryption have already lost.</p>
+  </div>
+  <div class="content-card">
+    <h3>The Kill Chain at a Glance</h3>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">1 · Initial Access</div><div class="tl-text">Phishing, valid credentials from infostealers, exposed RDP/VPN without MFA, social engineering of help desks (Scattered Spider's signature).</div></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">2 · Execution &amp; Persistence</div><div class="tl-text">Living-off-the-land binaries (PowerShell, certutil, mshta), legitimate remote-access tools (AnyDesk, ScreenConnect, Atera), scheduled tasks, run keys.</div></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">3 · Privilege Escalation &amp; Credential Access</div><div class="tl-text">Mimikatz, LSASS dumping (comsvcs.dll, ProcDump), Kerberoasting, AS-REP roasting, ADCS abuse, stored credentials in browsers.</div></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">4 · Discovery &amp; Lateral Movement</div><div class="tl-text">AdFind, BloodHound, SoftPerfect Scanner. Movement via SMB, WMI, PsExec, Impacket, RDP across subnets, SSO infrastructure abuse.</div></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">5 · Defence Evasion</div><div class="tl-text">Disabling Defender via GPO, BYOVD techniques, clearing event logs, deleting volume shadow copies: <code>vssadmin delete shadows /all /quiet</code>, bcdedit boot tampering.</div></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">6 · Exfiltration</div><div class="tl-text">Rclone, MegaSync, custom Go binaries staging hundreds of GB to attacker-controlled cloud storage. Often 100s of GB to multiple TB.</div></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">7 · Encryption</div><div class="tl-text">AES-256 per-file; per-file key wrapped with RSA-2048 or Curve25519 held by operator. Intermittent encryption modes maximise throughput on large file shares.</div></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-year">8 · Extortion</div><div class="tl-text">Ransom note in every directory; Tor portal negotiation; Data Leak Site theatrics — countdown timers, sample data drops, DDoS, executive harassment.</div></div></div>
+    </div>
+  </div>
+  <div class="info-banner">⚠️ If your detection stack only fires at stage 7 (encryption), the attacker has already won. The high-confidence pre-encryption signals below fire hours or days earlier.</div>
+  <div class="quiz-block">
+    <div class="quiz-q">🎯 Which of the following are high-confidence pre-encryption signals (stages 1–6)? Click ALL that apply, then check.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;" id="signal-opts">
+      <button class="option-btn" style="width:auto;padding:6px 14px;font-size:12px;" data-stype="correct" onclick="toggleSignal(this)">Mass vssadmin shadow copy deletion</button>
+      <button class="option-btn" style="width:auto;padding:6px 14px;font-size:12px;" data-stype="correct" onclick="toggleSignal(this)">Rclone upload to unfamiliar cloud endpoint from a server</button>
+      <button class="option-btn" style="width:auto;padding:6px 14px;font-size:12px;" data-stype="correct" onclick="toggleSignal(this)">ScreenConnect installed on a finance workstation at 02:00</button>
+      <button class="option-btn" style="width:auto;padding:6px 14px;font-size:12px;" data-stype="correct" onclick="toggleSignal(this)">Anomalous Kerberos ticket request surge</button>
+      <button class="option-btn" style="width:auto;padding:6px 14px;font-size:12px;" data-stype="wrong" onclick="toggleSignal(this)">Ransom note dropped in every directory</button>
+      <button class="option-btn" style="width:auto;padding:6px 14px;font-size:12px;" data-stype="correct" onclick="toggleSignal(this)">bcdedit /set recoveryenabled No</button>
+      <button class="option-btn" style="width:auto;padding:6px 14px;font-size:12px;" data-stype="wrong" onclick="toggleSignal(this)">High-entropy file I/O across thousands of files simultaneously</button>
+    </div>
+    <button class="btn-reveal" onclick="revealSignals()">Check my selections →</button>
+    <div class="feedback" id="signal-feedback"></div>
+  </div>
+  <div class="quiz-block">
+    <div class="quiz-q">🎯 Why is ScreenConnect on a sysadmin laptop "normal" — but on a finance workstation at 02:00 an indicator of compromise?</div>
+    <div class="options">
+      <button class="option-btn" onclick="answerQ('q2b',this,false,'The tool itself is not the problem — attackers use legitimate tools precisely because they evade signature-based detection.')">ScreenConnect is blocked by most EDR platforms by default</button>
+      <button class="option-btn" onclick="answerQ('q2b',this,true,'Exactly. Attackers use legitimate remote-management tools because they evade signature-based detection. Context — user, device, time, baseline behaviour — is what EDR behavioural analytics use to distinguish legitimate admin work from attacker activity.')">Context determines legitimacy — EDR behavioural analytics detect deviations from baseline, not the tool name itself</button>
+      <button class="option-btn" onclick="answerQ('q2b',this,false,'Finance workstations do not have a blanket software block — context is the key, not the device type.')">Finance workstations have allow-listing that blocks it</button>
+      <button class="option-btn" onclick="answerQ('q2b',this,false,'02:00 alone is not the signal — legitimate after-hours admin work happens. It is the combination of user, device, time, and tool that matters.')">02:00 is outside business hours so any activity is suspicious</button>
+    </div>
+    <div class="feedback" id="q2b-feedback"></div>
+  </div>
+  <div class="discuss-block">
+    <div class="discuss-label">💬 Discussion Prompt — Section 2</div>
+    <div class="discuss-q">Pick any ransomware family from Module 1. Identify three behaviours from the kill chain that occur hours or days before encryption. Where in your environment would each signal surface — and who is on call to act on them at 03:00?</div>
+    <textarea class="discuss-input" placeholder="e.g. For Akira: (1) Kerberoasting → Windows Security event logs / SIEM alert → SOC analyst on-call…"></textarea>
+    <button class="btn-reveal" onclick="toggleExpert('exp2')">Reveal expert perspective</button>
+    <div class="expert-answer" id="exp2">Key insight from the briefing: <em>"If your detection stack only fires on encryption itself, the attacker has already won."</em> For most RaaS families, dwell time before encryption is 3–14 days. High-confidence pre-encryption signals: (1) vssadmin shadow deletion — Windows Security/Sysmon, should trigger auto-response; (2) anomalous remote-access tool install on non-admin endpoint — EDR process telemetry; (3) off-hours RDP across subnets — network telemetry or identity logs. The on-call question is the hard one — many organisations have detection content but no analyst alert-ready at 03:00.</div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-nav" onclick="prevSection()">← Origins</button>
+    <button class="btn-nav next" onclick="nextSection()">Notable Incidents →</button>
+  </div>`;
+}
+
+// ── SECTION 3: Notable Incidents ───────────────────────────────────────────
+function renderS3() {
+  var incidents = [
+    { n:'WannaCry', y:'May 2017', tags:['North Korea','EternalBlue','NHS','Worm'], b:'Exploited EternalBlue (MS17-010, patched March 2017 — unpatched systems everywhere). 200,000+ systems, 150 countries. 80 NHS trusts — surgeries cancelled, ambulances diverted. Attributed to North Korea\'s Lazarus Group.', l:'Vulnerable internet-facing services are a strategic problem, not a maintenance backlog. A worm + strong encryption + network-reachable RCE is the worst case.' },
+    { n:'NotPetya', y:'Jun 2017', tags:['Russia/GRU','Supply chain','Wiper','$10B+'], b:'Weaponised auto-update of M.E.Doc (Ukrainian accounting software). Spread via EternalBlue + credential harvesting. Maersk, FedEx TNT, Merck, Mondelez affected. A GRU wiper disguised as ransomware. $10B+ aggregate damage.', l:'Supply-chain trust is a top-tier risk. The Merck v. ACE American ruling (2023) found the "war exclusion" did NOT apply to NotPetya — reshaping the insurance industry.' },
+    { n:'Colonial Pipeline', y:'May 2021', tags:['DarkSide','VPN','No MFA','Critical infra'], b:'DarkSide affiliate gained access via a single legacy VPN account — reused password, no MFA. Colonial proactively shut pipeline flow, cutting 45% of US East Coast fuel. Paid ~$4.4M; FBI recovered ~63.7 BTC.', l:'A single weak credential on a legacy access path can produce nation-impacting consequences. Drove Biden EO 14028 and TSA pipeline security directives.' },
+    { n:'Kaseya VSA', y:'Jul 2021', tags:['REvil','MSP','Supply chain','1,500 SMBs'], b:'REvil exploited zero-days in Kaseya VSA to push ransomware through MSPs to their customers. 800–1,500 small businesses encrypted. $70M universal decryptor demanded. Kaseya later obtained one and distributed it free.', l:'MSPs are force-multipliers for both productivity and risk. Compromise once, deliver many — now a standard playbook.' },
+    { n:'Conti Leaks', y:'Feb 2022', tags:['Conti','RaaS internal','$180M/yr'], b:'Ukrainian researcher dumped two years of internal Jabber chats after Conti backed Russia\'s invasion. Revealed HR, finance, payroll, OSINT, malware dev, performance management — a fully bureaucratic criminal enterprise.', l:'Ransomware operators run as businesses with growth and retention problems. Pressure on profit margins is more durable than pressure on infrastructure.' },
+    { n:'MGM / Caesars', y:'Sep 2023', tags:['Scattered Spider','Vishing','$100M loss'], b:'English-speaking Scattered Spider (UNC3944) gained MGM access via vishing the IT help desk, deployed ALPHV/BlackCat. Caesars paid ~$15M. MGM declined — suffered ~$100M in lost revenue plus remediation costs.', l:'Social-engineering-led affiliates are hard to defend against by technical controls alone. Help-desk identity verification became an urgent F500 priority.' },
+    { n:'Change Healthcare', y:'Feb 2024', tags:['ALPHV/BlackCat','No MFA on Citrix','$2B+ impact'], b:'ALPHV/BlackCat compromised via valid credentials on a Citrix portal — no MFA. Processes 1-in-3 US medical claims. ~$22M ransom paid; affiliate absconded (exit scam); data re-extorted under RansomHub brand. $2B+ total impact.', l:'Cost of a basic MFA gap on a single SaaS portal is now measured in billions. Concentration risk in healthcare clearinghouses is a systemic problem.' },
+    { n:'LockBit / Op Cronos', y:'2019–2024', tags:['LockBit','NCA','Decryptors released'], b:'Most prolific RaaS brand at peak (~2,000 listed victims). Operation Cronos (Feb 2024): NCA-led coalition seized infrastructure, defaced leak site, indicted alleged admin Khoroshev, released free decryptors. Never recovered prior volume.', l:'Law-enforcement disruption can meaningfully reduce a brand\'s affiliate value — even without arresting all principals.' },
+  ];
+
+  var incidentHTML = incidents.map(function(inc, i) {
+    var tagHTML = inc.tags.map(function(t){ return '<span class="tag-pill">'+t+'</span>'; }).join('');
+    return '<div class="incident-card" id="inc-'+i+'" onclick="toggleInc('+i+')">'
+      +'<div class="incident-title"><span class="incident-name">'+inc.n+'</span>'
+      +'<div style="display:flex;align-items:center;gap:8px;"><span class="incident-year">'+inc.y+'</span>'
+      +'<span id="inc-arr-'+i+'" style="color:var(--muted);font-size:12px;">▶</span></div></div>'
+      +'<div style="margin-top:6px;">'+tagHTML+'</div>'
+      +'<div class="incident-body" id="inc-body-'+i+'">'
+      +'<p>'+inc.b+'</p>'
+      +'<div class="lesson-box">🔑 Lesson: '+inc.l+'</div>'
+      +'</div></div>';
+  }).join('');
+
+  return `<div class="section-header">
+    <div class="section-tag">Part 3 of 6</div>
+    <h2>💥 Notable Incidents &amp; What They Taught Us</h2>
+    <p>Eight case studies shaped the modern defensive playbook. Click to expand each incident — then tackle the quiz.</p>
+  </div>
+  <div class="info-banner">📖 Click any incident card to expand the full brief and lesson.</div>
+  <div id="incident-list">` + incidentHTML + `</div>
+  <div class="quiz-block" style="margin-top:20px;">
+    <div class="quiz-q">🎯 Match the lesson. What is the defining lesson of Colonial Pipeline?</div>
+    <div class="options">
+      <button class="option-btn" onclick="answerQ('q3a',this,false,'That is the NotPetya / Kaseya lesson about supply-chain trust and MSP risk.')">Supply-chain compromise via software update proves MSPs are force-multipliers for risk</button>
+      <button class="option-btn" onclick="answerQ('q3a',this,true,'Correct. A single VPN account — reused password, no MFA — cut 45% of US East Coast fuel supply and triggered an executive order. The credential hygiene lesson is unambiguous.')">A single weak credential on a legacy access path — no MFA, reused password — can produce nation-impacting consequences</button>
+      <button class="option-btn" onclick="answerQ('q3a',this,false,'That is the Conti / ecosystem lesson about criminal business operations.')">Ransomware operators run as structured businesses — pressure on profit margin outlasts infrastructure disruption</button>
+      <button class="option-btn" onclick="answerQ('q3a',this,false,'That is the MGM / Scattered Spider lesson about social engineering at the help desk.')">English-speaking social engineering bypasses technical controls — help-desk verification is a control surface</button>
+    </div>
+    <div class="feedback" id="q3a-feedback"></div>
+  </div>
+  <div class="quiz-block">
+    <div class="quiz-q">🎯 The Merck v. ACE American appellate ruling (2023) related to NotPetya was significant for cyber insurance because:</div>
+    <div class="options">
+      <button class="option-btn" onclick="answerQ('q3b',this,false,'The ruling found the opposite — the war exclusion did NOT apply to NotPetya.')">It confirmed the war exclusion applied to nation-state cyberattacks, reducing insurer liability</button>
+      <button class="option-btn" onclick="answerQ('q3b',this,false,'The ruling was about the war exclusion clause, not a universal ransom payment rule.')">It established insurers must reimburse all ransom payments regardless of attribution</button>
+      <button class="option-btn" onclick="answerQ('q3b',this,true,'Correct. The court found the war exclusion did NOT cover NotPetya — a wiper attributed to Russian GRU. Insurers responded by writing explicit "cyber war" exclusions whose wording remains actively contested.')">It found the war exclusion did NOT apply to NotPetya — prompting insurers to rewrite explicit cyber-war exclusion clauses</button>
+      <button class="option-btn" onclick="answerQ('q3b',this,false,'The ruling addressed the war exclusion, not government reimbursement schemes.')">It required governments to reimburse cyber-insurance carriers for nation-state losses</button>
+    </div>
+    <div class="feedback" id="q3b-feedback"></div>
+  </div>
+  <div class="discuss-block">
+    <div class="discuss-label">💬 Discussion Prompt — Section 3</div>
+    <div class="discuss-q">Pick one incident above. Identify the defender-side categories from Module 1 that would have been engaged in the response. Which category was most decisive — and which would you have wanted in place six months earlier?</div>
+    <textarea class="discuss-input" placeholder="e.g. For Change Healthcare: EDR (missing on Citrix), MFA (root cause gap), IR firm, breach counsel, insurance carrier, OFAC screen before payment…"></textarea>
+    <button class="btn-reveal" onclick="toggleExpert('exp3')">Reveal expert perspective</button>
+    <div class="expert-answer" id="exp3">For <strong>Change Healthcare</strong>: missing control was phishing-resistant MFA on the Citrix portal. Response engaged: IR firm (ALPHV specialist), breach counsel (HIPAA notification, OFAC screen before payment), cyber insurer, blockchain analytics (wallet attribution). Most decisive missing control six months earlier: MFA. Cost: ~$50/user/year. Ransom + total impact: $2B+. The asymmetry is the lesson.</div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-nav" onclick="prevSection()">← Kill Chain</button>
+    <button class="btn-nav next" onclick="nextSection()">Build Your Defence →</button>
+  </div>`;
+}
+
+// ── SECTION 4: Build Your Defence ─────────────────────────────────────────
+function renderS4() {
+  _s4controls = [
+    { id:'c1', name:'Phishing-resistant MFA (FIDO2/WebAuthn)', desc:'On every internet-facing service. Push-notification MFA is no longer sufficient against Evilginx-style kits and MFA fatigue attacks.', cost:'💰 Low', points:25, pillar:'Identity' },
+    { id:'c2', name:'EDR/XDR on every endpoint (servers included)', desc:'With auto-response for high-confidence behaviours. Servers, not just workstations — attackers go where EDR isn\'t.', cost:'💰💰 Medium', points:20, pillar:'Detect' },
+    { id:'c3', name:'Immutable backups — 3-2-1 with offline copy', desc:'At least one copy object-locked (WORM). Attackers\' first move is to delete backups — assume they will try.', cost:'💰💰 Medium', points:25, pillar:'Recover' },
+    { id:'c4', name:'Patch edge devices to CISA KEV SLA', desc:'Citrix, Fortinet, Ivanti, Cisco ASA CVEs need emergency-class patching SLAs. Most initial access uses known, unpatched vulnerabilities.', cost:'💰 Low (process)', points:15, pillar:'Protect' },
+    { id:'c5', name:'Network segmentation — isolate backup/DC/SAN', desc:'A compromise of one workstation should not reach domain controllers, backup servers, or SAN management. Flat network is the force-multiplier.', cost:'💰💰💰 High', points:20, pillar:'Protect' },
+    { id:'c6', name:'IR retainer — placed before the incident', desc:'Pre-purchased hours at a discount. Post-incident IR procurement is the worst possible time. No IR retainer was a deliberate gap in Northwind\'s profile.', cost:'💰💰 Medium', points:15, pillar:'Respond' },
+    { id:'c7', name:'Help-desk identity verification protocol', desc:'Cannot be defeated by public information alone (LinkedIn, building address). Named callbacks, ticket-driven workflow, or video verification. The Scattered Spider lesson.', cost:'💰 Low (process)', points:15, pillar:'Protect' },
+    { id:'c8', name:'24/7 SOC or MDR with documented runbook', desc:'Ransomware operators preferentially detonate Friday nights, holidays, and long-weekend first days. No one should be reading alerts alone at 03:00.', cost:'💰💰💰 High', points:20, pillar:'Detect' },
+    { id:'c9', name:'Privileged Access Management (PAM) — JIT/JEA', desc:'Just-in-time, just-enough-access for domain admin, cloud admin, break-glass accounts. Tier-0 isolation in Active Directory.', cost:'💰💰 Medium', points:20, pillar:'Identity' },
+    { id:'c10', name:'Tested restore procedures — end-to-end validation', desc:'Untested backups have a non-zero real-world failure rate. Restore from backup, on non-production, on a regular cadence. Testing is the control.', cost:'💰 Low (process)', points:15, pillar:'Recover' },
+  ];
+  _s4selected = new Set();
+
+  var ctrlHTML = _s4controls.map(function(c) {
+    return '<div class="control-item" id="ctrl-'+c.id+'" onclick="toggleControl(\''+c.id+'\')">'
+      +'<div class="control-check" id="chk-'+c.id+'"></div>'
+      +'<div class="control-text">'
+      +'<div class="control-name">'+c.name+'</div>'
+      +'<div class="control-desc">'+c.desc+'</div>'
+      +'<div class="control-cost">'+c.cost+' · '+c.pillar+' · +'+c.points+' pts</div>'
+      +'</div></div>';
+  }).join('');
+
+  return `<div class="section-header">
+    <div class="section-tag">Part 4 of 6</div>
+    <h2>🛡️ Build Your Defence</h2>
+    <p>Module 1 Section 4 identifies controls that consistently appear in post-incident reviews as either the missing piece or the determining piece. Which six would you fund?</p>
+  </div>
+  <div class="info-banner">💡 The Module 1 discussion prompt: <em>"If you could fund only six controls for a 1,000-person org — which six, and why?"</em> Select exactly 6 below, then evaluate.</div>
+  <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+    <div>
+      <div class="budget-bar-wrap"><div class="budget-bar" id="s4-bar" style="width:0%"></div></div>
+      <div style="font-size:11px;color:var(--muted);">Selected: <span id="s4-count">0</span> / 6</div>
+    </div>
+    <div id="s4-preview" style="font-size:12px;color:var(--muted);">Select 6 controls to build your defence</div>
+  </div>
+  <div class="control-grid">` + ctrlHTML + `</div>
+  <div id="s4-result" style="display:none;" class="content-card">
+    <h3 id="s4-res-title"></h3>
+    <p id="s4-res-body" style="font-size:13px;color:#c9d1d9;"></p>
+    <div id="s4-res-miss"></div>
+  </div>
+  <button class="btn-reveal" id="s4-submit" onclick="scoreDefence()" style="display:none;margin-bottom:16px;">Evaluate my defence →</button>
+  <div class="discuss-block">
+    <div class="discuss-label">💬 Discussion Prompt — Section 4</div>
+    <div class="discuss-q">Which of your six choices would be the first to fall short under a Scattered Spider-style social-engineering attack — and what does that tell you about the assumptions behind your selection?</div>
+    <textarea class="discuss-input" placeholder="e.g. MFA is effective against credential stuffing but Scattered Spider bypasses it at the help desk process level…"></textarea>
+    <button class="btn-reveal" onclick="toggleExpert('exp4')">Reveal expert perspective</button>
+    <div class="expert-answer" id="exp4">The briefing notes Scattered Spider's signature is <em>"social engineering of help desks"</em> — they call the help desk, impersonate an employee, and get MFA reset. A defence built on MFA alone, without a robust help-desk identity verification protocol, has a logical gap: the attacker bypasses MFA at the process level, not the technical one. The most resilient stack includes at least one identity/human-process control alongside the technical controls.</div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-nav" onclick="prevSection()">← Incidents</button>
+    <button class="btn-nav next" onclick="nextSection()">Attacker Ecosystem →</button>
+  </div>`;
+}
+
+// ── SECTION 5: Attacker Ecosystem ─────────────────────────────────────────
+function renderS5() {
+  var actors = [
+    { name:'LockBit', era:'2019–2024', tag:'Most prolific brand', desc:'Polished affiliate programme; public bug-bounty for own malware; CIS rule hard-coded. Op Cronos (Feb 2024): NCA seized infrastructure, indicted admin Khoroshev, released free decryptors. Never recovered prior volume.' },
+    { name:'ALPHV/BlackCat', era:'2021–2024', tag:'First Rust-based locker', desc:'DarkSide → BlackMatter → ALPHV lineage. Change Healthcare ($22M). Staged exit scam after receiving payment — affiliates moved to RansomHub. Illustrates operator exit-scam risk.' },
+    { name:'Conti', era:'2020–2022', tag:'Wizard Spider / ~$180M/yr', desc:'Ryuk → Conti → Black Basta/Karakurt. Conti Leaks (Feb 2022) revealed full corporate structure. Most durable lesson: economic pressure outlasts infrastructure disruption.' },
+    { name:'Scattered Spider', era:'2022–present', tag:'UNC3944 / vishing', desc:'English-speaking; signature is vishing IT help desks. MGM ($100M loss), Caesars ($15M paid). Technical MFA bypassed at the process level. Help-desk verification is the control.' },
+    { name:'Maze', era:'2019–2020', tag:'Invented double extortion', desc:'Introduced exfiltrate-then-encrypt in 2019 — the innovation that made backups insufficient. Formalised RaaS model. Closed late 2020; affiliates migrated to Egregor and others.' },
+    { name:'RansomHub', era:'2024–present', tag:'Post-ALPHV successor', desc:'Absorbed ALPHV affiliates after Change Healthcare exit scam. Now a major brand. Demonstrates that the affiliate base — not the brand — is the durable asset in the ecosystem.' },
+  ];
+
+  var actorHTML = actors.map(function(a) {
+    return '<div class="actor-card" onclick="this.classList.toggle(\'flipped\')">'
+      +'<div class="actor-front">'
+      +'<div class="actor-name">'+a.name+'</div>'
+      +'<div class="actor-era">'+a.era+'</div>'
+      +'<div class="actor-tag">'+a.tag+'</div>'
+      +'<div class="flip-hint">👆 Tap to reveal</div>'
+      +'</div>'
+      +'<div class="actor-back">'
+      +'<div class="actor-name">'+a.name+'</div>'
+      +'<div class="actor-desc">'+a.desc+'</div>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+
+  return `<div class="section-header">
+    <div class="section-tag">Part 5 of 6</div>
+    <h2>🕸️ The Attacker-Side Industry</h2>
+    <p>Ransomware is a market. Map the criminal supply chain — operators, affiliates, IABs, infostealers, laundering — and understand the economic logic that makes simple disruption insufficient.</p>
+  </div>
+  <div class="content-card">
+    <h3>RaaS Supply Chain — Roles &amp; Economics</h3>
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <tr style="border-bottom:1px solid var(--border);"><th style="text-align:left;padding:7px;color:var(--muted);">Role</th><th style="text-align:left;padding:7px;color:var(--muted);">What they do</th><th style="text-align:left;padding:7px;color:var(--muted);">Typical fee</th></tr>
+      <tr style="border-bottom:1px solid var(--border);"><td style="padding:7px;color:var(--accent);font-weight:700;">RaaS Operator</td><td style="padding:7px;color:#c9d1d9;">Builds locker, leak site, payment portal; runs brand reputation; vets affiliates</td><td style="padding:7px;color:#c9d1d9;">20–30% of ransom</td></tr>
+      <tr style="border-bottom:1px solid var(--border);"><td style="padding:7px;color:var(--accent);font-weight:700;">Affiliate</td><td style="padding:7px;color:#c9d1d9;">Buys or finds initial access; performs lateral movement, exfiltration, detonation</td><td style="padding:7px;color:#c9d1d9;">70–80% of ransom</td></tr>
+      <tr style="border-bottom:1px solid var(--border);"><td style="padding:7px;color:var(--accent);font-weight:700;">Initial Access Broker (IAB)</td><td style="padding:7px;color:#c9d1d9;">Sells pre-compromised network access on forums (XSS, Exploit). Prices by sector, revenue, access type</td><td style="padding:7px;color:#c9d1d9;">$500–$100,000+ per access</td></tr>
+      <tr style="border-bottom:1px solid var(--border);"><td style="padding:7px;color:var(--accent);font-weight:700;">Infostealer operator</td><td style="padding:7px;color:#c9d1d9;">Distributes Redline/Lumma/Vidar; sells browser credential logs including session cookies and MFA tokens</td><td style="padding:7px;color:#c9d1d9;">$10–$50 per log</td></tr>
+      <tr style="border-bottom:1px solid var(--border);"><td style="padding:7px;color:var(--accent);font-weight:700;">Negotiator</td><td style="padding:7px;color:#c9d1d9;">Runs the chat with the victim; staged proof-of-life, deadlines, selective leak disclosure</td><td style="padding:7px;color:#c9d1d9;">Salary or % of demand</td></tr>
+      <tr><td style="padding:7px;color:var(--accent);font-weight:700;">Money-laundering service</td><td style="padding:7px;color:#c9d1d9;">Mixers, chain-hopping bridges, OTC desks, illicit exchanges</td><td style="padding:7px;color:#c9d1d9;">5–25% laundering fee</td></tr>
+    </table>
+    </div>
+  </div>
+  <div class="content-card">
+    <h3>📛 Threat Actor Cards — Click to Flip</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Tap each card to reveal lineage, key incidents, and lessons.</p>
+    <div class="actor-grid">` + actorHTML + `</div>
+  </div>
+  <div class="quiz-block">
+    <div class="quiz-q">🎯 Which ecosystem role is described? <em>"They convert the noisy work of finding a foothold — credential stuffing, exploiting an unpatched VPN — into a tradable inventory item. Their existence lowers the skill floor for ransomware affiliates."</em></div>
+    <div class="options">
+      <button class="option-btn" onclick="answerQ('q5a',this,false,'The RaaS operator builds the locker and platform — they do not sell initial access.')">RaaS Operator</button>
+      <button class="option-btn" onclick="answerQ('q5a',this,false,'The affiliate performs the attack inside the environment — they may buy access, but they are not the ones selling it.')">Affiliate</button>
+      <button class="option-btn" onclick="answerQ('q5a',this,true,'Correct. IABs are arguably the most important specialisation in the modern ecosystem. They commoditise initial access — domain admin at a multinational can fetch $100,000+. Their existence means a skilled lateral-movement specialist no longer needs to be a skilled intruder too.')">Initial Access Broker (IAB)</button>
+      <button class="option-btn" onclick="answerQ('q5a',this,false,'Infostealer operators harvest credentials from individual machines and sell logs — a related but distinct role upstream of IABs.')">Infostealer operator</button>
+    </div>
+    <div class="feedback" id="q5a-feedback"></div>
+  </div>
+  <div class="quiz-block">
+    <div class="quiz-q">🎯 The "CIS rule" hard-coded into most major ransomware families does what — and what does it reveal about the geopolitical context?</div>
+    <div class="options">
+      <button class="option-btn" onclick="answerQ('q5b',this,false,'It is about geographic targeting exclusion, not encryption algorithm selection.')">It specifies which encryption algorithm to use for CIS-region targets</button>
+      <button class="option-btn" onclick="answerQ('q5b',this,false,'The CIS rule specifically avoids CIS-region targets — not seeks them out.')">It directs affiliates to prioritise CIS-region targets for highest ransom yield</button>
+      <button class="option-btn" onclick="answerQ('q5b',this,true,'Exactly. The locker checks Windows locale and keyboard layout and refuses to run on Russian/CIS-language systems. This hard-coded political instruction explains why the Russian government has tolerated these operations — they exclusively target Western enterprises and critical infrastructure.')">The locker checks system locale and refuses to run on Russian/CIS-language systems — a political instruction that explains Russian government tolerance of the operations</button>
+      <button class="option-btn" onclick="answerQ('q5b',this,false,'The CIS rule is about geographic exclusion, not a reporting mechanism to intelligence services.')">It requires affiliates to report attack telemetry to Russian intelligence services</button>
+    </div>
+    <div class="feedback" id="q5b-feedback"></div>
+  </div>
+  <div class="discuss-block">
+    <div class="discuss-label">💬 Discussion Prompt — Section 5</div>
+    <div class="discuss-q">If a single ransomware brand were eliminated tomorrow — operators arrested, infrastructure seized, decryptor released — how long would the affiliate base take to reconstitute under a new brand? Trace the path: which brands absorb the affiliates, which IABs sell to the new buyers, which laundering services route the proceeds?</div>
+    <textarea class="discuss-input" placeholder="e.g. LockBit affiliates after Op Cronos moved to RansomHub, Play, Akira within weeks…"></textarea>
+    <button class="btn-reveal" onclick="toggleExpert('exp5')">Reveal expert perspective</button>
+    <div class="expert-answer" id="exp5">The LockBit case is instructive: after Op Cronos (Feb 2024), affiliates migrated within weeks — primarily to RansomHub, ALPHV, Play, and Akira. IABs are brand-agnostic — they sell to whoever is paying. Laundering services similarly serve multiple clients. Implication: <em>the affiliate base is the durable asset, not the brand.</em> Defensive pressure that degrades the economics of affiliation — lower ransom payment rates, slower laundering, better detection — is more structurally durable than single-brand disruption.</div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-nav" onclick="prevSection()">← Defence Builder</button>
+    <button class="btn-nav next" onclick="nextSection()">Defender Industry →</button>
+  </div>`;
+}
+
+// ── SECTION 6: Defender Industry ──────────────────────────────────────────
+function renderS6() {
+  var chips = [
+    {id:'m1',text:'Chainalysis',answer:'blockchain'},
+    {id:'m2',text:'Coveware',answer:'ir'},
+    {id:'m3',text:'Arctic Wolf',answer:'mdr'},
+    {id:'m4',text:'NoMoreRansom.org',answer:'govlaw'},
+    {id:'m5',text:'Recorded Future',answer:'intel'},
+    {id:'m6',text:'Rubrik',answer:'backup'},
+    {id:'m7',text:'CrowdStrike Falcon',answer:'edr'},
+    {id:'m8',text:'Mullen Coughlin',answer:'legal'},
+  ];
+  var slots = [
+    {id:'edr',label:'EDR / XDR Platform'},
+    {id:'mdr',label:'Managed Detection & Response (MDR)'},
+    {id:'intel',label:'Threat Intelligence'},
+    {id:'ir',label:'IR / Negotiation Firm'},
+    {id:'blockchain',label:'Blockchain Analytics'},
+    {id:'backup',label:'Backup & Immutable Recovery'},
+    {id:'govlaw',label:'Government / Law Enforcement'},
+    {id:'legal',label:'Breach Counsel'},
+  ];
+  _matchedSlots = new Set();
+  _matchPlacements = {};
+  _selectedChip = null;
+
+  var chipHTML = chips.map(function(c){
+    return '<div class="match-item" id="chip-'+c.id+'" data-answer="'+c.answer+'" onclick="selectChip(\''+c.id+'\')">' + c.text + '</div>';
+  }).join('');
+
+  var slotHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
+    + slots.map(function(s){
+      return '<div><div class="slot-label">'+s.label+'</div>'
+        +'<div class="role-slot" id="slot-'+s.id+'" onclick="placeChip(\''+s.id+'\')">Drop here</div></div>';
+    }).join('') + '</div>';
+
+  return `<div class="section-header">
+    <div class="section-tag">Part 6 of 6</div>
+    <h2>🏢 The Defender-Side Industry</h2>
+    <p>Ransomware has reshaped the commercial cybersecurity industry. Categories that didn't exist a decade ago are now major segments — each with specific capabilities and limits.</p>
+  </div>
+  <div class="stat-row">
+    <div class="stat-card"><div class="stat-num">$1.1B</div><div class="stat-label">Confirmed ransomware payments tracked in 2024 (Chainalysis)</div></div>
+    <div class="stat-card"><div class="stat-num">8.5M</div><div class="stat-label">Windows hosts affected by CrowdStrike sensor update (Jul 2024)</div></div>
+    <div class="stat-card"><div class="stat-num">$10M</div><div class="stat-label">US State Dept Rewards for Justice — ransomware actor info</div></div>
+    <div class="stat-card"><div class="stat-num">60+</div><div class="stat-label">Countries in the Counter Ransomware Initiative (CRI)</div></div>
+  </div>
+  <div class="quiz-block">
+    <div class="quiz-q">🎯 Matching Challenge: Click an organisation to select it, then click the correct category slot to place it.</div>
+    <div style="margin-bottom:10px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Organisations (click to select):</div>
+      <div>` + chipHTML + `</div>
+    </div>
+    ` + slotHTML + `
+    <div id="match-feedback" style="margin-top:10px;font-size:13px;display:none;"></div>
+    <button class="btn-reveal" id="match-btn" onclick="checkMatches()" style="margin-top:12px;">Check matches →</button>
+  </div>
+  <div class="quiz-block">
+    <div class="quiz-q">🎯 Cyber-insurance underwriting has become a de-facto security standard. Which controls are now near-universally required before carriers will issue a ransomware policy?</div>
+    <div class="options">
+      <button class="option-btn" onclick="answerQ('q6a',this,false,'Penetration testing is valuable but not yet a universal underwriting requirement across the market.')">Annual third-party penetration testing</button>
+      <button class="option-btn" onclick="answerQ('q6a',this,false,'ISO 27001 is sometimes preferred by carriers but is not a universal checkbox.')">ISO 27001 certification</button>
+      <button class="option-btn" onclick="answerQ('q6a',this,true,'Correct. MFA on remote access and email, EDR on every endpoint, and immutable backups are now near-universal requirements. The absence of EDR is a red flag at underwriting. Carriers have effectively driven adoption of these controls across the mid-market through the application questionnaire.')">MFA on remote access and email, EDR on every endpoint, and immutable backups</button>
+      <button class="option-btn" onclick="answerQ('q6a',this,false,'Zero-trust architecture is an emerging trend but not yet a standard underwriting checkbox.')">Zero-trust architecture across all user access</button>
+    </div>
+    <div class="feedback" id="q6a-feedback"></div>
+  </div>
+  <div class="quiz-block">
+    <div class="quiz-q">🎯 The OFAC advisories of 2020 and 2021 created strict-liability sanctions risk for paying certain ransomware actors. Which parties are explicitly named — beyond just the victim organisation?</div>
+    <div class="options">
+      <button class="option-btn" onclick="answerQ('q6b',this,false,'The OFAC advisory was broader — it explicitly named facilitators beyond the victim.')">Only the victim organisation making the payment</button>
+      <button class="option-btn" onclick="answerQ('q6b',this,true,'Correct. The September 2021 OFAC advisory explicitly named cyber insurers and IR firms (including negotiators) as subjects of sanctions risk. This is why wallet-level blockchain analytics (not just brand-level SDN list check) is now a standard step in any negotiation engagement.')">The victim, cyber insurers, and IR firms / negotiators — all explicitly named as subjects</button>
+      <button class="option-btn" onclick="answerQ('q6b',this,false,'Banks are not specifically named as primary subjects in the OFAC ransomware advisories.')">Only the banking institutions processing the crypto conversion</button>
+      <button class="option-btn" onclick="answerQ('q6b',this,false,'The advisory specifically named IR firms and insurers as facilitators — not just the two parties to the transaction.')">The victim and the ransomware operator only</button>
+    </div>
+    <div class="feedback" id="q6b-feedback"></div>
+  </div>
+  <div class="discuss-block">
+    <div class="discuss-label">💬 Final Discussion Prompt</div>
+    <div class="discuss-q">Module 1's three framing observations: (1) ransomware is an economic phenomenon; (2) the line between cybercrime and statecraft has blurred; (3) the harder problem is governance, not technology. Which is most underappreciated in your organisation today — and what would you change?</div>
+    <textarea class="discuss-input" placeholder="Your reflection before completing the lab…"></textarea>
+    <button class="btn-reveal" onclick="toggleExpert('exp6')">Reveal framing from the briefing</button>
+    <div class="expert-answer" id="exp6">The briefing argues all three are underappreciated — but the governance observation is most consistently validated by post-incident reviews: <em>"The most effective controls are unglamorous… but the harder problem is governance, not technology."</em> Technical controls exist at most organisations that suffer major incidents. What fails is the escalation chain, the decision authority, the untested backup, the runbook nobody read. That is exactly what Module 6's tabletop scenarios are designed to surface — you will encounter it there.</div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-nav" onclick="prevSection()">← Attacker Ecosystem</button>
+    <button class="btn-nav next" onclick="nextSection()">🏁 See Results →</button>
+  </div>`;
+}
+
+// ── INTERACTION HANDLERS ───────────────────────────────────────────────────
+function answerQ(qid, btn, correct, msg) {
+  var opts = btn.parentElement.querySelectorAll('.option-btn');
+  opts.forEach(function(b){ b.disabled = true; });
+  var fb = document.getElementById(qid + '-feedback');
+  if (!fb) return;
+  if (correct) {
+    btn.classList.add('correct');
+    fb.innerHTML = '✅ ' + msg;
+    fb.className = 'feedback show correct';
+    addPoints(10);
+  } else {
+    btn.classList.add('wrong');
+    fb.innerHTML = '❌ ' + msg;
+    fb.className = 'feedback show wrong';
+  }
+}
+
+function toggleExpert(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('show');
+}
+
+function toggleInc(i) {
+  var body = document.getElementById('inc-body-' + i);
+  var arr = document.getElementById('inc-arr-' + i);
+  var card = document.getElementById('inc-' + i);
+  body.classList.toggle('show');
+  card.classList.toggle('expanded');
+  arr.textContent = body.classList.contains('show') ? '▼' : '▶';
+}
+
+// Multi-select signal quiz
+var _signals = new Set();
+function toggleSignal(btn) {
+  if (btn.disabled) return;
+  btn.classList.toggle('selected');
+  if (_signals.has(btn)) _signals.delete(btn); else _signals.add(btn);
+}
+function revealSignals() {
+  var correct = 0;
+  _signals.forEach(function(btn) {
+    if (btn.dataset.stype === 'correct') correct++;
+    else correct--;
+  });
+  var allBtns = document.querySelectorAll('#signal-opts button');
+  allBtns.forEach(function(b) {
+    b.disabled = true;
+    if (b.dataset.stype === 'correct') b.classList.add('correct');
+    else b.classList.add('wrong');
+  });
+  var fb = document.getElementById('signal-feedback');
+  if (correct >= 3) {
+    fb.innerHTML = '✅ Well spotted. vssadmin deletion, Rclone upload, ScreenConnect anomaly, Kerberos surge, and bcdedit tampering all fire <em>before</em> encryption. Ransom note and high-entropy file I/O arrive with encryption itself — stages 7–8.';
+    fb.className = 'feedback show correct';
+    addPoints(15);
+  } else {
+    fb.innerHTML = '❌ The five pre-encryption signals are: vssadmin deletion, Rclone upload to unfamiliar endpoint, ScreenConnect on non-admin device at odd hours, Kerberos ticket surge, and bcdedit /set. Ransom note and high-entropy I/O ARE the encryption event.';
+    fb.className = 'feedback show wrong';
+  }
+}
+
+// Defence builder
+function toggleControl(cid) {
+  var el = document.getElementById('ctrl-' + cid);
+  var chk = document.getElementById('chk-' + cid);
+  document.getElementById('s4-result').style.display = 'none';
+  if (_s4selected.has(cid)) {
+    _s4selected.delete(cid);
+    el.classList.remove('selected');
+    chk.textContent = '';
+  } else {
+    if (_s4selected.size >= 6) return;
+    _s4selected.add(cid);
+    el.classList.add('selected');
+    chk.textContent = '✓';
+  }
+  var cnt = _s4selected.size;
+  document.getElementById('s4-count').textContent = cnt;
+  document.getElementById('s4-bar').style.width = (cnt/6*100) + '%';
+  var sub = document.getElementById('s4-submit');
+  var prev = document.getElementById('s4-preview');
+  if (cnt >= 6) {
+    sub.style.display = 'inline-block';
+    prev.textContent = '✅ 6 controls selected — evaluate your defence!';
+    prev.style.color = 'var(--green)';
+  } else {
+    sub.style.display = 'none';
+    prev.textContent = 'Select ' + (6-cnt) + ' more control' + (6-cnt!==1?'s':'');
+    prev.style.color = 'var(--muted)';
+  }
+}
+
+function scoreDefence() {
+  var sel = [..._s4selected];
+  var pts = 0;
+  var highValue = ['c1','c2','c3'];
+  var hasHV = highValue.filter(function(h){ return sel.includes(h); });
+  sel.forEach(function(cid){ var c = _s4controls.find(function(x){ return x.id===cid; }); if(c) pts+=c.points; });
+  var missing = highValue.filter(function(h){ return !sel.includes(h); }).map(function(h){ var c=_s4controls.find(function(x){ return x.id===h; }); return c?c.name:''; });
+  var res = document.getElementById('s4-result');
+  res.style.display = 'block';
+  var title = document.getElementById('s4-res-title');
+  var body = document.getElementById('s4-res-body');
+  var miss = document.getElementById('s4-res-miss');
+  if (pts >= 100 && hasHV.length === 3) {
+    title.textContent = '🏆 Excellent — ' + pts + ' pts';
+    title.style.color = 'var(--green)';
+    body.textContent = 'You included the three highest-impact controls from Module 1\'s mitigation framework: phishing-resistant MFA, EDR/XDR, and immutable backups — the controls that consistently appear as the determining piece in post-incident reviews.';
+    addPoints(20);
+  } else if (pts >= 75) {
+    title.textContent = '✅ Strong selection — ' + pts + ' pts';
+    title.style.color = 'var(--accent2)';
+    body.textContent = 'Good prioritisation. Review which high-value controls you left out — they consistently appear as the missing piece in breach post-mortems.';
+    addPoints(10);
+  } else {
+    title.textContent = '📘 Needs refinement — ' + pts + ' pts';
+    title.style.color = 'var(--yellow)';
+    body.textContent = 'Your selection misses some of the highest-impact controls. Re-read Section 4.1–4.4 of the Module 1 briefing.';
+  }
+  if (missing.length > 0) {
+    miss.innerHTML = '<div class="lesson-box">⚠️ Not included: ' + missing.join(', ') + ' — these appear in virtually every post-incident review as the missing or determining piece.</div>';
+  }
+  document.getElementById('s4-submit').style.display = 'none';
+}
+
+// Matching game
+function selectChip(chipId) {
+  var chip = document.getElementById('chip-' + chipId);
+  if (chip.classList.contains('matched')) return;
+  document.querySelectorAll('.match-item').forEach(function(c){ c.classList.remove('selected'); });
+  _selectedChip = chipId;
+  chip.classList.add('selected');
+}
+
+function placeChip(slotId) {
+  if (!_selectedChip) return;
+  if (_matchedSlots.has(slotId)) return;
+  var chip = document.getElementById('chip-' + _selectedChip);
+  var slot = document.getElementById('slot-' + slotId);
+  slot.textContent = chip.textContent;
+  _matchPlacements[slotId] = { chipId: _selectedChip, answer: chip.dataset.answer };
+  _selectedChip = null;
+  document.querySelectorAll('.match-item').forEach(function(c){ c.classList.remove('selected'); });
+}
+
+function checkMatches() {
+  var correct = 0;
+  Object.keys(_matchPlacements).forEach(function(slotId) {
+    var p = _matchPlacements[slotId];
+    var slot = document.getElementById('slot-' + slotId);
+    if (p.answer === slotId) {
+      slot.classList.add('filled');
+      var chip = document.getElementById('chip-' + p.chipId);
+      if (chip) chip.classList.add('matched');
+      _matchedSlots.add(slotId);
+      delete _matchPlacements[slotId];
+      correct++;
+    } else {
+      slot.classList.add('wrong-fill');
+      setTimeout(function() {
+        slot.classList.remove('wrong-fill');
+        slot.textContent = 'Drop here';
+        delete _matchPlacements[slotId];
+      }, 1000);
+    }
+  });
+  var fb = document.getElementById('match-feedback');
+  fb.style.display = 'block';
+  if (_matchedSlots.size === 8) {
+    fb.innerHTML = '✅ Perfect — all 8 organisations correctly categorised!';
+    fb.style.color = 'var(--green)';
+    addPoints(20);
+    document.getElementById('match-btn').style.display = 'none';
+  } else {
+    fb.innerHTML = _matchedSlots.size + '/8 correct. Mismatches cleared — try the remaining ones.';
+    fb.style.color = 'var(--yellow)';
+  }
+}
+</script>
+</body>
+</html>

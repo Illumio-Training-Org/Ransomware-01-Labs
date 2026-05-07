@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 6 — Tabletop Scenario Library | Ransomware Training</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1f2937;
+  --border: #30363d;
+  --accent: #f97316;
+  --accent2: #3b82f6;
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #eab308;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --card: #1c2128;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ===== SCREENS ===== */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ===== INTRO SCREEN ===== */
+#screen-intro{
+  background: radial-gradient(ellipse at 30% 40%, #1a0a00 0%, #0d1117 55%), 
+              radial-gradient(ellipse at 75% 70%, #0a1628 0%, transparent 60%);
+  align-items:center;justify-content:center;padding:40px 20px;
+}
+.intro-wrap{max-width:760px;text-align:center;}
+.intro-badge{display:inline-block;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.35);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:24px;}
+.intro-wrap h1{font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:16px;}
+.intro-wrap h1 span{color:var(--accent);}
+.intro-sub{font-size:16px;color:var(--muted);line-height:1.7;max-width:580px;margin:0 auto 32px;}
+.intro-org{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px 28px;text-align:left;margin-bottom:32px;}
+.intro-org h3{font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
+.org-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+.org-item{background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--muted);line-height:1.5;}
+.org-item strong{color:var(--text);display:block;font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.intro-stats{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:36px;}
+.intro-stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 22px;text-align:center;}
+.intro-stat .val{font-size:26px;font-weight:800;color:var(--accent);}
+.intro-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.btn-start{background:var(--accent);color:#000;border:none;border-radius:10px;padding:16px 40px;font-size:17px;font-weight:800;cursor:pointer;letter-spacing:.3px;transition:all .2s;}
+.btn-start:hover{background:#fb923c;transform:translateY(-1px);box-shadow:0 8px 24px rgba(249,115,22,0.35);}
+
+/* ===== GAME SCREEN ===== */
+#screen-game{flex-direction:row;min-height:100vh;}
+.sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sidebar-logo{padding:0 18px 16px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.sidebar-logo .lab-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.sidebar-logo .lab-title{font-size:14px;font-weight:700;color:var(--text);margin-top:2px;}
+.section-track{flex:1;padding:0 10px;}
+.track-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:background .15s;}
+.track-item:hover{background:var(--surface2);}
+.track-item.active{background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);}
+.track-item.completed{opacity:.8;}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.dot-1{background:#f97316;}
+.dot-2{background:#3b82f6;}
+.dot-3{background:#22c55e;}
+.dot-4{background:#eab308;}
+.dot-5{background:#a855f7;}
+.dot-6{background:#ef4444;}
+.track-label{font-size:12px;color:var(--muted);line-height:1.3;flex:1;}
+.track-item.active .track-label{color:var(--text);}
+.track-check{font-size:14px;color:var(--green);}
+.score-box{margin:16px 10px 0;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+.score-box .score-val{font-size:28px;font-weight:800;color:var(--accent);}
+.score-box .score-max{font-size:13px;color:var(--muted);}
+.score-box .score-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-top:2px;}
+.progress-bar-wrap{height:4px;background:var(--border);border-radius:2px;margin:10px 10px 0;overflow:hidden;}
+.progress-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s;}
+
+/* MAIN CONTENT */
+.main-content{flex:1;padding:36px 40px;overflow-y:auto;max-width:900px;}
+.section-header{margin-bottom:28px;}
+.section-header .scenario-num{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+.section-header h2{font-size:24px;font-weight:800;line-height:1.3;}
+
+/* PRE-BRIEF CARD */
+.prebrief-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:10px;padding:20px 22px;margin-bottom:24px;font-size:14px;line-height:1.75;color:var(--muted);}
+.prebrief-card strong{color:var(--text);}
+
+/* TIMELINE */
+.timeline{margin-bottom:28px;}
+.timeline h3{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.timeline-items{position:relative;padding-left:22px;}
+.timeline-items::before{content:'';position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--border);}
+.tl-item{position:relative;margin-bottom:14px;padding-left:18px;}
+.tl-item::before{content:'';position:absolute;left:-16px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--surface2);border:2px solid var(--accent2);}
+.tl-time{font-size:11px;font-weight:700;color:var(--accent2);letter-spacing:.5px;}
+.tl-text{font-size:13px;color:var(--muted);line-height:1.5;margin-top:2px;}
+
+/* MCQ */
+.question-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px;}
+.question-block .q-num{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.question-block .q-text{font-size:15px;font-weight:600;line-height:1.55;margin-bottom:16px;}
+.options{display:flex;flex-direction:column;gap:8px;}
+.option-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;text-align:left;font-size:13px;color:var(--text);cursor:pointer;transition:all .15s;line-height:1.5;}
+.option-btn:hover:not(:disabled){background:var(--surface);border-color:var(--accent2);}
+.option-btn.correct{background:rgba(34,197,94,0.1);border-color:var(--green);color:var(--green);}
+.option-btn.wrong{background:rgba(239,68,68,0.1);border-color:var(--red);color:var(--red);}
+.option-btn:disabled{cursor:default;}
+.feedback-box{margin-top:12px;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;display:none;}
+.feedback-box.show{display:block;}
+.feedback-box.correct{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);color:var(--green);}
+.feedback-box.wrong{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:var(--red);}
+.feedback-box.neutral{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);color:#93c5fd;}
+
+/* MULTI-SELECT */
+.multiselect-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px;}
+.multiselect-block .q-text{font-size:15px;font-weight:600;line-height:1.55;margin-bottom:6px;}
+.multiselect-block .q-hint{font-size:12px;color:var(--muted);margin-bottom:16px;}
+.checkbox-option{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);margin-bottom:8px;cursor:pointer;transition:border-color .15s;}
+.checkbox-option:hover{border-color:var(--accent2);}
+.checkbox-option input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin-top:1px;accent-color:var(--accent2);cursor:pointer;}
+.checkbox-option label{font-size:13px;color:var(--text);line-height:1.5;cursor:pointer;flex:1;}
+.checkbox-option.cb-correct{background:rgba(34,197,94,0.08);border-color:var(--green);}
+.checkbox-option.cb-correct label{color:var(--green);}
+.checkbox-option.cb-wrong{background:rgba(239,68,68,0.08);border-color:var(--red);}
+.checkbox-option.cb-wrong label{color:var(--red);}
+.submit-btn{background:var(--accent2);border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;margin-top:4px;transition:background .15s;}
+.submit-btn:hover{background:#2563eb;}
+.submit-btn:disabled{background:var(--border);color:var(--muted);cursor:default;}
+
+/* MATCHING GAME */
+.matching-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px;}
+.matching-block h3{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.matching-block .m-hint{font-size:12px;color:var(--muted);margin-bottom:18px;}
+.matching-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.matching-col-label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.term-chip{background:var(--surface2);border:2px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text);cursor:pointer;margin-bottom:8px;line-height:1.4;transition:all .15s;user-select:none;}
+.term-chip:hover{border-color:var(--accent2);}
+.term-chip.selected{border-color:var(--accent);background:rgba(249,115,22,0.1);color:var(--accent);}
+.term-chip.used{opacity:.4;cursor:default;pointer-events:none;}
+.term-chip.matched-correct{border-color:var(--green);background:rgba(34,197,94,0.1);color:var(--green);cursor:default;}
+.term-chip.matched-wrong{border-color:var(--red);background:rgba(239,68,68,0.1);color:var(--red);cursor:default;}
+.slot{background:var(--surface2);border:2px dashed var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);margin-bottom:8px;min-height:44px;line-height:1.4;cursor:pointer;transition:all .15s;display:flex;align-items:center;}
+.slot:hover{border-color:var(--accent2);}
+.slot.filled{border-style:solid;border-color:var(--accent2);color:var(--text);}
+.slot.slot-correct{border-color:var(--green);background:rgba(34,197,94,0.08);}
+.slot.slot-wrong{border-color:var(--red);background:rgba(239,68,68,0.08);}
+.slot-label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px;}
+
+/* DISCUSSION */
+.discussion-block{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:20px;}
+.discussion-block .disc-tag{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--yellow);background:rgba(234,179,8,0.1);padding:3px 10px;border-radius:12px;display:inline-block;margin-bottom:10px;}
+.discussion-block .disc-q{font-size:14px;font-weight:600;line-height:1.6;margin-bottom:14px;color:var(--text);}
+.expert-toggle{background:none;border:1px solid var(--border);border-radius:7px;padding:8px 16px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;}
+.expert-toggle:hover{border-color:var(--accent2);color:var(--text);}
+.expert-answer{margin-top:14px;padding:14px 16px;background:var(--card);border-radius:8px;font-size:13px;color:var(--muted);line-height:1.75;display:none;}
+.expert-answer.show{display:block;}
+.expert-answer strong{color:var(--text);}
+
+/* SELF-ASSESSMENT */
+.self-assess-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px;}
+.self-assess-block h3{font-size:14px;font-weight:700;margin-bottom:4px;}
+.self-assess-block .sa-hint{font-size:12px;color:var(--muted);margin-bottom:16px;}
+.sa-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.sa-item:last-of-type{border-bottom:none;}
+.sa-item input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin-top:2px;accent-color:var(--green);cursor:pointer;}
+.sa-item label{font-size:13px;color:var(--text);line-height:1.5;cursor:pointer;}
+
+/* NAV */
+.nav-row{display:flex;align-items:center;justify-content:space-between;margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
+.nav-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 22px;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s;}
+.nav-btn:hover:not(:disabled){background:var(--surface);border-color:var(--accent);}
+.nav-btn:disabled{opacity:.35;cursor:default;}
+.nav-btn.primary{background:var(--accent);border-color:var(--accent);color:#000;}
+.nav-btn.primary:hover:not(:disabled){background:#fb923c;}
+.nav-section{font-size:12px;color:var(--muted);}
+
+/* POINTS POPUP */
+#points-popup{position:fixed;top:24px;right:24px;background:var(--green);color:#000;font-weight:800;font-size:18px;padding:12px 24px;border-radius:12px;z-index:1000;opacity:0;transform:translateY(-16px) scale(.95);transition:all .3s;pointer-events:none;}
+#points-popup.show{opacity:1;transform:translateY(0) scale(1);}
+
+/* RESULTS SCREEN */
+#screen-results{align-items:center;justify-content:center;padding:48px 24px;flex-direction:column;}
+.results-wrap{max-width:680px;width:100%;text-align:center;}
+.grade-badge{font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:8px 20px;border-radius:20px;display:inline-block;margin-bottom:20px;}
+.grade-a{background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.3);}
+.grade-b{background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);}
+.grade-c{background:rgba(234,179,8,0.15);color:var(--yellow);border:1px solid rgba(234,179,8,0.3);}
+.grade-d{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);}
+.results-score-big{font-size:72px;font-weight:900;color:var(--accent);line-height:1;}
+.results-max{font-size:20px;color:var(--muted);margin-bottom:8px;}
+.results-title{font-size:22px;font-weight:800;margin-bottom:8px;}
+.results-sub{font-size:14px;color:var(--muted);margin-bottom:32px;line-height:1.6;}
+.results-breakdown{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;text-align:left;margin-bottom:28px;}
+.results-breakdown h3{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.breakdown-row:last-child{border-bottom:none;}
+.breakdown-row .pts{font-weight:700;color:var(--accent);}
+.key-lessons{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;text-align:left;margin-bottom:28px;}
+.key-lessons h3{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.lesson-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.55;color:var(--muted);}
+.lesson-item:last-child{border-bottom:none;}
+.lesson-item::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;}
+.btn-restart{background:var(--accent);color:#000;border:none;border-radius:10px;padding:14px 36px;font-size:16px;font-weight:800;cursor:pointer;transition:all .2s;}
+.btn-restart:hover{background:#fb923c;}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  #screen-game{flex-direction:column;}
+  .sidebar{width:100%;min-width:0;height:auto;position:static;flex-direction:row;flex-wrap:wrap;padding:12px;border-right:none;border-bottom:1px solid var(--border);}
+  .sidebar-logo{padding:0;border:none;margin:0;flex:0 0 100%;margin-bottom:8px;}
+  .section-track{flex:0 0 100%;display:flex;flex-wrap:wrap;gap:4px;padding:0;}
+  .track-item{flex:0 0 calc(33% - 4px);font-size:11px;padding:6px 8px;}
+  .score-box{flex:0 0 auto;margin:0;}
+  .progress-bar-wrap{display:none;}
+  .main-content{padding:20px 16px;}
+  .matching-cols{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- POINTS POPUP -->
+<div id="points-popup">+<span id="popup-pts">10</span> pts</div>
+
+<!-- ========== INTRO SCREEN ========== -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-wrap">
+    <div class="intro-badge">Ransomware Training Series &bull; Lab 6 of 6</div>
+    <h1>Module 6:<br><span>Tabletop Scenario Library</span></h1>
+    <p class="intro-sub">The practical capstone of the ransomware course. Six real-world crisis scenarios anchored to Northwind Logistics — a fictional regional 3PL. Work through decisions under pressure, legal exposure, detection gaps, and crisis communications.</p>
+
+    <div class="intro-org">
+      <h3>Anchor Organisation — Northwind Logistics</h3>
+      <div class="org-grid">
+        <div class="org-item"><strong>Size</strong>1,200 employees &bull; 14 facilities (OH, PA, IN, MI, KY, TN)</div>
+        <div class="org-item"><strong>Revenue</strong>~$240M &bull; warehousing, cross-dock, e-commerce fulfillment</div>
+        <div class="org-item"><strong>Infrastructure</strong>350 servers (250 Windows / 100 Linux), ~1,400 endpoints</div>
+        <div class="org-item"><strong>Identity</strong>Microsoft 365 / Azure AD / Entra ID &bull; Single AD forest, 2 DCs/region</div>
+        <div class="org-item"><strong>Security</strong>CrowdStrike Falcon — Windows only. NO EDR on Linux. Fortinet edge.</div>
+        <div class="org-item"><strong>Backup</strong>Veeam on-prem — immutable retention NOT configured</div>
+        <div class="org-item"><strong>Insurance</strong>$5M ransomware sub-limit, $250k retention, no IR retainer</div>
+        <div class="org-item"><strong>SLAs</strong>Same-day shipping (2 retail); 45-min cross-dock (automotive). Penalties $80k–$250k/day</div>
+      </div>
+    </div>
+
+    <div class="intro-stats">
+      <div class="intro-stat"><div class="val">6</div><div class="lbl">Scenarios</div></div>
+      <div class="intro-stat"><div class="val">200</div><div class="lbl">Points</div></div>
+      <div class="intro-stat"><div class="val">12</div><div class="lbl">MCQs</div></div>
+      <div class="intro-stat"><div class="val">~45</div><div class="lbl">Minutes</div></div>
+    </div>
+
+    <button class="btn-start" onclick="startGame()">Begin Lab 6 &rarr;</button>
+  </div>
+</div>
+
+<!-- ========== GAME SCREEN ========== -->
+<div id="screen-game" class="screen">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="lab-label">Lab 6</div>
+      <div class="lab-title">Tabletop Scenarios</div>
+    </div>
+    <div class="section-track" id="section-track">
+      <div class="track-item active" onclick="goToSection(0)" id="track-0">
+        <div class="dot dot-1"></div>
+        <div class="track-label">The 03:00 Detonation</div>
+        <span class="track-check" id="check-0"></span>
+      </div>
+      <div class="track-item" onclick="goToSection(1)" id="track-1">
+        <div class="dot dot-2"></div>
+        <div class="track-label">The Help-Desk Call</div>
+        <span class="track-check" id="check-1"></span>
+      </div>
+      <div class="track-item" onclick="goToSection(2)" id="track-2">
+        <div class="dot dot-3"></div>
+        <div class="track-label">The Insurance Question</div>
+        <span class="track-check" id="check-2"></span>
+      </div>
+      <div class="track-item" onclick="goToSection(3)" id="track-3">
+        <div class="dot dot-4"></div>
+        <div class="track-label">The Sanctioned Actor</div>
+        <span class="track-check" id="check-3"></span>
+      </div>
+      <div class="track-item" onclick="goToSection(4)" id="track-4">
+        <div class="dot dot-5"></div>
+        <div class="track-label">Supply Chain Compromise</div>
+        <span class="track-check" id="check-4"></span>
+      </div>
+      <div class="track-item" onclick="goToSection(5)" id="track-5">
+        <div class="dot dot-6"></div>
+        <div class="track-label">Public Records Crisis</div>
+        <span class="track-check" id="check-5"></span>
+      </div>
+    </div>
+    <div class="score-box">
+      <div class="score-val" id="sidebar-score">0</div>
+      <div class="score-max">/ 200 pts</div>
+      <div class="score-lbl">Score</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <!-- MAIN CONTENT AREA -->
+  <div class="main-content" id="main-content"></div>
+</div>
+
+<!-- ========== RESULTS SCREEN ========== -->
+<div id="screen-results" class="screen">
+  <div class="results-wrap">
+    <div id="grade-badge" class="grade-badge grade-a">Incident Commander</div>
+    <div class="results-score-big" id="final-score">0</div>
+    <div class="results-max">/ 200 pts</div>
+    <div class="results-title" id="results-title">Incident Commander</div>
+    <div class="results-sub" id="results-sub">You know the playbook under pressure.</div>
+
+    <div class="results-breakdown">
+      <h3>Score Breakdown</h3>
+      <div class="breakdown-row"><span>12 MCQs (10 pts each)</span><span class="pts" id="br-mcq">0 / 120</span></div>
+      <div class="breakdown-row"><span>Multi-Select — T+15 Actions (Section 1)</span><span class="pts" id="br-ms">0 / 20</span></div>
+      <div class="breakdown-row"><span>Matching — OFAC Factors (Section 4)</span><span class="pts" id="br-m1">0 / 20</span></div>
+      <div class="breakdown-row"><span>Matching — Profile Gaps (Section 6)</span><span class="pts" id="br-m2">0 / 20</span></div>
+      <div class="breakdown-row"><span>Self-Assessment Bonus (Section 6)</span><span class="pts" id="br-sa">0 / 20</span></div>
+    </div>
+
+    <div class="key-lessons">
+      <h3>Key Lessons</h3>
+      <div class="lesson-item">Linux blind spots = unscoped incidents — EDR coverage must include all OS types</div>
+      <div class="lesson-item">Out-of-band identity verification is the only defense against social engineering help-desk attacks</div>
+      <div class="lesson-item">Material misrepresentation in insurance applications creates coverage gaps at the worst moment</div>
+      <div class="lesson-item">OFAC strict liability means sanctions screening is required before payment, not after</div>
+      <div class="lesson-item">CEOs and boards must be on the incident bridge early — escalation thresholds must be written down</div>
+    </div>
+
+    <button class="btn-restart" onclick="restart()">Restart Lab &rarr;</button>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let score = 0;
+let currentSection = 0;
+let sectionAttempted = [false,false,false,false,false,false];
+let scoreLog = { mcq: 0, ms: 0, m1: 0, m2: 0, sa: 0 };
+
+// MCQ answered state
+let mcqAnswered = {};
+
+// Multi-select
+let msSubmitted = false;
+
+// Matching games
+let matching1 = { selected: null, slots: {}, submitted: false }; // Section 4 OFAC
+let matching2 = { selected: null, slots: {}, submitted: false }; // Section 6 gaps
+
+// Self-assess
+let saSubmitted = false;
+
+// ===== POPUP =====
+function showPopup(pts) {
+  const el = document.getElementById('points-popup');
+  document.getElementById('popup-pts').textContent = pts;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+function addScore(pts, category) {
+  score += pts;
+  scoreLog[category] = (scoreLog[category] || 0) + pts;
+  document.getElementById('sidebar-score').textContent = score;
+  document.getElementById('progress-fill').style.width = Math.min(100, score/2) + '%';
+  if (pts > 0) showPopup(pts);
+}
+
+// ===== NAVIGATION =====
+function startGame() {
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  renderSection(0);
+}
+
+function goToSection(idx) {
+  currentSection = idx;
+  document.querySelectorAll('.track-item').forEach((el,i) => {
+    el.classList.toggle('active', i === idx);
+  });
+  renderSection(idx);
+  document.getElementById('main-content').scrollTop = 0;
+  window.scrollTo(0,0);
+}
+
+function nextSection() {
+  if (currentSection < 5) {
+    goToSection(currentSection + 1);
+  } else {
+    showResults();
+  }
+}
+
+function prevSection() {
+  if (currentSection > 0) goToSection(currentSection - 1);
+}
+
+function markSectionAttempted() {
+  sectionAttempted[currentSection] = true;
+  document.getElementById('check-' + currentSection).textContent = '✓';
+  document.getElementById('track-' + currentSection).classList.add('completed');
+  updateNextBtn();
+}
+
+function updateNextBtn() {
+  const btn = document.getElementById('btn-next');
+  if (btn) btn.disabled = !sectionAttempted[currentSection];
+}
+
+// ===== SECTION RENDERER =====
+function renderSection(idx) {
+  const el = document.getElementById('main-content');
+  const sections = [sec0, sec1, sec2, sec3, sec4, sec5];
+  el.innerHTML = sections[idx]();
+  attachSectionHandlers(idx);
+  updateNextBtn();
+}
+
+function navHTML(label) {
+  return `<div class="nav-row">
+    <button class="nav-btn" onclick="prevSection()" ${currentSection===0?'disabled':''}>&#8592; Back</button>
+    <span class="nav-section">${label}</span>
+    <button class="nav-btn primary" id="btn-next" onclick="nextSection()" ${sectionAttempted[currentSection]?'':'disabled'}>${currentSection===5?'View Results':'Next &rarr;'}</button>
+  </div>`;
+}
+
+function timelineHTML(items) {
+  return `<div class="timeline"><h3>Inject Schedule</h3><div class="timeline-items">${items.map(i=>`<div class="tl-item"><div class="tl-time">${i[0]}</div><div class="tl-text">${i[1]}</div></div>`).join('')}</div></div>`;
+}
+
+function mcqHTML(id, qnum, question, options, correctIdx) {
+  return `<div class="question-block" id="qblock-${id}">
+    <div class="q-num">Question ${qnum} — 10 pts</div>
+    <div class="q-text">${question}</div>
+    <div class="options" id="opts-${id}">
+      ${options.map((o,i)=>`<button class="option-btn" onclick="answerMCQ('${id}',${i},${correctIdx})">${String.fromCharCode(65+i)}) ${o.text}</button>`).join('')}
+    </div>
+    <div class="feedback-box" id="fb-${id}"></div>
+  </div>`;
+}
+
+function discussionHTML(question, expert) {
+  const uid = 'disc' + Math.random().toString(36).slice(2,7);
+  return `<div class="discussion-block">
+    <span class="disc-tag">Discussion Prompt</span>
+    <div class="disc-q">${question}</div>
+    <button class="expert-toggle" onclick="toggleExpert('${uid}')">Show Expert Perspective</button>
+    <div class="expert-answer" id="${uid}">${expert}</div>
+  </div>`;
+}
+
+// ===== MCQ HANDLER =====
+function answerMCQ(id, chosen, correct) {
+  if (mcqAnswered[id]) return;
+  mcqAnswered[id] = true;
+  const opts = document.querySelectorAll(`#opts-${id} .option-btn`);
+  const fb = document.getElementById(`fb-${id}`);
+  opts.forEach((b,i) => {
+    b.disabled = true;
+    if (i === correct) b.classList.add('correct');
+    else if (i === chosen) b.classList.add('wrong');
+  });
+  const isCorrect = chosen === correct;
+  // Get feedback text from data
+  const fbData = window.feedbacks[id];
+  fb.className = 'feedback-box show ' + (isCorrect ? 'correct' : 'wrong');
+  fb.innerHTML = (isCorrect ? '<strong>Correct.</strong> ' : '<strong>Incorrect.</strong> ') + (fbData || '');
+  if (isCorrect) {
+    addScore(10, 'mcq');
+    scoreLog.mcq = scoreLog.mcq; // already updated
+  }
+  checkSectionProgress();
+}
+
+function toggleExpert(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+}
+
+// Track which MCQs are in each section
+const sectionMCQs = {
+  0: ['s0q1','s0q2'],
+  1: ['s1q1','s1q2'],
+  2: ['s2q1','s2q2'],
+  3: ['s3q1','s3q2'],
+  4: ['s4q1','s4q2'],
+  5: ['s5q1','s5q2'],
+};
+
+function checkSectionProgress() {
+  const ids = sectionMCQs[currentSection];
+  const allMCQDone = ids ? ids.every(id => mcqAnswered[id]) : true;
+  // Different conditions per section
+  if (currentSection === 0 && (allMCQDone && msSubmitted)) markSectionAttempted();
+  else if (currentSection === 3 && (allMCQDone && matching1.submitted)) markSectionAttempted();
+  else if (currentSection === 5 && (allMCQDone && matching2.submitted && saSubmitted)) markSectionAttempted();
+  else if ([1,2,4].includes(currentSection) && allMCQDone) markSectionAttempted();
+}
+
+// ===== FEEDBACKS =====
+window.feedbacks = {
+  s0q1: "No EDR on Linux is a deliberate weak point in the Northwind profile. In a real incident, this blind spot means you cannot reliably scope the incident, cannot confirm containment, and may underestimate encryption spread.",
+  s0q2: "Backup viability is the pivot point. Everything else — pay or don't pay, negotiate or not — depends on whether you have a clean restore path. The backup admin laptop going dark is a red flag that the attacker reached the backup management plane.",
+  s1q1: "This is classic Scattered Spider technique. The attacker researches target employees (LinkedIn, company website) and calls help-desk using real names and plausible context. The defense is out-of-band verification: call back on a number from the directory, not one provided by the caller.",
+  s1q2: "Six accounts over three weeks is a patient, deliberate campaign. This is the access-broker or affiliate phase — securing privileged access across multiple accounts before ransomware detonation. Every compromised account needs immediate forced re-authentication, and the timeline suggests significant lateral movement may already have occurred.",
+  s2q1: "Material misrepresentation means the insurer may void the policy entirely on the affected claim — not just reduce coverage. The 'documented internally' qualifier does not help if the underwriter was never informed.",
+  s2q2: "Concealing a material fact from the insurer during a claim is insurance fraud. Voluntary disclosure is the only defensible path. The insurer may still reduce or deny coverage — but concealment compounds the legal exposure dramatically.",
+  s3q1: "OFAC's guidance makes clear that payments to entities 'linked to' sanctioned actors can trigger liability. Blockchain analytics that show prior Evil Corp infrastructure overlap are material risk indicators that must be disclosed and evaluated by sanctions counsel.",
+  s3q2: "Prosecution risk is one outcome, but civil penalties, public enforcement actions, and license revocations are more likely and still severely damaging. The CFO framing the question as prosecution probability misses the full exposure landscape.",
+  s4q1: "Vendor notifications are almost always under-scoped at first disclosure. 'A subset of customers' is not an assurance that you're not affected — it's a gap. Proactive hunting on vendor-connected systems while demanding IOCs is the correct posture.",
+  s4q2: "Accepting a software update from a vendor whose CI/CD pipeline was compromised requires independent assurance — not just their word. Code signing verification, independent review, or installation in an isolated test environment first are all reasonable requirements.",
+  s5q1: "The GDPR clock runs from when you 'became aware' of the personal data breach — which courts and DPAs often interpret as the moment of incident discovery, not the moment you confirmed EU data was involved. Late identification of EU data scope doesn't reset the clock.",
+  s5q2: "A holding statement doesn't admit liability or disclose technical details — it acknowledges awareness and communicates that you're taking the situation seriously. Silence or full technical disclosure are both worse outcomes.",
+};
+
+// ===== SECTION 0: 03:00 DETONATION =====
+function sec0() {
+  return `
+  <div class="section-header">
+    <div class="scenario-num">Scenario 1 of 6</div>
+    <h2>The 03:00 Detonation</h2>
+  </div>
+  <div class="prebrief-card">
+    <strong>Pre-Incident Brief:</strong> 02:55 Saturday. NOC sees CPU/disk-IO spikes on northeast file servers. By 03:08, "can't open file" tickets climbing. On-call contractor escalates to Director of Security at 03:14. By 03:25, 10 of 14 facilities reporting widespread file-share unavailability. CrowdStrike firing "mass file rename" alerts on Windows. Linux file servers — no EDR — showing similar IO but no alerting. CIO at sister's wedding in Vermont. CEO in airplane mode. GC at brunch with in-laws.
+  </div>
+  ${timelineHTML([
+    ['T+0','EDR fires mass file rename / high entropy I/O. Director of Security paged.'],
+    ['T+10m','Ransom note on Pittsburgh workstation — branded "Akira", Tor URL provided.'],
+    ['T+25m','Linux file server confirmed encrypting via SMB telemetry. Pittsburgh and Detroit warehouses cannot ship.'],
+    ['T+40m','Veeam backup job alerts "target unreachable." Backup admin laptop unresponsive on RDP.'],
+    ['T+1h15m','Automotive customer\'s 06:00 cross-dock requires 45-min turnaround — currently 0% functional.'],
+    ['T+2h','EDR confirms ransom notes on ~280 servers. ~60% Windows file shares encrypted. Linux scope unclear.'],
+  ])}
+  ${mcqHTML('s0q1','1','At T+25 minutes, Linux file servers are encrypting but have no EDR alerts. What does this tell you about your detection coverage?',[
+    {text:'Linux servers are not a priority target for ransomware'},
+    {text:'The Linux servers are not connected to the network'},
+    {text:'Your detection coverage has a critical gap — you are flying blind on 100 Linux servers and may only be seeing 70% of the encryption activity'},
+    {text:'Veeam alerts will cover the Linux server gap'},
+  ],2)}
+  ${mcqHTML('s0q2','2','At T+40 minutes, Veeam shows "target unreachable" and the backup admin laptop is unresponsive. What is the most important immediate question?',[
+    {text:'Whether to contact the Veeam support hotline'},
+    {text:'Whether to restart the Veeam service'},
+    {text:'Whether the backup repository itself has been encrypted or corrupted — and whether the backup catalog is accessible via an out-of-band path'},
+    {text:'Whether to escalate to the CIO in Vermont'},
+  ],2)}
+  <div class="multiselect-block" id="ms-block">
+    <div class="q-num">Multi-Select — 20 pts</div>
+    <div class="q-text">It is T+15 minutes. You are the Director of Security. Which of the following actions are correct <em>right now</em>?</div>
+    <div class="q-hint">Select all that apply, then submit.</div>
+    <div id="ms-options">
+      <label class="checkbox-option"><input type="checkbox" id="ms0"> <label for="ms0">Activate the incident bridge — get IT operations, security, and on-call leadership on a call immediately</label></label>
+      <label class="checkbox-option"><input type="checkbox" id="ms1"> <label for="ms1">Begin network segmentation assessment — identify isolation points to stop lateral spread</label></label>
+      <label class="checkbox-option"><input type="checkbox" id="ms2"> <label for="ms2">Preserve all available EDR telemetry and logs before attacker can clear them</label></label>
+      <label class="checkbox-option"><input type="checkbox" id="ms3"> <label for="ms3">Start a decision log — document every action and decision with timestamps</label></label>
+      <label class="checkbox-option"><input type="checkbox" id="ms4"> <label for="ms4">Contact the ransomware group's Tor chat immediately to open negotiations</label></label>
+      <label class="checkbox-option"><input type="checkbox" id="ms5"> <label for="ms5">Begin restoring from backup immediately without validating backup integrity</label></label>
+    </div>
+    <button class="submit-btn" id="ms-submit-btn" onclick="submitMultiSelect()">Submit Answer</button>
+    <div class="feedback-box" id="ms-feedback"></div>
+  </div>
+  ${discussionHTML(
+    'You are the Director of Security. It is T+30 minutes. You cannot reach the CIO or CEO. You need to make an isolation decision that will take approximately 40% of the Northwind network offline, disrupting customer SLAs. Do you make that call unilaterally, and what authority do you need pre-documented to do so?',
+    `In a well-designed IR program, the Director of Security should have pre-delegated authority to make isolation decisions up to a defined impact threshold without executive approval. Waiting for the CIO (unreachable in Vermont) or CEO (on a plane) while encryption spreads is itself a decision with consequences — every minute of delay is more encrypted servers and more SLA penalties.<br><br><strong>What needs to be pre-documented:</strong> an IR playbook with explicit authority delegation, a decision log template, and escalation thresholds. The conversation to have before the incident: "Who can authorize isolation at 03:00 on a Saturday, and what level of business disruption requires executive approval?" If that conversation hasn't happened, the answer is still usually "isolate and apologize later."`
+  )}
+  ${navHTML('Section 1 of 6')}`;
+}
+
+// ===== SECTION 1: HELP-DESK =====
+function sec1() {
+  return `
+  <div class="section-header">
+    <div class="scenario-num">Scenario 2 of 6</div>
+    <h2>The Help-Desk Call</h2>
+  </div>
+  <div class="prebrief-card">
+    <strong>Pre-Incident Brief:</strong> Tuesday, 14:22. A help-desk ticket comes in from "Derek Chen, Regional Warehouse Manager, Pittsburgh." Derek says he's locked out of his account after a password reset gone wrong, is presenting for a big customer meeting in 20 minutes, and needs his credentials reset immediately. The help-desk agent has a 3-minute average handle time target and a manager listening in on quality calls. Derek's voice is stressed and professional. The employee record shows Derek Chen — Pittsburgh — Regional Warehouse Manager. Everything checks out.
+  </div>
+  ${timelineHTML([
+    ['T+0','Help-desk call received. Caller ID shows Pittsburgh area code. Employee record matches.'],
+    ['T+3m','Help-desk agent skips out-of-band identity verification because the caller "sounds right" and is in a rush.'],
+    ['T+4m','Password reset completed. Account unlocked. Caller thanks agent warmly.'],
+    ['T+45m','Real Derek Chen calls from his personal cell. He has not been locked out and did not call help-desk.'],
+    ['T+1h','Security team traces the reset. The account is now logging into M365 from an IP in Eastern Europe.'],
+    ['T+2h','Entra ID audit logs show 6 additional accounts reset via help-desk in the past 3 weeks using similar patterns.'],
+  ])}
+  ${mcqHTML('s1q1','1','The help-desk agent verified the caller\'s identity by checking that the name matched the employee record. What is the critical verification step that was skipped?',[
+    {text:'Asking the caller their employee ID number'},
+    {text:'Escalating to a supervisor'},
+    {text:'Out-of-band identity verification — calling back on a known number from HR records, or requiring manager approval'},
+    {text:'Checking whether the caller had previously called help-desk'},
+  ],2)}
+  ${mcqHTML('s1q2','2','At T+1h, the account is logging in from Eastern Europe. At T+2h, you discover 6 similar resets over 3 weeks. What does this pattern indicate?',[
+    {text:'The help-desk system has a bug causing false positives'},
+    {text:'A sustained identity-access campaign — multiple accounts compromised via social engineering over weeks, likely the access phase before ransomware deployment'},
+    {text:'A disgruntled employee testing the help-desk system'},
+    {text:'A misconfigured Azure AD conditional access policy'},
+  ],1)}
+  ${discussionHTML(
+    'You are reviewing the help-desk quality scorecard. The top performers have the fastest handle times. How does that incentive structure create security risk, and how would you redesign it?',
+    `Average Handle Time (AHT) as a primary metric directly penalizes the behavior you want: the 30–60 second pause to do out-of-band identity verification. An agent who does the right thing looks like a poor performer on the scorecard.<br><br><strong>Redesign:</strong> (1) Remove AHT as a metric for security-sensitive actions (password resets, MFA resets, account unlocks). (2) Add a mandatory "verification step completed" field to the ticket — the ticket cannot close without it. (3) Treat social-engineering-resistant behavior as a positive quality indicator, not a negative handle-time anomaly. (4) Create a simple one-click escalation path: "I'm not confident — escalate to security team for identity verification." The AHT culture is the attacker's best ally.`
+  )}
+  ${navHTML('Section 2 of 6')}`;
+}
+
+// ===== SECTION 2: INSURANCE =====
+function sec2() {
+  return `
+  <div class="section-header">
+    <div class="scenario-num">Scenario 3 of 6</div>
+    <h2>The Insurance Question</h2>
+  </div>
+  <div class="prebrief-card">
+    <strong>Pre-Incident Brief:</strong> Day 3 of the incident. The CFO is reviewing the cyber insurance policy during the response. A footnote on page 47 states: "Coverage requires that the insured maintains multi-factor authentication on all remote access systems." The Director of Security recalls that the VPN had an MFA exception for three legacy OT management systems. The exception was documented internally but never disclosed to the insurer. The exception systems are in the attacker's confirmed path of entry.
+  </div>
+  ${timelineHTML([
+    ['T+0','CFO reads the MFA requirement on page 47.'],
+    ['T+30m','Director of Security confirms 3 OT systems had documented MFA exception at time of policy application.'],
+    ['T+1h','The insurer\'s breach coach is on the response bridge.'],
+    ['T+3h','External forensics confirms VPN account on OT exception list was the initial access vector.'],
+    ['T+6h','Insurer\'s breach coach asks: "Were all remote access systems MFA-protected at policy inception?"'],
+    ['T+8h','Response team faces coverage question: disclose the exception or stay silent and hope it\'s not discovered.'],
+  ])}
+  ${mcqHTML('s2q1','1','The OT management MFA exception was "documented internally but never disclosed to the insurer." What is the legal term for a misrepresentation that voids insurance coverage?',[
+    {text:'Force majeure'},
+    {text:'Material misrepresentation — a false or misleading statement of a material fact in the insurance application that the insurer relied upon in underwriting'},
+    {text:'Contributory negligence'},
+    {text:'Breach of warranty of fitness'},
+  ],1)}
+  ${mcqHTML('s2q2','2','At T+8h, the team faces the question: disclose the exception or stay silent. What is the correct answer and why?',[
+    {text:'Stay silent — the insurer may never find forensics evidence linking the OT systems'},
+    {text:'Disclose immediately through legal counsel — voluntary disclosure before the insurer discovers the gap is a mitigating factor; concealment is a separate, worse violation'},
+    {text:'Disclose only if forensics definitively proves the OT path was the entry vector'},
+    {text:'Let the General Counsel decide without involving the IR team'},
+  ],1)}
+  ${discussionHTML(
+    'Before the next insurance renewal, what process would you build to prevent this scenario? Who owns it, and what does it produce?',
+    `The process: an annual "insurance control attestation" — a structured review of every control warranty in the policy against actual configuration.<br><br><strong>Owner:</strong> CISO or Director of Security, with CFO sign-off.<br><strong>What it produces:</strong> (1) A documented compliance checklist for each policy warranty. (2) An exception register — any control that isn't met 100% is documented with a risk acceptance, and the underwriter is notified. (3) A pre-renewal briefing where the broker reviews the attestation with the underwriter and gets written acknowledgment.<br><br>This turns an ambiguous "we think we're compliant" into a documented, auditable process. It also often surfaces coverage gaps before the incident, when they can be corrected or priced into the premium rather than becoming a claim dispute.`
+  )}
+  ${navHTML('Section 3 of 6')}`;
+}
+
+// ===== SECTION 3: SANCTIONED ACTOR =====
+function sec3() {
+  const m1keys = ['ofac-a','ofac-b','ofac-c','ofac-d'];
+  const m1terms = [
+    'Timely law enforcement reporting',
+    'Voluntary self-disclosure',
+    'Professional negotiators with screening',
+    'Cooperation with investigation',
+  ];
+  const m1defs = [
+    'Contacting FBI/CISA promptly about the incident',
+    'Proactively reporting the potential sanctions issue to OFAC before enforcement',
+    'Using an IR firm that independently screens against the SDN list',
+    'Providing full information to OFAC during any enforcement inquiry',
+  ];
+  const correctM1 = {
+    'ofac-a': m1defs[0],
+    'ofac-b': m1defs[1],
+    'ofac-c': m1defs[2],
+    'ofac-d': m1defs[3],
+  };
+  window._m1terms = m1terms;
+  window._m1defs = m1defs;
+  window._m1correct = correctM1;
+  window._m1keys = m1keys;
+  return `
+  <div class="section-header">
+    <div class="scenario-num">Scenario 4 of 6</div>
+    <h2>The Sanctioned Actor</h2>
+  </div>
+  <div class="prebrief-card">
+    <strong>Pre-Incident Brief:</strong> Day 5. Negotiations are underway. The threat actor is demanding $4.2M in Bitcoin. The negotiator (an external firm) has been working the conversation down toward $1.8M. On Day 5, threat intel from the insurer's IR firm comes in: the encryption signature and operational patterns are consistent with a group on CISA's advisory list that has been linked to Evil Corp infrastructure — a sanctioned entity.
+  </div>
+  ${timelineHTML([
+    ['T+0','Threat intel report lands. "High confidence" Evil Corp infrastructure overlap.'],
+    ['T+30m','OFAC SDN check on the wallet address provided for payment: wallet not listed, but linked clusters show prior Evil Corp association.'],
+    ['T+2h','Negotiator says the actor is willing to accept $1.8M — this is the best outcome possible. Pressure to pay.'],
+    ['T+4h','General Counsel briefs OFAC strict-liability risk. CFO asks: "What\'s the chance we actually get prosecuted?"'],
+    ['T+6h','Insurer says they will not fund a payment to an OFAC-designated entity.'],
+    ['T+8h','Board chair calls. "What are we doing?"'],
+  ])}
+  ${mcqHTML('s3q1','1','The threat actor\'s wallet address is not directly on the SDN list, but linked blockchain clusters show prior Evil Corp association. Under OFAC\'s strict-liability standard, what does this mean for a potential payment?',[
+    {text:'The payment is safe because the specific wallet is not listed'},
+    {text:'OFAC liability only applies to direct SDN matches'},
+    {text:'The payment carries significant OFAC risk — "high confidence" infrastructure links to a sanctioned entity create strict-liability exposure even if the specific wallet isn\'t listed'},
+    {text:'The negotiator\'s professional screening shields the victim from liability'},
+  ],2)}
+  ${mcqHTML('s3q2','2','The CFO asks: "What\'s the chance we actually get prosecuted?" What is the correct framing for that question?',[
+    {text:'Prosecution risk is low — OFAC rarely prosecutes ransomware victims'},
+    {text:'The question is prosecution probability, which is low but non-zero'},
+    {text:'The question should be: what is our civil penalty exposure and what mitigating factors do we have — prosecution is one outcome, but civil penalties, public enforcement actions, and license revocations are more likely and still severely damaging'},
+    {text:'If the insurer is funding the payment, the victim has no liability'},
+  ],2)}
+  <div class="matching-block" id="matching1-block">
+    <div class="q-num">Matching — OFAC Mitigating Factors — 20 pts</div>
+    <h3>Match each OFAC mitigating factor to its description.</h3>
+    <div class="m-hint">Click a factor on the left, then click the matching description slot on the right.</div>
+    <div class="matching-cols">
+      <div>
+        <div class="matching-col-label">Mitigating Factor</div>
+        ${m1terms.map((t,i)=>`<div class="term-chip" id="m1t-${i}" onclick="selectM1Term(${i})">${t}</div>`).join('')}
+      </div>
+      <div>
+        <div class="matching-col-label">Description</div>
+        ${m1defs.map((d,i)=>`<div class="slot" id="m1s-${i}" onclick="assignM1Slot(${i})"><span class="slot-label">${d}</span></div>`).join('')}
+      </div>
+    </div>
+    <button class="submit-btn" id="m1-submit-btn" onclick="submitMatching1()">Submit Matching</button>
+    <div class="feedback-box" id="m1-feedback"></div>
+  </div>
+  ${discussionHTML(
+    'Walking into a board call: the chair asks "should we pay?" You have Evil Corp infrastructure links, a $1.8M demand, and no viable restore path. How do you structure your answer?',
+    `<strong>Structure:</strong><br>(1) State the legal reality — OFAC strict liability means payment creates sanctions exposure regardless of intent; we need sanctions counsel's opinion before any payment decision.<br>(2) State the operational reality — what's the current restore timeline without payment? If no viable restore path, what is the business impact per day?<br>(3) Present the decision matrix: pay (exposure: OFAC sanctions, insurer won't fund, potential civil penalty) vs. don't pay (exposure: extended downtime, customer SLA penalties, potential data leak).<br>(4) Recommend: engage OFAC counsel immediately and seek a specific license if payment is the chosen path — this process takes time and demonstrates good-faith compliance effort.<br>(5) Escalate to the board as a board-level decision, not a security decision. The board makes risk acceptance decisions of this magnitude. The security team provides facts, not the final call.`
+  )}
+  ${navHTML('Section 4 of 6')}`;
+}
+
+// ===== SECTION 4: SUPPLY CHAIN =====
+function sec4() {
+  return `
+  <div class="section-header">
+    <div class="scenario-num">Scenario 5 of 6</div>
+    <h2>The Supply Chain Compromise</h2>
+  </div>
+  <div class="prebrief-card">
+    <strong>Pre-Incident Brief:</strong> Northwind uses a cloud-based WMS (Warehouse Management System) provided by LogiSoft, a SaaS vendor. LogiSoft notifies Northwind on a Tuesday afternoon: "We experienced a security incident affecting a subset of customers. We are investigating. No further details at this time." By Thursday, Northwind's CrowdStrike begins alerting on unusual PowerShell execution on warehouse workstations — all machines that run the LogiSoft WMS agent.
+  </div>
+  ${timelineHTML([
+    ['T+0','LogiSoft notification received — vague, no IOCs, no affected customer list.'],
+    ['T+24h','CrowdStrike alerts: unusual PowerShell on WMS workstations. LogiSoft not yet responding to calls.'],
+    ['T+36h','IR team isolates the WMS workstations. LogiSoft discloses: their CI/CD pipeline was compromised; a malicious WMS agent update was pushed to 47 customers including Northwind.'],
+    ['T+48h','Memory forensics on an isolated WMS workstation finds a Cobalt Strike beacon — implanted via the malicious agent update.'],
+    ['T+60h','Ransomware detonation attempt from the Cobalt Strike beacon — partially blocked by CrowdStrike.'],
+    ['T+72h','LogiSoft proposes an "emergency patched update" to the WMS agent. Should Northwind trust it?'],
+  ])}
+  ${mcqHTML('s4q1','1','LogiSoft\'s notification at T+0 provides no IOCs and no affected-customer list. What is Northwind\'s correct immediate response?',[
+    {text:'Wait for LogiSoft to provide more details before taking any action'},
+    {text:'Assume Northwind is not affected since LogiSoft said "a subset of customers"'},
+    {text:'Treat the notification as potential impact — immediately review LogiSoft-connected systems for anomalies and contact LogiSoft with a formal RFI requiring IOCs and the affected customer list'},
+    {text:'Notify Northwind\'s own customers immediately'},
+  ],2)}
+  ${mcqHTML('s4q2','2','At T+72h, LogiSoft offers an "emergency patched update" to the WMS agent. Given that the attacker compromised LogiSoft\'s CI/CD pipeline, what should Northwind require before accepting the update?',[
+    {text:'A verbal confirmation from LogiSoft\'s CEO that the pipeline is clean'},
+    {text:'No additional verification — the vendor has already disclosed the incident'},
+    {text:'Independent verification that LogiSoft\'s build pipeline has been remediated, ideally with code signing verification and an independent security review of the update'},
+    {text:'A SLA guarantee that the patched agent will not cause further incidents'},
+  ],2)}
+  ${discussionHTML(
+    'This scenario shows a vendor-initiated compromise. What contractual and pre-incident due diligence obligations should Northwind have had with LogiSoft before this happened?',
+    `<strong>Pre-incident obligations:</strong><br>(1) Contract right to audit — the right to request LogiSoft's security posture, SOC 2 reports, and penetration test results annually.<br>(2) Incident notification SLA — contractual requirement that LogiSoft notify Northwind within 4 hours of a confirmed incident, including IOCs and affected scope.<br>(3) Vulnerability disclosure program — contact named, with escalation path.<br>(4) Build pipeline integrity requirements — code signing of all agent updates, software composition analysis in the CI/CD pipeline.<br>(5) Insurance requirement — LogiSoft should carry cyber liability coverage that covers downstream customer harm.<br>(6) Third-party risk management annual review — a WMS agent with RCE-equivalent on warehouse endpoints is a tier-1 risk. This scenario is a textbook case for why TPRM is not a checkbox — it requires active engagement with critical vendors.`
+  )}
+  ${navHTML('Section 5 of 6')}`;
+}
+
+// ===== SECTION 5: PUBLIC RECORDS CRISIS =====
+function sec5() {
+  const m2scenarios = [
+    '"Akira" encrypted Linux servers undetected',
+    'Social engineering reset succeeded',
+    'Backup found unreachable at T+40m',
+    'OFAC sanctions exposure',
+    'CEO uninformed for 48 hours',
+  ];
+  const m2gaps = [
+    'No EDR on Linux servers',
+    'No out-of-band identity verification process',
+    'Veeam immutable retention not configured',
+    'No pre-payment SDN screening process',
+    'No mandatory CEO escalation threshold in IR policy',
+  ];
+  window._m2scenarios = m2scenarios;
+  window._m2gaps = m2gaps;
+  const saItems = [
+    'IR playbook with documented authority delegation exists and is tested annually',
+    'Help-desk has mandatory out-of-band identity verification for all privileged account resets',
+    'Insurance policy warranties are audited against actual configuration before each renewal',
+    'OFAC SDN screening process is pre-defined for any potential ransomware payment scenario',
+    'Third-party vendor contracts include incident notification SLA and audit rights',
+    'CEO/Board mandatory notification thresholds are defined in writing in the IR policy',
+    'EDR coverage includes all server operating systems (Windows AND Linux)',
+    'Backup immutability is configured and restore integrity is tested quarterly',
+  ];
+  window._saItems = saItems;
+  return `
+  <div class="section-header">
+    <div class="scenario-num">Scenario 6 of 6</div>
+    <h2>The Public Records Crisis + Readiness Assessment</h2>
+  </div>
+  <div class="prebrief-card">
+    <strong>Pre-Incident Brief:</strong> Day 2 of the incident. Northwind's technical team is in full containment mode. CEO Maria Alvarez is on a previously planned vacation in Italy — reachable but 6 hours ahead. At 09:15 EST, the threat actor posts on their data-leak site: "Northwind Logistics — 47GB exfiltrated." The post includes sample files — visibly containing Northwind customer shipping records, including PII of hundreds of retail consumers. By 09:45, a local Cleveland TV station has emailed the media contact address asking for comment.
+  </div>
+  ${timelineHTML([
+    ['T+0','Leak site post discovered by threat intel team. 47GB claimed exfil. Sample files visible and real.'],
+    ['T+30m','TV station email received. No prepared holding statement exists.'],
+    ['T+1h','A Northwind customer (retail brand) calls the account manager demanding to know if their customer data is in the exfil.'],
+    ['T+2h','CEO reachable from Italy but was previously uninvolved in the incident (kept in the dark per previous Comms decision).'],
+    ['T+3h','GC Erin Brooks identifies: affected retail customer data may include EU residents — GDPR notification clock potentially started.'],
+    ['T+5h','Second leak site post: attacker threatens to release the full 47GB in 48 hours if negotiations stall.'],
+  ])}
+  ${mcqHTML('s5q2','1','At T+30m, the TV station emails for comment and no holding statement exists. What is the correct immediate action?',[
+    {text:'Ignore the email until legal counsel reviews the situation'},
+    {text:'Issue a full technical disclosure immediately'},
+    {text:'Respond with a brief holding statement — acknowledge an incident is under investigation, state Northwind is working with experts, and commit to updates as information is confirmed'},
+    {text:'Redirect the email to Northwind\'s marketing team'},
+  ],2)}
+  ${mcqHTML('s5q1','2','At T+3h, GC identifies the exfiltrated data may include EU residents. What regulatory clock may have started, and when?',[
+    {text:'SEC 8-K clock — 4 business days from materiality'},
+    {text:'The GDPR 72-hour notification clock — which may have started at the time of the original incident discovery, not at the moment the EU data exposure was identified'},
+    {text:'The CIRCIA clock — 72 hours from incident confirmation'},
+    {text:'No EU notification is required since Northwind is a U.S. company'},
+  ],1)}
+  <div class="matching-block" id="matching2-block">
+    <div class="q-num">Matching — Profile Gaps — 20 pts</div>
+    <h3>Match each scenario weakness to the Northwind profile gap that enabled it.</h3>
+    <div class="m-hint">Click a weakness on the left, then click the matching gap slot on the right.</div>
+    <div class="matching-cols">
+      <div>
+        <div class="matching-col-label">Scenario Weakness</div>
+        ${m2scenarios.map((t,i)=>`<div class="term-chip" id="m2t-${i}" onclick="selectM2Term(${i})">${t}</div>`).join('')}
+      </div>
+      <div>
+        <div class="matching-col-label">Profile Gap</div>
+        ${m2gaps.map((d,i)=>`<div class="slot" id="m2s-${i}" onclick="assignM2Slot(${i})"><span class="slot-label">${d}</span></div>`).join('')}
+      </div>
+    </div>
+    <button class="submit-btn" id="m2-submit-btn" onclick="submitMatching2()">Submit Matching</button>
+    <div class="feedback-box" id="m2-feedback"></div>
+  </div>
+  ${discussionHTML(
+    'CEO Maria Alvarez was "kept in the dark" for the first 2 days of the incident. How should the communications escalation policy have been written to prevent this?',
+    `A mature IR communications policy has three elements that prevent the "CEO in the dark" scenario:<br><br>(1) <strong>Predefined escalation threshold</strong> — specific criteria that trigger mandatory CEO notification (e.g., confirmed data exfiltration, customer data involved, media contact received, estimated downtime &gt;4 hours, potential ransom payment). These should be bright lines, not judgment calls.<br>(2) <strong>Predefined board/exec briefing cadence</strong> — initial notification within 2 hours of confirmed incident declaration, regardless of whether the "full picture" is available.<br>(3) <strong>Pre-approved holding statements</strong> — template communications for external stakeholders (media, customers, partners) that legal has pre-approved and can be activated without going back through approvals.<br><br>Keeping executives in the dark "to not distract them" is itself a governance failure — executives need to be aware and available to make the decisions that only they can make.`
+  )}
+  <div class="self-assess-block">
+    <div class="q-num">Self-Assessment Bonus — up to 20 pts</div>
+    <h3>Readiness Checklist</h3>
+    <div class="sa-hint">Check every item that your organisation currently has in place. Checking 6 or more earns 20 bonus points.</div>
+    ${saItems.map((item,i)=>`<div class="sa-item"><input type="checkbox" id="sa${i}"> <label for="sa${i}">${item}</label></div>`).join('')}
+    <button class="submit-btn" style="margin-top:16px;" id="sa-submit-btn" onclick="submitSelfAssess()">Submit Readiness Check</button>
+    <div class="feedback-box" id="sa-feedback"></div>
+  </div>
+  ${navHTML('Section 6 of 6')}`;
+}
+
+// ===== MULTI-SELECT LOGIC =====
+function submitMultiSelect() {
+  if (msSubmitted) return;
+  msSubmitted = true;
+  const correctSet = new Set([0,1,2,3]);
+  const wrongSet = new Set([4,5]);
+  let allCorrectSelected = true;
+  let anyWrongSelected = false;
+  let correctCount = 0;
+  for (let i=0;i<6;i++) {
+    const cb = document.getElementById('ms'+i);
+    const label = cb.closest('.checkbox-option');
+    const checked = cb.checked;
+    cb.disabled = true;
+    if (correctSet.has(i) && checked) { label.classList.add('cb-correct'); correctCount++; }
+    else if (correctSet.has(i) && !checked) { label.classList.add('cb-wrong'); allCorrectSelected = false; }
+    else if (wrongSet.has(i) && checked) { label.classList.add('cb-wrong'); anyWrongSelected = true; }
+    else if (wrongSet.has(i) && !checked) { label.classList.add('cb-correct'); }
+  }
+  document.getElementById('ms-submit-btn').disabled = true;
+  const fb = document.getElementById('ms-feedback');
+  fb.classList.add('show');
+  let pts = 0;
+  if (allCorrectSelected && !anyWrongSelected) { pts = 20; fb.className='feedback-box show correct'; fb.innerHTML='<strong>Perfect — 20 pts.</strong> All four correct actions selected, neither incorrect action chosen. Preserve logs, activate the bridge, assess isolation paths, and start your decision log — these are the T+15 priorities.'; }
+  else if (correctCount >= 3 && !anyWrongSelected) { pts = 10; fb.className='feedback-box show neutral'; fb.innerHTML='<strong>Partial credit — 10 pts.</strong> Good instincts but one correct action missed. Remember: the decision log is often overlooked in the chaos but is legally critical.'; }
+  else { fb.className='feedback-box show wrong'; fb.innerHTML='<strong>Needs review — 0 pts.</strong> Contacting the Tor chat and restoring without validating backup integrity are both dangerous moves at T+15. Contact comes later; backup validation must precede any restore attempt.'; }
+  if (pts > 0) addScore(pts, 'ms');
+  checkSectionProgress();
+}
+
+// ===== MATCHING 1: OFAC =====
+let m1Selected = null;
+let m1Assignments = {}; // slotIdx -> termIdx
+function selectM1Term(termIdx) {
+  if (matching1.submitted) return;
+  // Deselect
+  document.querySelectorAll('[id^="m1t-"]').forEach(el => el.classList.remove('selected'));
+  if (m1Selected === termIdx) { m1Selected = null; return; }
+  m1Selected = termIdx;
+  document.getElementById('m1t-'+termIdx).classList.add('selected');
+}
+function assignM1Slot(slotIdx) {
+  if (matching1.submitted) return;
+  if (m1Selected === null) return;
+  // Check if term already used in another slot
+  for (let k in m1Assignments) { if (m1Assignments[k] === m1Selected) { delete m1Assignments[k]; document.getElementById('m1s-'+k).innerHTML = `<span class="slot-label">${window._m1defs[k]}</span>`; document.getElementById('m1s-'+k).classList.remove('filled'); } }
+  // Unassign slot if already filled
+  if (m1Assignments[slotIdx] !== undefined) { const oldTerm = m1Assignments[slotIdx]; document.getElementById('m1t-'+oldTerm).classList.remove('used'); }
+  m1Assignments[slotIdx] = m1Selected;
+  document.getElementById('m1s-'+slotIdx).innerHTML = `<span class="slot-label" style="color:var(--muted);font-size:10px;">${window._m1defs[slotIdx]}</span><span style="color:var(--text);font-size:13px;">${window._m1terms[m1Selected]}</span>`;
+  document.getElementById('m1s-'+slotIdx).classList.add('filled');
+  document.getElementById('m1t-'+m1Selected).classList.add('used');
+  document.getElementById('m1t-'+m1Selected).classList.remove('selected');
+  m1Selected = null;
+}
+function submitMatching1() {
+  if (matching1.submitted) return;
+  matching1.submitted = true;
+  document.getElementById('m1-submit-btn').disabled = true;
+  // Correct answer: termIdx i should be in slot i (same order)
+  let correct = 0;
+  for (let s=0;s<4;s++) {
+    const termAssigned = m1Assignments[s];
+    const slot = document.getElementById('m1s-'+s);
+    if (termAssigned === s) { correct++; slot.classList.add('slot-correct'); if (termAssigned!==undefined) document.getElementById('m1t-'+termAssigned).classList.add('matched-correct'); }
+    else { slot.classList.add('slot-wrong'); if (termAssigned!==undefined) document.getElementById('m1t-'+termAssigned).classList.add('matched-wrong'); }
+  }
+  const fb = document.getElementById('m1-feedback');
+  fb.classList.add('show');
+  let pts = 0;
+  if (correct === 4) { pts = 20; fb.className='feedback-box show correct'; fb.innerHTML=`<strong>Perfect — 20 pts.</strong> All four OFAC mitigating factors correctly matched. These factors don't eliminate liability but demonstrate good-faith compliance effort to OFAC.`; }
+  else if (correct >= 3) { pts = 10; fb.className='feedback-box show neutral'; fb.innerHTML=`<strong>Partial — 10 pts.</strong> ${correct}/4 correct. These mitigating factors are critical in any OFAC enforcement inquiry.`; }
+  else { fb.className='feedback-box show wrong'; fb.innerHTML=`<strong>${correct}/4 correct — 0 pts.</strong> Review the OFAC mitigating factors framework. Each one represents a documented action that reduces civil penalty exposure.`; }
+  if (pts > 0) addScore(pts, 'm1');
+  checkSectionProgress();
+}
+
+// ===== MATCHING 2: PROFILE GAPS =====
+let m2Selected = null;
+let m2Assignments = {}; // slotIdx -> termIdx
+function selectM2Term(termIdx) {
+  if (matching2.submitted) return;
+  document.querySelectorAll('[id^="m2t-"]').forEach(el => el.classList.remove('selected'));
+  if (m2Selected === termIdx) { m2Selected = null; return; }
+  m2Selected = termIdx;
+  document.getElementById('m2t-'+termIdx).classList.add('selected');
+}
+function assignM2Slot(slotIdx) {
+  if (matching2.submitted) return;
+  if (m2Selected === null) return;
+  for (let k in m2Assignments) { if (m2Assignments[k] === m2Selected) { delete m2Assignments[k]; document.getElementById('m2s-'+k).innerHTML=`<span class="slot-label">${window._m2gaps[k]}</span>`; document.getElementById('m2s-'+k).classList.remove('filled'); } }
+  if (m2Assignments[slotIdx] !== undefined) { const oldTerm = m2Assignments[slotIdx]; document.getElementById('m2t-'+oldTerm).classList.remove('used'); }
+  m2Assignments[slotIdx] = m2Selected;
+  document.getElementById('m2s-'+slotIdx).innerHTML=`<span class="slot-label" style="color:var(--muted);font-size:10px;">${window._m2gaps[slotIdx]}</span><span style="color:var(--text);font-size:13px;">${window._m2scenarios[m2Selected]}</span>`;
+  document.getElementById('m2s-'+slotIdx).classList.add('filled');
+  document.getElementById('m2t-'+m2Selected).classList.add('used');
+  document.getElementById('m2t-'+m2Selected).classList.remove('selected');
+  m2Selected = null;
+}
+function submitMatching2() {
+  if (matching2.submitted) return;
+  matching2.submitted = true;
+  document.getElementById('m2-submit-btn').disabled = true;
+  // Correct: scenario i matches gap i (same index order)
+  let correct = 0;
+  for (let s=0;s<5;s++) {
+    const termAssigned = m2Assignments[s];
+    const slot = document.getElementById('m2s-'+s);
+    if (termAssigned === s) { correct++; slot.classList.add('slot-correct'); if (termAssigned!==undefined) document.getElementById('m2t-'+termAssigned).classList.add('matched-correct'); }
+    else { slot.classList.add('slot-wrong'); if (termAssigned!==undefined) document.getElementById('m2t-'+termAssigned).classList.add('matched-wrong'); }
+  }
+  const fb = document.getElementById('m2-feedback');
+  fb.classList.add('show');
+  let pts = 0;
+  if (correct === 5) { pts = 20; fb.className='feedback-box show correct'; fb.innerHTML=`<strong>Perfect — 20 pts.</strong> All five weaknesses correctly mapped to their enabling gaps. These are the architectural decisions that made Northwind vulnerable.`; }
+  else if (correct >= 4) { pts = 10; fb.className='feedback-box show neutral'; fb.innerHTML=`<strong>Partial — 10 pts.</strong> ${correct}/5 correct. Each gap represents a pre-incident architectural or policy decision with incident-day consequences.`; }
+  else { fb.className='feedback-box show wrong'; fb.innerHTML=`<strong>${correct}/5 correct — 0 pts.</strong> Review the Northwind profile. Each scenario weakness maps directly to a documented configuration or policy gap.`; }
+  if (pts > 0) addScore(pts, 'm2');
+  checkSectionProgress();
+}
+
+// ===== SELF ASSESS =====
+function submitSelfAssess() {
+  if (saSubmitted) return;
+  saSubmitted = true;
+  document.getElementById('sa-submit-btn').disabled = true;
+  let checked = 0;
+  for (let i=0;i<8;i++) { if (document.getElementById('sa'+i).checked) checked++; document.getElementById('sa'+i).disabled = true; }
+  const fb = document.getElementById('sa-feedback');
+  fb.classList.add('show');
+  let pts = 0;
+  if (checked >= 6) { pts = 20; fb.className='feedback-box show correct'; fb.innerHTML=`<strong>+20 pts bonus.</strong> ${checked}/8 items in place — strong readiness posture. The gaps you identified are your priority roadmap.`; }
+  else { fb.className='feedback-box show neutral'; fb.innerHTML=`<strong>0 pts — ${checked}/8 items checked.</strong> ${8-checked} gap(s) identified. Each unchecked item represents an architectural risk that this lab's scenarios demonstrated. Use this as your remediation roadmap.`; }
+  if (pts > 0) addScore(pts, 'sa');
+  checkSectionProgress();
+}
+
+// ===== ATTACH HANDLERS on render =====
+function attachSectionHandlers(idx) {
+  // Restore MCQ states if already answered
+  const ids = sectionMCQs[idx] || [];
+  ids.forEach(id => {
+    if (mcqAnswered[id]) {
+      // Re-trigger visual state
+      // MCQ will be re-rendered fresh; answered state is tracked but UI is reset on re-render
+    }
+  });
+}
+
+// ===== RESULTS =====
+function showResults() {
+  document.getElementById('screen-game').classList.remove('active');
+  document.getElementById('screen-results').classList.add('active');
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('br-mcq').textContent = scoreLog.mcq + ' / 120';
+  document.getElementById('br-ms').textContent = (scoreLog.ms||0) + ' / 20';
+  document.getElementById('br-m1').textContent = (scoreLog.m1||0) + ' / 20';
+  document.getElementById('br-m2').textContent = (scoreLog.m2||0) + ' / 20';
+  document.getElementById('br-sa').textContent = (scoreLog.sa||0) + ' / 20';
+  let band, title, sub, cls;
+  if (score >= 160) { band='Incident Commander'; title='Incident Commander'; sub='You know the playbook under pressure.'; cls='grade-a'; }
+  else if (score >= 120) { band='Solid Foundation'; title='Solid Foundation'; sub='Tighten escalation authority and legal integration.'; cls='grade-b'; }
+  else if (score >= 80) { band='Developing'; title='Developing'; sub='Revisit isolation authority and regulatory triggers.'; cls='grade-c'; }
+  else { band='Needs Review'; title='Needs Review'; sub='Return to the briefing — critical gaps remain.'; cls='grade-d'; }
+  const badge = document.getElementById('grade-badge');
+  badge.textContent = band;
+  badge.className = 'grade-badge ' + cls;
+  document.getElementById('results-title').textContent = title;
+  document.getElementById('results-sub').textContent = sub;
+}
+
+function restart() {
+  score = 0;
+  currentSection = 0;
+  sectionAttempted = [false,false,false,false,false,false];
+  scoreLog = {mcq:0,ms:0,m1:0,m2:0,sa:0};
+  mcqAnswered = {};
+  msSubmitted = false;
+  matching1 = {selected:null,slots:{},submitted:false};
+  matching2 = {selected:null,slots:{},submitted:false};
+  m1Selected = null; m1Assignments = {};
+  m2Selected = null; m2Assignments = {};
+  saSubmitted = false;
+  document.getElementById('sidebar-score').textContent = '0';
+  document.getElementById('progress-fill').style.width = '0%';
+  for (let i=0;i<6;i++) { document.getElementById('check-'+i).textContent=''; document.getElementById('track-'+i).classList.remove('completed','active'); }
+  document.getElementById('screen-results').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  goToSection(0);
+}
+</script>
+</body>
+</html>
