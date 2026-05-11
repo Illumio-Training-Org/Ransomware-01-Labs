@@ -81,6 +81,7 @@
   .options { display: flex; flex-direction: column; gap: 8px; }
   .option-btn { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; text-align: left; color: var(--text); font-size: 13px; cursor: pointer; transition: all .15s; }
   .option-btn:hover:not(:disabled) { border-color: var(--accent2); background: var(--surface); }
+  .option-btn.selected { border-color: var(--accent2); background: rgba(59,130,246,.15); color: var(--accent2); }
   .option-btn.correct { border-color: var(--green) !important; background: rgba(34,197,94,.12) !important; color: var(--green) !important; }
   .option-btn.wrong { border-color: var(--red) !important; background: rgba(239,68,68,.12) !important; color: var(--red) !important; }
   .feedback { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 13px; display: none; }
@@ -108,9 +109,11 @@
   .match-item:hover { border-color: var(--accent2); }
   .match-item.selected { border-color: var(--accent); background: rgba(249,115,22,.15); }
   .match-item.matched { border-color: var(--green); background: rgba(34,197,94,.12); color: var(--green); cursor: default; }
-  .role-slot { background: var(--card); border: 2px dashed var(--border); border-radius: 8px; padding: 8px 12px; font-size: 12px; min-height: 38px; transition: border-color .15s; margin-bottom: 8px; cursor: pointer; color: var(--muted); }
+  .role-slot { background: var(--card); border: 2px dashed var(--border); border-radius: 8px; padding: 8px 12px; font-size: 12px; min-height: 38px; transition: all .15s; margin-bottom: 8px; cursor: pointer; color: var(--muted); }
+  .role-slot.pending { border-style: solid; border-color: var(--accent); background: rgba(249,115,22,.1); color: var(--text); }
   .role-slot.filled { border-style: solid; border-color: var(--green); background: rgba(34,197,94,.08); color: var(--text); }
   .role-slot.wrong-fill { border-color: var(--red); background: rgba(239,68,68,.08); }
+  .match-item.placed { opacity: 0.4; }
   .slot-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
 
   /* STAT CARDS */
@@ -889,7 +892,14 @@ function placeChip(slotId) {
   if (_matchedSlots.has(slotId)) return;
   var chip = document.getElementById('chip-' + _selectedChip);
   var slot = document.getElementById('slot-' + slotId);
+  // If slot already has a pending chip, un-dim the old chip
+  if (_matchPlacements[slotId]) {
+    var oldChip = document.getElementById('chip-' + _matchPlacements[slotId].chipId);
+    if (oldChip) oldChip.classList.remove('placed');
+  }
   slot.textContent = chip.textContent;
+  slot.classList.add('pending');
+  chip.classList.add('placed');
   _matchPlacements[slotId] = { chipId: _selectedChip, answer: chip.dataset.answer };
   _selectedChip = null;
   document.querySelectorAll('.match-item').forEach(function(c){ c.classList.remove('selected'); });
@@ -901,17 +911,21 @@ function checkMatches() {
     var p = _matchPlacements[slotId];
     var slot = document.getElementById('slot-' + slotId);
     if (p.answer === slotId) {
+      slot.classList.remove('pending');
       slot.classList.add('filled');
       var chip = document.getElementById('chip-' + p.chipId);
-      if (chip) chip.classList.add('matched');
+      if (chip) { chip.classList.remove('placed'); chip.classList.add('matched'); }
       _matchedSlots.add(slotId);
       delete _matchPlacements[slotId];
       correct++;
     } else {
       slot.classList.add('wrong-fill');
+      var wrongChipId = p.chipId;
       setTimeout(function() {
-        slot.classList.remove('wrong-fill');
+        slot.classList.remove('wrong-fill', 'pending');
         slot.textContent = 'Drop here';
+        var wrongChip = document.getElementById('chip-' + wrongChipId);
+        if (wrongChip) wrongChip.classList.remove('placed');
         delete _matchPlacements[slotId];
       }, 1000);
     }
