@@ -418,6 +418,8 @@ function updateNextBtn() {
 
 // ===== SECTION RENDERER =====
 function renderSection(idx) {
+  if (idx === 3) { matching1 = {selected:null,slots:{},submitted:false}; m1Assignments = {}; m1Selected = null; }
+  if (idx === 5) { matching2 = {selected:null,slots:{},submitted:false}; m2Assignments = {}; m2Selected = null; }
   const el = document.getElementById('main-content');
   const sections = [sec0, sec1, sec2, sec3, sec4, sec5];
   el.innerHTML = sections[idx]();
