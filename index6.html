@@ -541,17 +541,17 @@ function sec0() {
     ['T+2h','EDR confirms ransom notes on ~280 servers. ~60% Windows file shares encrypted. Linux scope unclear.'],
   ])}
   ${mcqHTML('s0q1','1','At T+25 minutes, Linux file servers are encrypting but have no EDR alerts. What does this tell you about your detection coverage?',[
-    {text:'Linux servers are not a priority target for ransomware'},
+    {text:'Veeam alerts will cover the Linux server gap'},
     {text:'The Linux servers are not connected to the network'},
     {text:'Your detection coverage has a critical gap — you are flying blind on 100 Linux servers and may only be seeing 70% of the encryption activity'},
-    {text:'Veeam alerts will cover the Linux server gap'},
+    {text:'Linux servers are not a priority target for ransomware'},
   ],2)}
   ${mcqHTML('s0q2','2','At T+40 minutes, Veeam shows "target unreachable" and the backup admin laptop is unresponsive. What is the most important immediate question?',[
-    {text:'Whether to contact the Veeam support hotline'},
-    {text:'Whether to restart the Veeam service'},
     {text:'Whether the backup repository itself has been encrypted or corrupted — and whether the backup catalog is accessible via an out-of-band path'},
+    {text:'Whether to contact the Veeam support hotline'},
     {text:'Whether to escalate to the CIO in Vermont'},
-  ],2)}
+    {text:'Whether to restart the Veeam service'},
+  ],0)}
   <div class="multiselect-block" id="ms-block">
     <div class="q-num">Multi-Select — 20 pts</div>
     <div class="q-text">It is T+15 minutes. You are the Director of Security. Which of the following actions are correct <em>right now</em>?</div>
@@ -594,16 +594,16 @@ function sec1() {
   ])}
   ${mcqHTML('s1q1','1','The help-desk agent verified the caller\'s identity by checking that the name matched the employee record. What is the critical verification step that was skipped?',[
     {text:'Asking the caller their employee ID number'},
-    {text:'Escalating to a supervisor'},
     {text:'Out-of-band identity verification — calling back on a known number from HR records, or requiring manager approval'},
     {text:'Checking whether the caller had previously called help-desk'},
-  ],2)}
+    {text:'Escalating to a supervisor'},
+  ],1)}
   ${mcqHTML('s1q2','2','At T+1h, the account is logging in from Eastern Europe. At T+2h, you discover 6 similar resets over 3 weeks. What does this pattern indicate?',[
     {text:'The help-desk system has a bug causing false positives'},
-    {text:'A sustained identity-access campaign — multiple accounts compromised via social engineering over weeks, likely the access phase before ransomware deployment'},
     {text:'A disgruntled employee testing the help-desk system'},
     {text:'A misconfigured Azure AD conditional access policy'},
-  ],1)}
+    {text:'A sustained identity-access campaign — multiple accounts compromised via social engineering over weeks, likely the access phase before ransomware deployment'},
+  ],3)}
   ${discussionHTML(
     'You are reviewing the help-desk quality scorecard. The top performers have the fastest handle times. How does that incentive structure create security risk, and how would you redesign it?',
     `Average Handle Time (AHT) as a primary metric directly penalizes the behavior you want: the 30–60 second pause to do out-of-band identity verification. An agent who does the right thing looks like a poor performer on the scorecard.<br><br><strong>Redesign:</strong> (1) Remove AHT as a metric for security-sensitive actions (password resets, MFA resets, account unlocks). (2) Add a mandatory "verification step completed" field to the ticket — the ticket cannot close without it. (3) Treat social-engineering-resistant behavior as a positive quality indicator, not a negative handle-time anomaly. (4) Create a simple one-click escalation path: "I'm not confident — escalate to security team for identity verification." The AHT culture is the attacker's best ally.`
@@ -630,17 +630,17 @@ function sec2() {
     ['T+8h','Response team faces coverage question: disclose the exception or stay silent and hope it\'s not discovered.'],
   ])}
   ${mcqHTML('s2q1','1','The OT management MFA exception was "documented internally but never disclosed to the insurer." What is the legal term for a misrepresentation that voids insurance coverage?',[
-    {text:'Force majeure'},
     {text:'Material misrepresentation — a false or misleading statement of a material fact in the insurance application that the insurer relied upon in underwriting'},
-    {text:'Contributory negligence'},
     {text:'Breach of warranty of fitness'},
-  ],1)}
+    {text:'Contributory negligence'},
+    {text:'Force majeure'},
+  ],0)}
   ${mcqHTML('s2q2','2','At T+8h, the team faces the question: disclose the exception or stay silent. What is the correct answer and why?',[
-    {text:'Stay silent — the insurer may never find forensics evidence linking the OT systems'},
     {text:'Disclose immediately through legal counsel — voluntary disclosure before the insurer discovers the gap is a mitigating factor; concealment is a separate, worse violation'},
+    {text:'Stay silent — the insurer may never find forensics evidence linking the OT systems'},
     {text:'Disclose only if forensics definitively proves the OT path was the entry vector'},
     {text:'Let the General Counsel decide without involving the IR team'},
-  ],1)}
+  ],0)}
   ${discussionHTML(
     'Before the next insurance renewal, what process would you build to prevent this scenario? Who owns it, and what does it produce?',
     `The process: an annual "insurance control attestation" — a structured review of every control warranty in the policy against actual configuration.<br><br><strong>Owner:</strong> CISO or Director of Security, with CFO sign-off.<br><strong>What it produces:</strong> (1) A documented compliance checklist for each policy warranty. (2) An exception register — any control that isn't met 100% is documented with a risk acceptance, and the underwriter is notified. (3) A pre-renewal briefing where the broker reviews the attestation with the underwriter and gets written acknowledgment.<br><br>This turns an ambiguous "we think we're compliant" into a documented, auditable process. It also often surfaces coverage gaps before the incident, when they can be corrected or priced into the premium rather than becoming a claim dispute.`
@@ -690,16 +690,16 @@ function sec3() {
     ['T+8h','Board chair calls. "What are we doing?"'],
   ])}
   ${mcqHTML('s3q1','1','The threat actor\'s wallet address is not directly on the SDN list, but linked blockchain clusters show prior Evil Corp association. Under OFAC\'s strict-liability standard, what does this mean for a potential payment?',[
-    {text:'The payment is safe because the specific wallet is not listed'},
-    {text:'OFAC liability only applies to direct SDN matches'},
     {text:'The payment carries significant OFAC risk — "high confidence" infrastructure links to a sanctioned entity create strict-liability exposure even if the specific wallet isn\'t listed'},
     {text:'The negotiator\'s professional screening shields the victim from liability'},
-  ],2)}
+    {text:'The payment is safe because the specific wallet is not listed'},
+    {text:'OFAC liability only applies to direct SDN matches'},
+  ],0)}
   ${mcqHTML('s3q2','2','The CFO asks: "What\'s the chance we actually get prosecuted?" What is the correct framing for that question?',[
-    {text:'Prosecution risk is low — OFAC rarely prosecutes ransomware victims'},
+    {text:'If the insurer is funding the payment, the victim has no liability'},
     {text:'The question is prosecution probability, which is low but non-zero'},
     {text:'The question should be: what is our civil penalty exposure and what mitigating factors do we have — prosecution is one outcome, but civil penalties, public enforcement actions, and license revocations are more likely and still severely damaging'},
-    {text:'If the insurer is funding the payment, the victim has no liability'},
+    {text:'Prosecution risk is low — OFAC rarely prosecutes ransomware victims'},
   ],2)}
   <div class="matching-block" id="matching1-block">
     <div class="q-num">Matching — OFAC Mitigating Factors — 20 pts</div>
@@ -744,17 +744,17 @@ function sec4() {
     ['T+72h','LogiSoft proposes an "emergency patched update" to the WMS agent. Should Northwind trust it?'],
   ])}
   ${mcqHTML('s4q1','1','LogiSoft\'s notification at T+0 provides no IOCs and no affected-customer list. What is Northwind\'s correct immediate response?',[
-    {text:'Wait for LogiSoft to provide more details before taking any action'},
-    {text:'Assume Northwind is not affected since LogiSoft said "a subset of customers"'},
     {text:'Treat the notification as potential impact — immediately review LogiSoft-connected systems for anomalies and contact LogiSoft with a formal RFI requiring IOCs and the affected customer list'},
+    {text:'Assume Northwind is not affected since LogiSoft said "a subset of customers"'},
     {text:'Notify Northwind\'s own customers immediately'},
-  ],2)}
+    {text:'Wait for LogiSoft to provide more details before taking any action'},
+  ],0)}
   ${mcqHTML('s4q2','2','At T+72h, LogiSoft offers an "emergency patched update" to the WMS agent. Given that the attacker compromised LogiSoft\'s CI/CD pipeline, what should Northwind require before accepting the update?',[
-    {text:'A verbal confirmation from LogiSoft\'s CEO that the pipeline is clean'},
-    {text:'No additional verification — the vendor has already disclosed the incident'},
     {text:'Independent verification that LogiSoft\'s build pipeline has been remediated, ideally with code signing verification and an independent security review of the update'},
+    {text:'No additional verification — the vendor has already disclosed the incident'},
+    {text:'A verbal confirmation from LogiSoft\'s CEO that the pipeline is clean'},
     {text:'A SLA guarantee that the patched agent will not cause further incidents'},
-  ],2)}
+  ],0)}
   ${discussionHTML(
     'This scenario shows a vendor-initiated compromise. What contractual and pre-incident due diligence obligations should Northwind have had with LogiSoft before this happened?',
     `<strong>Pre-incident obligations:</strong><br>(1) Contract right to audit — the right to request LogiSoft's security posture, SOC 2 reports, and penetration test results annually.<br>(2) Incident notification SLA — contractual requirement that LogiSoft notify Northwind within 4 hours of a confirmed incident, including IOCs and affected scope.<br>(3) Vulnerability disclosure program — contact named, with escalation path.<br>(4) Build pipeline integrity requirements — code signing of all agent updates, software composition analysis in the CI/CD pipeline.<br>(5) Insurance requirement — LogiSoft should carry cyber liability coverage that covers downstream customer harm.<br>(6) Third-party risk management annual review — a WMS agent with RCE-equivalent on warehouse endpoints is a tier-1 risk. This scenario is a textbook case for why TPRM is not a checkbox — it requires active engagement with critical vendors.`
@@ -810,15 +810,15 @@ function sec5() {
   ${mcqHTML('s5q2','1','At T+30m, the TV station emails for comment and no holding statement exists. What is the correct immediate action?',[
     {text:'Ignore the email until legal counsel reviews the situation'},
     {text:'Issue a full technical disclosure immediately'},
-    {text:'Respond with a brief holding statement — acknowledge an incident is under investigation, state Northwind is working with experts, and commit to updates as information is confirmed'},
     {text:'Redirect the email to Northwind\'s marketing team'},
-  ],2)}
+    {text:'Respond with a brief holding statement — acknowledge an incident is under investigation, state Northwind is working with experts, and commit to updates as information is confirmed'},
+  ],3)}
   ${mcqHTML('s5q1','2','At T+3h, GC identifies the exfiltrated data may include EU residents. What regulatory clock may have started, and when?',[
+    {text:'No EU notification is required since Northwind is a U.S. company'},
+    {text:'The CIRCIA clock — 72 hours from incident confirmation'},
     {text:'SEC 8-K clock — 4 business days from materiality'},
     {text:'The GDPR 72-hour notification clock — which may have started at the time of the original incident discovery, not at the moment the EU data exposure was identified'},
-    {text:'The CIRCIA clock — 72 hours from incident confirmation'},
-    {text:'No EU notification is required since Northwind is a U.S. company'},
-  ],1)}
+  ],3)}
   <div class="matching-block" id="matching2-block">
     <div class="q-num">Matching — Profile Gaps — 20 pts</div>
     <h3>Match each scenario weakness to the Northwind profile gap that enabled it.</h3>
