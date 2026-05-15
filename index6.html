@@ -658,20 +658,16 @@ function sec3() {
     'Cooperation with investigation',
   ];
   const m1defs = [
-    'Contacting FBI/CISA promptly about the incident',
-    'Proactively reporting the potential sanctions issue to OFAC before enforcement',
     'Using an IR firm that independently screens against the SDN list',
+    'Contacting FBI/CISA promptly about the incident',
     'Providing full information to OFAC during any enforcement inquiry',
+    'Proactively reporting the potential sanctions issue to OFAC before enforcement',
   ];
-  const correctM1 = {
-    'ofac-a': m1defs[0],
-    'ofac-b': m1defs[1],
-    'ofac-c': m1defs[2],
-    'ofac-d': m1defs[3],
-  };
+  // slot 0→term2, slot 1→term0, slot 2→term3, slot 3→term1
+  const m1correctTerm = [2, 0, 3, 1];
   window._m1terms = m1terms;
   window._m1defs = m1defs;
-  window._m1correct = correctM1;
+  window._m1correctTerm = m1correctTerm;
   window._m1keys = m1keys;
   return `
   <div class="section-header">
@@ -772,14 +768,17 @@ function sec5() {
     'CEO uninformed for 48 hours',
   ];
   const m2gaps = [
-    'No EDR on Linux servers',
-    'No out-of-band identity verification process',
-    'Veeam immutable retention not configured',
-    'No pre-payment SDN screening process',
     'No mandatory CEO escalation threshold in IR policy',
+    'No EDR on Linux servers',
+    'No pre-payment SDN screening process',
+    'Veeam immutable retention not configured',
+    'No out-of-band identity verification process',
   ];
+  // slot 0→term4, slot 1→term0, slot 2→term3, slot 3→term2, slot 4→term1
+  const m2correctTerm = [4, 0, 3, 2, 1];
   window._m2scenarios = m2scenarios;
   window._m2gaps = m2gaps;
+  window._m2correctTerm = m2correctTerm;
   const saItems = [
     'IR playbook with documented authority delegation exists and is tested annually',
     'Help-desk has mandatory out-of-band identity verification for all privileged account resets',
@@ -910,12 +909,12 @@ function submitMatching1() {
   if (matching1.submitted) return;
   matching1.submitted = true;
   document.getElementById('m1-submit-btn').disabled = true;
-  // Correct answer: termIdx i should be in slot i (same order)
   let correct = 0;
   for (let s=0;s<4;s++) {
     const termAssigned = m1Assignments[s];
+    const correctTerm = window._m1correctTerm[s];
     const slot = document.getElementById('m1s-'+s);
-    if (termAssigned === s) { correct++; slot.classList.add('slot-correct'); if (termAssigned!==undefined) document.getElementById('m1t-'+termAssigned).classList.add('matched-correct'); }
+    if (termAssigned === correctTerm) { correct++; slot.classList.add('slot-correct'); if (termAssigned!==undefined) document.getElementById('m1t-'+termAssigned).classList.add('matched-correct'); }
     else { slot.classList.add('slot-wrong'); if (termAssigned!==undefined) document.getElementById('m1t-'+termAssigned).classList.add('matched-wrong'); }
   }
   const fb = document.getElementById('m1-feedback');
@@ -954,12 +953,12 @@ function submitMatching2() {
   if (matching2.submitted) return;
   matching2.submitted = true;
   document.getElementById('m2-submit-btn').disabled = true;
-  // Correct: scenario i matches gap i (same index order)
   let correct = 0;
   for (let s=0;s<5;s++) {
     const termAssigned = m2Assignments[s];
+    const correctTerm = window._m2correctTerm[s];
     const slot = document.getElementById('m2s-'+s);
-    if (termAssigned === s) { correct++; slot.classList.add('slot-correct'); if (termAssigned!==undefined) document.getElementById('m2t-'+termAssigned).classList.add('matched-correct'); }
+    if (termAssigned === correctTerm) { correct++; slot.classList.add('slot-correct'); if (termAssigned!==undefined) document.getElementById('m2t-'+termAssigned).classList.add('matched-correct'); }
     else { slot.classList.add('slot-wrong'); if (termAssigned!==undefined) document.getElementById('m2t-'+termAssigned).classList.add('matched-wrong'); }
   }
   const fb = document.getElementById('m2-feedback');
