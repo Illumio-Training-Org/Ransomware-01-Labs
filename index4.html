@@ -530,19 +530,19 @@ function buildSec1() {
     mcq('s1q1',
       'According to Mandiant M-Trends, what does median ransomware dwell time mean for your backup infrastructure?',
       ['Attackers rarely find backup systems',
-       'Attackers have time to inventory, credential-harvest, and stage destructive actions against backups',
        'Backup systems are protected by default encryption',
-       'Dwell time only matters for endpoint telemetry'],
-      1, 0,
+       'Dwell time only matters for endpoint telemetry',
+       'Attackers have time to inventory, credential-harvest, and stage destructive actions against backups'],
+      3, 0,
       'Weeks of dwell time gives attackers ample opportunity to enumerate and target backup infrastructure — often before any encryption event is visible to defenders.'
     ) +
     mcq('s1q2',
       'What is the primary time-consuming step in ransomware recovery?',
       ['Restoring bytes from backup tapes',
        'Rebuilding physical hardware',
-       'Validating restored systems are clean — no implants or persistence',
-       'Notifying regulators of the incident'],
-      2, 0,
+       'Notifying regulators of the incident',
+       'Validating restored systems are clean — no implants or persistence'],
+      3, 0,
       'The actual data restore is often relatively fast. The bottleneck is forensic validation that a restored image is truly clean before it is re-introduced to the network.'
     ) +
     disc(
@@ -574,20 +574,20 @@ function buildSec2() {
     '</ul></div>' +
     mcq('s2q1',
       'Why is the classic 3-2-1 backup rule insufficient against ransomware?',
-      ['It requires three copies which is too expensive',
-       'It does not survive an attacker with privileged access who targets backup infrastructure',
+      ['It does not survive an attacker with privileged access who targets backup infrastructure',
        'It only applies to tape-based backups',
-       'It was designed for cloud environments only'],
-      1, 1,
+       'It was designed for cloud environments only',
+       'It requires three copies which is too expensive'],
+      0, 1,
       '3-2-1 was designed against hardware failure, not adversarial actors. An attacker with domain admin can reach all three copies if they share the same identity plane — immutability and identity separation are the missing ingredients.'
     ) +
     mcq('s2q2',
       'What is the most dangerous architectural failure in backup design?',
-      ['Using cloud storage for Tier 3',
-       'Backup management server domain-joined to production AD — a domain admin compromise equals backup compromise',
-       'Keeping more than 90 days of retention',
-       'Running backups during business hours'],
-      1, 1,
+      ['Backup management server domain-joined to production AD — a domain admin compromise equals backup compromise',
+       'Using cloud storage for Tier 3',
+       'Running backups during business hours',
+       'Keeping more than 90 days of retention'],
+      0, 1,
       'When the backup server lives in the same AD domain, a domain admin compromise gives the attacker full control over the backup system. This is the most common and consequential single point of failure in backup architecture.'
     ) +
     disc(
@@ -610,20 +610,20 @@ function buildSec3() {
     '</div></div>' +
     mcq('s3q1',
       'What is the primary attack vector against cloud object-lock immutability?',
-      ['Direct encryption of S3 objects',
-       'Account-takeover via cloud IAM compromise or root-account abuse to disable the lock',
-       'Physical access to the data centre',
-       'DDoS against the cloud provider API'],
-      1, 2,
+      ['Account-takeover via cloud IAM compromise or root-account abuse to disable the lock',
+       'Direct encryption of S3 objects',
+       'DDoS against the cloud provider API',
+       'Physical access to the data centre'],
+      0, 2,
       'Immutability protects the objects — but not the control plane. An attacker with cloud root credentials can modify or remove retention policies. Cloud IAM hygiene and root-account lockdown are prerequisites for cloud immutability to be meaningful.'
     ) +
     mcq('s3q2',
       'When using vendor-native immutability (Veeam, Rubrik, etc.), what is the critical verification to perform?',
-      ['That the vendor has SOC 2 certification',
-       'That backups run during off-peak hours',
-       'That immutability cannot be revoked from the same management console used to manage backups',
-       'That the vendor supports multi-cloud environments'],
-      2, 2,
+      ['That immutability cannot be revoked from the same management console used to manage backups',
+       'That the vendor supports multi-cloud environments',
+       'That the vendor has SOC 2 certification',
+       'That backups run during off-peak hours'],
+      0, 2,
       'If an attacker compromises the backup console and immutability can be revoked from that same console, your immutability provides no real protection. The revocation path must be hardened or separated to a different identity boundary.'
     ) +
     disc(
@@ -654,20 +654,20 @@ function buildSec4() {
     '</div></div>' +
     mcq('s4q1',
       'Why must identity recovery (Active Directory / IdP) happen in Wave 1 before anything else?',
-      ['AD servers are usually the fastest to restore',
-       'Identity is the recovery substrate — everything else depends on authenticated access to function',
-       'Regulators require AD to be restored first',
-       'Domain controllers are less likely to be compromised'],
-      1, 3,
+      ['Regulators require AD to be restored first',
+       'AD servers are usually the fastest to restore',
+       'Domain controllers are less likely to be compromised',
+       'Identity is the recovery substrate — everything else depends on authenticated access to function'],
+      3, 3,
       'Every system you restore — ERP, email, file shares — authenticates against your identity provider. If AD is compromised and you restore other systems against it, those systems immediately inherit the compromise. Identity is the foundation the entire recovery rests on.'
     ) +
     mcq('s4q2',
       'What is the primary purpose of an Isolated Recovery Environment (IRE)?',
-      ['To store backup tapes offline',
-       'To provide a clean, network-separated environment for restoring and validating systems before re-introducing them to production',
+      ['To host the incident command post during a crisis',
        'To run forensic investigations on attacker tooling',
-       'To host the incident command post during a crisis'],
-      1, 3,
+       'To store backup tapes offline',
+       'To provide a clean, network-separated environment for restoring and validating systems before re-introducing them to production'],
+      3, 3,
       'The IRE exists to break the cycle of re-infection: restore into isolation, validate clean, then promote to production. Without this step, a restored system introduced to a still-compromised network may be re-infected within hours.'
     ) +
     disc(
@@ -725,16 +725,16 @@ function buildSec5() {
       'What is the most common gap found when organizations actually try to restore from their primary backups during an incident?',
       ['Backups are too large to restore quickly',
        'The restore process works exactly as documented',
-       'Organizations discover they cannot fully restore — due to catalog issues, key escrow gaps, or untested procedures',
-       'Cloud storage is always slower than on-prem for restoration'],
-      2, 4,
+       'Cloud storage is always slower than on-prem for restoration',
+       'Organizations discover they cannot fully restore — due to catalog issues, key escrow gaps, or untested procedures'],
+      3, 4,
       'The most painful discovery during an incident is that backups exist but are not restorable — due to corrupted catalogs, missing encryption keys, outdated procedures, or agents never validated in a restore scenario.'
     ) +
     mcq('s5q2',
       'Why should restore tests be run in an isolated environment, not in production?',
-      ['Production environments do not have enough storage',
+      ['Regulators require isolated testing',
        'A compromised or unstable restored image should not be introduced to the live network until validated clean',
-       'Regulators require isolated testing',
+       'Production environments do not have enough storage',
        'Production restore tests are too expensive'],
       1, 4,
       'Restoring directly into production risks re-introducing persistence, implants, or instability from a compromised backup. The IRE provides a safe validation stage before production re-introduction.'
@@ -807,20 +807,20 @@ function buildSec6() {
 
     mcq('s6q1',
       'Which backup architecture failure most directly enables an attacker to render ALL backup tiers useless simultaneously?',
-      ['Using cloud storage for Tier 2',
-       'Retaining backups for only 30 days',
-       'All backup tiers sharing the same identity and authentication plane as production',
-       'Running backup jobs hourly instead of daily'],
-      2, 5,
+      ['Retaining backups for only 30 days',
+       'Running backup jobs hourly instead of daily',
+       'Using cloud storage for Tier 2',
+       'All backup tiers sharing the same identity and authentication plane as production'],
+      3, 5,
       'Shared identity is the architectural flaw that collapses all tier boundaries. If a single identity provider controls production and all backup tiers, a single domain admin compromise reaches everywhere simultaneously.'
     ) +
     mcq('s6q2',
       'A recovery team completes Wave 1 (identity recovery) and is ready to start Wave 2. What is the first validation they should perform before restoring any Wave 2 system?',
       ['Confirm the restored AD is accepting LDAP authentication successfully',
-       'Verify the restored domain controllers are clean — no persistence or attacker implants — before trusting them as the identity substrate for Wave 2 systems',
        'Ensure the ERP vendor is on standby for support',
+       'Verify the restored domain controllers are clean — no persistence or attacker implants — before trusting them as the identity substrate for Wave 2 systems',
        'Notify the board that identity recovery is complete'],
-      1, 5,
+      2, 5,
       'Restoring AD is necessary but not sufficient. Before using recovered AD as the trust anchor for Wave 2, you must forensically validate it is clean — otherwise you are building Wave 2 on a compromised foundation.'
     ) +
     disc(
