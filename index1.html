@@ -370,18 +370,18 @@ function renderS1() {
     <div class="quiz-q">🎯 What single innovation did Maze introduce in 2019 that made backups alone an insufficient defence?</div>
     <div class="options">
       <button class="option-btn" onclick="answerQ('q1a',this,false,'FIDO2 is an authentication standard — not a Maze innovation.')">Introducing FIDO2-bypassing authentication attacks</button>
+      <button class="option-btn" onclick="answerQ('q1a',this,false,'The affiliate revenue-sharing model predates Maze — it was not their specific 2019 innovation.')">Formalising the affiliate 70/30 revenue split</button>
       <button class="option-btn" onclick="answerQ('q1a',this,true,'Correct. Double extortion — exfiltrating data before encrypting, then threatening public release — meant a clean restore no longer ended the crisis. Victims faced a separate decision about whether to pay to suppress the leak.')">Double extortion: exfiltrating data before encrypting, then threatening public release</button>
       <button class="option-btn" onclick="answerQ('q1a',this,false,'Intermittent encryption existed before Maze — it was not their defining innovation.')">Intermittent encryption to maximise throughput on large file shares</button>
-      <button class="option-btn" onclick="answerQ('q1a',this,false,'The affiliate revenue-sharing model predates Maze — it was not their specific 2019 innovation.')">Formalising the affiliate 70/30 revenue split</button>
     </div>
     <div class="feedback" id="q1a-feedback"></div>
   </div>
   <div class="quiz-block">
     <div class="quiz-q">🎯 Bitcoin enabled ransomware at scale — but also handed defenders a structural lever. What is it?</div>
     <div class="options">
-      <button class="option-btn" onclick="answerQ('q1b',this,false,'Bitcoin is actually slower for large transactions than wire transfers.')">It was faster to transfer than wire transfers</button>
       <button class="option-btn" onclick="answerQ('q1b',this,true,'Exactly. Bitcoin provided a global, pseudonymous, automatable payment channel — enabling ransomware at scale. But the permanent public ledger is what blockchain analytics firms, defenders, and law enforcement use to trace payments, map the criminal economy, and seize funds.')">Pseudonymous payment channel — but the permanent public ledger became the tool defenders and law enforcement use to trace and seize funds</button>
       <button class="option-btn" onclick="answerQ('q1b',this,false,'Bitcoin is pseudonymous — the public ledger means it is NOT anonymous.')">Truly anonymous with no transaction traceability</button>
+      <button class="option-btn" onclick="answerQ('q1b',this,false,'Bitcoin is actually slower for large transactions than wire transfers.')">It was faster to transfer than wire transfers</button>
       <button class="option-btn" onclick="answerQ('q1b',this,false,'Bitcoin price volatility is actually a disadvantage for criminals.')">Its price volatility automatically increased ransom value</button>
     </div>
     <div class="feedback" id="q1b-feedback"></div>
@@ -434,9 +434,9 @@ function renderS2() {
   <div class="quiz-block">
     <div class="quiz-q">🎯 Why is ScreenConnect on a sysadmin laptop "normal" — but on a finance workstation at 02:00 an indicator of compromise?</div>
     <div class="options">
-      <button class="option-btn" onclick="answerQ('q2b',this,false,'The tool itself is not the problem — attackers use legitimate tools precisely because they evade signature-based detection.')">ScreenConnect is blocked by most EDR platforms by default</button>
       <button class="option-btn" onclick="answerQ('q2b',this,true,'Exactly. Attackers use legitimate remote-management tools because they evade signature-based detection. Context — user, device, time, baseline behaviour — is what EDR behavioural analytics use to distinguish legitimate admin work from attacker activity.')">Context determines legitimacy — EDR behavioural analytics detect deviations from baseline, not the tool name itself</button>
       <button class="option-btn" onclick="answerQ('q2b',this,false,'Finance workstations do not have a blanket software block — context is the key, not the device type.')">Finance workstations have allow-listing that blocks it</button>
+      <button class="option-btn" onclick="answerQ('q2b',this,false,'The tool itself is not the problem — attackers use legitimate tools precisely because they evade signature-based detection.')">ScreenConnect is blocked by most EDR platforms by default</button>
       <button class="option-btn" onclick="answerQ('q2b',this,false,'02:00 alone is not the signal — legitimate after-hours admin work happens. It is the combination of user, device, time, and tool that matters.')">02:00 is outside business hours so any activity is suspicious</button>
     </div>
     <div class="feedback" id="q2b-feedback"></div>
@@ -490,9 +490,9 @@ function renderS3() {
   <div class="quiz-block" style="margin-top:20px;">
     <div class="quiz-q">🎯 Match the lesson. What is the defining lesson of Colonial Pipeline?</div>
     <div class="options">
+      <button class="option-btn" onclick="answerQ('q3a',this,false,'That is the Conti / ecosystem lesson about criminal business operations.')">Ransomware operators run as structured businesses — pressure on profit margin outlasts infrastructure disruption</button>
       <button class="option-btn" onclick="answerQ('q3a',this,false,'That is the NotPetya / Kaseya lesson about supply-chain trust and MSP risk.')">Supply-chain compromise via software update proves MSPs are force-multipliers for risk</button>
       <button class="option-btn" onclick="answerQ('q3a',this,true,'Correct. A single VPN account — reused password, no MFA — cut 45% of US East Coast fuel supply and triggered an executive order. The credential hygiene lesson is unambiguous.')">A single weak credential on a legacy access path — no MFA, reused password — can produce nation-impacting consequences</button>
-      <button class="option-btn" onclick="answerQ('q3a',this,false,'That is the Conti / ecosystem lesson about criminal business operations.')">Ransomware operators run as structured businesses — pressure on profit margin outlasts infrastructure disruption</button>
       <button class="option-btn" onclick="answerQ('q3a',this,false,'That is the MGM / Scattered Spider lesson about social engineering at the help desk.')">English-speaking social engineering bypasses technical controls — help-desk verification is a control surface</button>
     </div>
     <div class="feedback" id="q3a-feedback"></div>
@@ -500,10 +500,10 @@ function renderS3() {
   <div class="quiz-block">
     <div class="quiz-q">🎯 The Merck v. ACE American appellate ruling (2023) related to NotPetya was significant for cyber insurance because:</div>
     <div class="options">
-      <button class="option-btn" onclick="answerQ('q3b',this,false,'The ruling found the opposite — the war exclusion did NOT apply to NotPetya.')">It confirmed the war exclusion applied to nation-state cyberattacks, reducing insurer liability</button>
       <button class="option-btn" onclick="answerQ('q3b',this,false,'The ruling was about the war exclusion clause, not a universal ransom payment rule.')">It established insurers must reimburse all ransom payments regardless of attribution</button>
-      <button class="option-btn" onclick="answerQ('q3b',this,true,'Correct. The court found the war exclusion did NOT cover NotPetya — a wiper attributed to Russian GRU. Insurers responded by writing explicit "cyber war" exclusions whose wording remains actively contested.')">It found the war exclusion did NOT apply to NotPetya — prompting insurers to rewrite explicit cyber-war exclusion clauses</button>
       <button class="option-btn" onclick="answerQ('q3b',this,false,'The ruling addressed the war exclusion, not government reimbursement schemes.')">It required governments to reimburse cyber-insurance carriers for nation-state losses</button>
+      <button class="option-btn" onclick="answerQ('q3b',this,true,'Correct. The court found the war exclusion did NOT cover NotPetya — a wiper attributed to Russian GRU. Insurers responded by writing explicit "cyber war" exclusions whose wording remains actively contested.')">It found the war exclusion did NOT apply to NotPetya — prompting insurers to rewrite explicit cyber-war exclusion clauses</button>
+      <button class="option-btn" onclick="answerQ('q3b',this,false,'The ruling found the opposite — the war exclusion did NOT apply to NotPetya.')">It confirmed the war exclusion applied to nation-state cyberattacks, reducing insurer liability</button>
     </div>
     <div class="feedback" id="q3b-feedback"></div>
   </div>
@@ -632,20 +632,20 @@ function renderS5() {
   <div class="quiz-block">
     <div class="quiz-q">🎯 Which ecosystem role is described? <em>"They convert the noisy work of finding a foothold — credential stuffing, exploiting an unpatched VPN — into a tradable inventory item. Their existence lowers the skill floor for ransomware affiliates."</em></div>
     <div class="options">
-      <button class="option-btn" onclick="answerQ('q5a',this,false,'The RaaS operator builds the locker and platform — they do not sell initial access.')">RaaS Operator</button>
+      <button class="option-btn" onclick="answerQ('q5a',this,false,'Infostealer operators harvest credentials from individual machines and sell logs — a related but distinct role upstream of IABs.')">Infostealer operator</button>
       <button class="option-btn" onclick="answerQ('q5a',this,false,'The affiliate performs the attack inside the environment — they may buy access, but they are not the ones selling it.')">Affiliate</button>
       <button class="option-btn" onclick="answerQ('q5a',this,true,'Correct. IABs are arguably the most important specialisation in the modern ecosystem. They commoditise initial access — domain admin at a multinational can fetch $100,000+. Their existence means a skilled lateral-movement specialist no longer needs to be a skilled intruder too.')">Initial Access Broker (IAB)</button>
-      <button class="option-btn" onclick="answerQ('q5a',this,false,'Infostealer operators harvest credentials from individual machines and sell logs — a related but distinct role upstream of IABs.')">Infostealer operator</button>
+      <button class="option-btn" onclick="answerQ('q5a',this,false,'The RaaS operator builds the locker and platform — they do not sell initial access.')">RaaS Operator</button>
     </div>
     <div class="feedback" id="q5a-feedback"></div>
   </div>
   <div class="quiz-block">
     <div class="quiz-q">🎯 The "CIS rule" hard-coded into most major ransomware families does what — and what does it reveal about the geopolitical context?</div>
     <div class="options">
+      <button class="option-btn" onclick="answerQ('q5b',this,false,'The CIS rule is about geographic exclusion, not a reporting mechanism to intelligence services.')">It requires affiliates to report attack telemetry to Russian intelligence services</button>
       <button class="option-btn" onclick="answerQ('q5b',this,false,'It is about geographic targeting exclusion, not encryption algorithm selection.')">It specifies which encryption algorithm to use for CIS-region targets</button>
       <button class="option-btn" onclick="answerQ('q5b',this,false,'The CIS rule specifically avoids CIS-region targets — not seeks them out.')">It directs affiliates to prioritise CIS-region targets for highest ransom yield</button>
       <button class="option-btn" onclick="answerQ('q5b',this,true,'Exactly. The locker checks Windows locale and keyboard layout and refuses to run on Russian/CIS-language systems. This hard-coded political instruction explains why the Russian government has tolerated these operations — they exclusively target Western enterprises and critical infrastructure.')">The locker checks system locale and refuses to run on Russian/CIS-language systems — a political instruction that explains Russian government tolerance of the operations</button>
-      <button class="option-btn" onclick="answerQ('q5b',this,false,'The CIS rule is about geographic exclusion, not a reporting mechanism to intelligence services.')">It requires affiliates to report attack telemetry to Russian intelligence services</button>
     </div>
     <div class="feedback" id="q5b-feedback"></div>
   </div>
@@ -722,19 +722,19 @@ function renderS6() {
   <div class="quiz-block">
     <div class="quiz-q">🎯 Cyber-insurance underwriting has become a de-facto security standard. Which controls are now near-universally required before carriers will issue a ransomware policy?</div>
     <div class="options">
+      <button class="option-btn" onclick="answerQ('q6a',this,false,'Zero-trust architecture is an emerging trend but not yet a standard underwriting checkbox.')">Zero-trust architecture across all user access</button>
+      <button class="option-btn" onclick="answerQ('q6a',this,true,'Correct. MFA on remote access and email, EDR on every endpoint, and immutable backups are now near-universal requirements. The absence of EDR is a red flag at underwriting. Carriers have effectively driven adoption of these controls across the mid-market through the application questionnaire.')">MFA on remote access and email, EDR on every endpoint, and immutable backups</button>
       <button class="option-btn" onclick="answerQ('q6a',this,false,'Penetration testing is valuable but not yet a universal underwriting requirement across the market.')">Annual third-party penetration testing</button>
       <button class="option-btn" onclick="answerQ('q6a',this,false,'ISO 27001 is sometimes preferred by carriers but is not a universal checkbox.')">ISO 27001 certification</button>
-      <button class="option-btn" onclick="answerQ('q6a',this,true,'Correct. MFA on remote access and email, EDR on every endpoint, and immutable backups are now near-universal requirements. The absence of EDR is a red flag at underwriting. Carriers have effectively driven adoption of these controls across the mid-market through the application questionnaire.')">MFA on remote access and email, EDR on every endpoint, and immutable backups</button>
-      <button class="option-btn" onclick="answerQ('q6a',this,false,'Zero-trust architecture is an emerging trend but not yet a standard underwriting checkbox.')">Zero-trust architecture across all user access</button>
     </div>
     <div class="feedback" id="q6a-feedback"></div>
   </div>
   <div class="quiz-block">
     <div class="quiz-q">🎯 The OFAC advisories of 2020 and 2021 created strict-liability sanctions risk for paying certain ransomware actors. Which parties are explicitly named — beyond just the victim organisation?</div>
     <div class="options">
+      <button class="option-btn" onclick="answerQ('q6b',this,false,'Banks are not specifically named as primary subjects in the OFAC ransomware advisories.')">Only the banking institutions processing the crypto conversion</button>
       <button class="option-btn" onclick="answerQ('q6b',this,false,'The OFAC advisory was broader — it explicitly named facilitators beyond the victim.')">Only the victim organisation making the payment</button>
       <button class="option-btn" onclick="answerQ('q6b',this,true,'Correct. The September 2021 OFAC advisory explicitly named cyber insurers and IR firms (including negotiators) as subjects of sanctions risk. This is why wallet-level blockchain analytics (not just brand-level SDN list check) is now a standard step in any negotiation engagement.')">The victim, cyber insurers, and IR firms / negotiators — all explicitly named as subjects</button>
-      <button class="option-btn" onclick="answerQ('q6b',this,false,'Banks are not specifically named as primary subjects in the OFAC ransomware advisories.')">Only the banking institutions processing the crypto conversion</button>
       <button class="option-btn" onclick="answerQ('q6b',this,false,'The advisory specifically named IR firms and insurers as facilitators — not just the two parties to the transaction.')">The victim and the ransomware operator only</button>
     </div>
     <div class="feedback" id="q6b-feedback"></div>
