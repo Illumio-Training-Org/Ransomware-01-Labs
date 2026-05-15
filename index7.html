@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 7 — Global Cost of Ransomware | Ransomware Training</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1f2937;
+  --border: #30363d;
+  --accent: #f97316;
+  --accent2: #3b82f6;
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #eab308;
+  --purple: #a855f7;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --card: #1c2128;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ===== SCREENS ===== */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ===== INTRO ===== */
+#screen-intro{
+  background: radial-gradient(ellipse at 25% 35%, #1a0800 0%, #0d1117 55%),
+              radial-gradient(ellipse at 80% 70%, #060d1a 0%, transparent 55%);
+  align-items:center;justify-content:center;padding:40px 20px;
+}
+.intro-wrap{max-width:800px;text-align:center;}
+.intro-badge{display:inline-block;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.35);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:24px;}
+.intro-wrap h1{font-size:clamp(26px,5vw,46px);font-weight:800;line-height:1.15;margin-bottom:14px;}
+.intro-wrap h1 span{color:var(--accent);}
+.intro-sub{font-size:15px;color:var(--muted);line-height:1.7;max-width:600px;margin:0 auto 28px;}
+.source-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;text-align:left;margin-bottom:28px;}
+.source-card h3{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
+.source-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;}
+.source-item{background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);line-height:1.5;}
+.source-item strong{color:var(--text);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.stat-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:32px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center;min-width:110px;}
+.stat-card .val{font-size:24px;font-weight:800;color:var(--accent);}
+.stat-card .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.btn-start{background:var(--accent);color:#000;border:none;border-radius:10px;padding:15px 40px;font-size:16px;font-weight:800;cursor:pointer;transition:all .2s;}
+.btn-start:hover{background:#fb923c;transform:translateY(-1px);box-shadow:0 8px 24px rgba(249,115,22,.35);}
+
+/* ===== GAME ===== */
+#screen-game{flex-direction:row;min-height:100vh;}
+.sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sidebar-logo{padding:0 18px 16px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.sidebar-logo .lab-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.sidebar-logo .lab-title{font-size:14px;font-weight:700;color:var(--text);margin-top:2px;}
+.section-track{flex:1;padding:0 10px;}
+.track-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:background .15s;}
+.track-item:hover{background:var(--surface2);}
+.track-item.active{background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.2);}
+.track-item.completed{opacity:.8;}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.dot-1{background:#f97316;}
+.dot-2{background:#3b82f6;}
+.dot-3{background:#22c55e;}
+.dot-4{background:#eab308;}
+.dot-5{background:#a855f7;}
+.dot-6{background:#ef4444;}
+.track-label{font-size:12px;color:var(--muted);line-height:1.3;flex:1;}
+.track-item.active .track-label{color:var(--text);}
+.track-check{font-size:14px;color:var(--green);}
+.score-box{margin:16px 10px 0;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+.score-box .score-val{font-size:28px;font-weight:800;color:var(--accent);}
+.score-box .score-max{font-size:13px;color:var(--muted);}
+.score-box .score-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-top:2px;}
+.progress-bar-wrap{height:4px;background:var(--border);border-radius:2px;margin:10px 10px 0;overflow:hidden;}
+.progress-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s;}
+
+/* MAIN */
+.main-content{flex:1;padding:36px 40px;overflow-y:auto;max-width:900px;}
+.section-header{margin-bottom:26px;}
+.section-header .section-num{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+.section-header h2{font-size:22px;font-weight:800;line-height:1.3;}
+
+/* DATA CARD */
+.data-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:10px;padding:18px 20px;margin-bottom:20px;font-size:13px;line-height:1.75;color:var(--muted);}
+.data-card strong{color:var(--text);}
+.data-card .data-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;}
+
+/* STAT HIGHLIGHT */
+.stat-highlight{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+.stat-hl{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;flex:1;min-width:120px;text-align:center;}
+.stat-hl .sh-val{font-size:28px;font-weight:800;color:var(--accent);line-height:1.1;}
+.stat-hl .sh-lbl{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;}
+
+/* MCQ */
+.question-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px;}
+.question-block .q-num{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.question-block .q-text{font-size:14px;font-weight:600;line-height:1.55;margin-bottom:14px;}
+.options{display:flex;flex-direction:column;gap:8px;}
+.option-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;text-align:left;font-size:13px;color:var(--text);cursor:pointer;transition:all .15s;line-height:1.5;}
+.option-btn:hover:not(:disabled){background:var(--surface);border-color:var(--accent2);}
+.option-btn.correct{background:rgba(34,197,94,.1);border-color:var(--green);color:var(--green);}
+.option-btn.wrong{background:rgba(239,68,68,.1);border-color:var(--red);color:var(--red);}
+.option-btn:disabled{cursor:default;}
+.feedback-box{margin-top:12px;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;display:none;}
+.feedback-box.show{display:block;}
+.feedback-box.correct{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:var(--green);}
+.feedback-box.wrong{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--red);}
+.feedback-box.neutral{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);color:#93c5fd;}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:12px;}
+.data-table th{background:var(--accent);color:#000;font-weight:700;padding:8px 12px;text-align:left;}
+.data-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted);}
+.data-table tr:nth-child(even) td{background:rgba(249,115,22,.04);}
+.data-table .highlight{color:var(--accent);font-weight:700;}
+.data-table .dimmed{color:var(--muted);font-size:11px;}
+
+/* MULTISELECT */
+.multiselect-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px;}
+.multiselect-block .q-num{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.multiselect-block .q-text{font-size:14px;font-weight:600;line-height:1.55;margin-bottom:6px;}
+.multiselect-block .q-hint{font-size:12px;color:var(--muted);margin-bottom:14px;}
+.checkbox-option{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);margin-bottom:8px;cursor:pointer;transition:border-color .15s;}
+.checkbox-option:hover{border-color:var(--accent2);}
+.checkbox-option input[type=checkbox]{width:15px;height:15px;flex-shrink:0;margin-top:2px;accent-color:var(--accent2);cursor:pointer;}
+.checkbox-option label{font-size:13px;color:var(--text);line-height:1.5;cursor:pointer;flex:1;}
+.checkbox-option.cb-correct{background:rgba(34,197,94,.08);border-color:var(--green);}
+.checkbox-option.cb-correct label{color:var(--green);}
+.checkbox-option.cb-wrong{background:rgba(239,68,68,.08);border-color:var(--red);}
+.checkbox-option.cb-wrong label{color:var(--red);}
+.submit-btn{background:var(--accent2);border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;margin-top:4px;transition:background .15s;}
+.submit-btn:hover{background:#2563eb;}
+.submit-btn:disabled{background:var(--border);color:var(--muted);cursor:default;}
+
+/* MATCHING */
+.matching-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px;}
+.matching-block .q-num{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.matching-block h3{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.matching-block .m-hint{font-size:12px;color:var(--muted);margin-bottom:16px;}
+.matching-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.matching-col-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.term-chip{background:var(--surface2);border:2px solid var(--border);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--text);cursor:pointer;margin-bottom:7px;line-height:1.4;transition:all .15s;user-select:none;}
+.term-chip:hover{border-color:var(--accent2);}
+.term-chip.selected{border-color:var(--accent);background:rgba(249,115,22,.1);color:var(--accent);}
+.term-chip.used{opacity:.4;cursor:default;pointer-events:none;}
+.term-chip.matched-correct{border-color:var(--green);background:rgba(34,197,94,.1);color:var(--green);cursor:default;}
+.term-chip.matched-wrong{border-color:var(--red);background:rgba(239,68,68,.1);color:var(--red);cursor:default;}
+.slot{background:var(--surface2);border:2px dashed var(--border);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--muted);margin-bottom:7px;min-height:42px;line-height:1.4;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;justify-content:center;}
+.slot:hover{border-color:var(--accent2);}
+.slot.filled{border-style:solid;border-color:var(--accent2);color:var(--text);}
+.slot.slot-correct{border-color:var(--green);background:rgba(34,197,94,.08);}
+.slot.slot-wrong{border-color:var(--red);background:rgba(239,68,68,.08);}
+.slot-def{font-size:10px;color:var(--muted);margin-bottom:3px;}
+
+/* DISCUSSION */
+.discussion-block{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+.discussion-block .disc-tag{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--yellow);background:rgba(234,179,8,.1);padding:3px 10px;border-radius:12px;display:inline-block;margin-bottom:10px;}
+.discussion-block .disc-q{font-size:14px;font-weight:600;line-height:1.6;margin-bottom:12px;color:var(--text);}
+.expert-toggle{background:none;border:1px solid var(--border);border-radius:7px;padding:8px 14px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;}
+.expert-toggle:hover{border-color:var(--accent2);color:var(--text);}
+.expert-answer{margin-top:12px;padding:14px 16px;background:var(--card);border-radius:8px;font-size:13px;color:var(--muted);line-height:1.75;display:none;}
+.expert-answer.show{display:block;}
+.expert-answer strong{color:var(--text);}
+
+/* SELF-ASSESS */
+.self-assess-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px;}
+.self-assess-block .q-num{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.self-assess-block h3{font-size:14px;font-weight:700;margin-bottom:4px;}
+.self-assess-block .sa-hint{font-size:12px;color:var(--muted);margin-bottom:14px;}
+.sa-item{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);}
+.sa-item:last-of-type{border-bottom:none;}
+.sa-item input[type=checkbox]{width:15px;height:15px;flex-shrink:0;margin-top:2px;accent-color:var(--green);cursor:pointer;}
+.sa-item label{font-size:13px;color:var(--text);line-height:1.5;cursor:pointer;}
+
+/* NAV */
+.nav-row{display:flex;align-items:center;justify-content:space-between;margin-top:28px;padding-top:22px;border-top:1px solid var(--border);}
+.nav-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 22px;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s;}
+.nav-btn:hover:not(:disabled){background:var(--surface);border-color:var(--accent);}
+.nav-btn:disabled{opacity:.35;cursor:default;}
+.nav-btn.primary{background:var(--accent);border-color:var(--accent);color:#000;}
+.nav-btn.primary:hover:not(:disabled){background:#fb923c;}
+.nav-section{font-size:12px;color:var(--muted);}
+
+/* POINTS POPUP */
+#points-popup{position:fixed;top:22px;right:22px;background:var(--green);color:#000;font-weight:800;font-size:18px;padding:12px 22px;border-radius:12px;z-index:1000;opacity:0;transform:translateY(-14px) scale(.95);transition:all .3s;pointer-events:none;}
+#points-popup.show{opacity:1;transform:translateY(0) scale(1);}
+
+/* RESULTS */
+#screen-results{align-items:center;justify-content:center;padding:48px 24px;flex-direction:column;}
+.results-wrap{max-width:700px;width:100%;text-align:center;}
+.grade-badge{font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:8px 20px;border-radius:20px;display:inline-block;margin-bottom:18px;}
+.grade-a{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+.grade-b{background:rgba(59,130,246,.15);color:#93c5fd;border:1px solid rgba(59,130,246,.3);}
+.grade-c{background:rgba(234,179,8,.15);color:var(--yellow);border:1px solid rgba(234,179,8,.3);}
+.grade-d{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+.results-score-big{font-size:72px;font-weight:900;color:var(--accent);line-height:1;}
+.results-max{font-size:20px;color:var(--muted);margin-bottom:8px;}
+.results-title{font-size:22px;font-weight:800;margin-bottom:8px;}
+.results-sub{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.6;}
+.results-breakdown{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;text-align:left;margin-bottom:24px;}
+.results-breakdown h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.breakdown-row:last-child{border-bottom:none;}
+.breakdown-row .pts{font-weight:700;color:var(--accent);}
+.key-lessons{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;text-align:left;margin-bottom:24px;}
+.key-lessons h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.lesson-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.55;color:var(--muted);}
+.lesson-item:last-child{border-bottom:none;}
+.lesson-item::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;}
+.btn-restart{background:var(--accent);color:#000;border:none;border-radius:10px;padding:14px 36px;font-size:16px;font-weight:800;cursor:pointer;transition:all .2s;}
+.btn-restart:hover{background:#fb923c;}
+
+@media(max-width:700px){
+  #screen-game{flex-direction:column;}
+  .sidebar{width:100%;min-width:0;height:auto;position:static;flex-direction:row;flex-wrap:wrap;padding:12px;border-right:none;border-bottom:1px solid var(--border);}
+  .sidebar-logo{padding:0;border:none;margin:0;flex:0 0 100%;margin-bottom:8px;}
+  .section-track{flex:0 0 100%;display:flex;flex-wrap:wrap;gap:4px;padding:0;}
+  .track-item{flex:0 0 calc(33% - 4px);font-size:11px;padding:6px 8px;}
+  .score-box{flex:0 0 auto;margin:0;}
+  .progress-bar-wrap{display:none;}
+  .main-content{padding:20px 16px;}
+  .matching-cols{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="points-popup">+<span id="popup-pts">10</span> pts</div>
+
+<!-- ========== INTRO ========== -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-wrap">
+    <div class="intro-badge">Ransomware Training Series &bull; Lab 7 of 7</div>
+    <h1>Module 7:<br><span>The Global Cost of Ransomware</span></h1>
+    <p class="intro-sub">Data-driven insights from the Ponemon Institute's 2025 study of 2,547 IT and cybersecurity practitioners across six countries. Turn statistics into operational decisions.</p>
+
+    <div class="source-card">
+      <h3>Study at a Glance — Ponemon Institute, January 2025</h3>
+      <div class="source-grid">
+        <div class="source-item"><strong>Respondents</strong>2,547 IT &amp; security practitioners</div>
+        <div class="source-item"><strong>Countries</strong>U.S., U.K., Germany, France, Australia, Japan</div>
+        <div class="source-item"><strong>Benchmark</strong>Compared to 2021 Ponemon study</div>
+        <div class="source-item"><strong>Attack Rate</strong>88% experienced ransomware in past 12 months</div>
+        <div class="source-item"><strong>Avg Demand</strong>$1.2M USD average ransom demand</div>
+        <div class="source-item"><strong>Paid</strong>51% of organizations paid the ransom</div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="val">$146K</div><div class="lbl">Avg Remediation Cost</div></div>
+      <div class="stat-card"><div class="val">13%</div><div class="lbl">Full Data Recovery (after paying)</div></div>
+      <div class="stat-card"><div class="val">132h</div><div class="lbl">Avg Containment Time</div></div>
+      <div class="stat-card"><div class="val">200</div><div class="lbl">Points Available</div></div>
+    </div>
+
+    <button class="btn-start" onclick="startGame()">Begin Lab 7 &rarr;</button>
+  </div>
+</div>
+
+<!-- ========== GAME ========== -->
+<div id="screen-game" class="screen">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="lab-label">Lab 7</div>
+      <div class="lab-title">Global Cost Study</div>
+    </div>
+    <div class="section-track" id="section-track">
+      <div class="track-item active" onclick="goToSection(0)" id="track-0"><div class="dot dot-1"></div><div class="track-label">The Security Gap</div><span class="track-check" id="check-0"></span></div>
+      <div class="track-item" onclick="goToSection(1)" id="track-1"><div class="dot dot-2"></div><div class="track-label">Cost Breakdown</div><span class="track-check" id="check-1"></span></div>
+      <div class="track-item" onclick="goToSection(2)" id="track-2"><div class="dot dot-3"></div><div class="track-label">Lateral Movement</div><span class="track-check" id="check-2"></span></div>
+      <div class="track-item" onclick="goToSection(3)" id="track-3"><div class="dot dot-4"></div><div class="track-label">Payment Decisions</div><span class="track-check" id="check-3"></span></div>
+      <div class="track-item" onclick="goToSection(4)" id="track-4"><div class="dot dot-5"></div><div class="track-label">Country Differences</div><span class="track-check" id="check-4"></span></div>
+      <div class="track-item" onclick="goToSection(5)" id="track-5"><div class="dot dot-6"></div><div class="track-label">Strategic Readiness</div><span class="track-check" id="check-5"></span></div>
+    </div>
+    <div class="score-box">
+      <div class="score-val" id="sidebar-score">0</div>
+      <div class="score-max">/ 200 pts</div>
+      <div class="score-lbl">Score</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+  <div class="main-content" id="main-content"></div>
+</div>
+
+<!-- ========== RESULTS ========== -->
+<div id="screen-results" class="screen">
+  <div class="results-wrap">
+    <div id="grade-badge" class="grade-badge grade-a">Chief Risk Officer</div>
+    <div class="results-score-big" id="final-score">0</div>
+    <div class="results-max">/ 200 pts</div>
+    <div class="results-title" id="results-title">Chief Risk Officer</div>
+    <div class="results-sub" id="results-sub">You can translate data into decisions.</div>
+    <div class="results-breakdown">
+      <h3>Score Breakdown</h3>
+      <div class="breakdown-row"><span>12 MCQs (10 pts each)</span><span class="pts" id="br-mcq">0 / 120</span></div>
+      <div class="breakdown-row"><span>Multi-Select — Cost Gap Actions (Section 1)</span><span class="pts" id="br-ms">0 / 20</span></div>
+      <div class="breakdown-row"><span>Matching — Cost Category Shifts (Section 2)</span><span class="pts" id="br-m1">0 / 20</span></div>
+      <div class="breakdown-row"><span>Matching — Country AI Profiles (Section 5)</span><span class="pts" id="br-m2">0 / 20</span></div>
+      <div class="breakdown-row"><span>Readiness Self-Assessment Bonus (Section 6)</span><span class="pts" id="br-sa">0 / 20</span></div>
+    </div>
+    <div class="key-lessons">
+      <h3>Key Data Points to Remember</h3>
+      <div class="lesson-item">88% of organizations were hit — but only 54% believe they are a target. The confidence gap is itself a risk.</div>
+      <div class="lesson-item">Only 27% of organizations deploy segmentation — the single highest-leverage control against lateral movement blast radius.</div>
+      <div class="lesson-item">13% of ransom payers recovered all their data. 40% saw it leaked anyway. Paying is not a recovery strategy.</div>
+      <div class="lesson-item">Reputation and brand damage is now the #1 financial cost of ransomware — displacing legal and regulatory actions from 2021.</div>
+      <div class="lesson-item">Only 28% report to law enforcement — forgoing decryption keys, threat intel, and legal pathway support.</div>
+    </div>
+    <button class="btn-restart" onclick="restart()">Restart Lab &rarr;</button>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let score = 0;
+let currentSection = 0;
+let sectionAttempted = [false,false,false,false,false,false];
+let scoreLog = {mcq:0, ms:0, m1:0, m2:0, sa:0};
+let mcqAnswered = {};
+let msSubmitted = false;
+let matching1 = {selected:null, assignments:{}, submitted:false};
+let matching2 = {selected:null, assignments:{}, submitted:false};
+let saSubmitted = false;
+
+const sectionMCQs = {
+  0: ['s0q1','s0q2'],
+  1: ['s1q1','s1q2'],
+  2: ['s2q1','s2q2'],
+  3: ['s3q1','s3q2'],
+  4: ['s4q1','s4q2'],
+  5: ['s5q1','s5q2'],
+};
+
+// ===== FEEDBACKS =====
+window.feedbacks = {
+  s0q1: "88% attack rate with only 54% believing they are a target creates a 34-point gap between reality and perception. Organizations that don't believe they are targets invest less in prevention and readiness — which makes them easier targets.",
+  s0q2: "Only 42% have adopted AI in defense. The asymmetry — 51% concerned about AI attacks, 42% adopted AI defense — represents a structural disadvantage. Attackers adopt AI capabilities faster than defenders because they face no procurement cycles, compliance requirements, or budget constraints.",
+  s1q1: "Reputation and brand damage moved from #6 (least significant) in 2021 to #1 (most significant) in 2024. This complete inversion reflects the rise of double-extortion leak sites, social media amplification, and increased customer sensitivity to data security failures.",
+  s1q2: "Revenue loss doubled from 22% to 40% of respondents over three years. Operational shutdowns increased from 45% to 58%. The downstream business consequences of ransomware are worsening even as direct remediation costs slightly declined.",
+  s2q1: "Unpatched vulnerabilities as a lateral movement vector increased 19 points (33% to 52%) — the largest three-year increase in the dataset. This reflects the growing ecosystem of published CVEs available to attackers and the challenge of enterprise-scale patch management.",
+  s2q2: "Only 27% of organizations deploy segmentation or microsegmentation. Segmentation limits lateral movement blast radius — the key determinant of how many systems get encrypted and how large the cost categories become. It is the control most clearly evidenced by the data and least frequently deployed.",
+  s3q1: "Only 13% of ransom payers recovered all their data. 40% saw data leaked despite payment. 32% faced additional demands. The expected value of a ransom payment for full, secure data recovery is approximately 1-in-8 odds at a $1.2M average demand — making it one of the worst risk-adjusted decisions available.",
+  s3q2: "48% of organizations that didn't pay the ransom cite an effective backup strategy as the reason. Backup architecture is the most controllable pre-incident factor in the payment decision. An immutable, tested, isolated backup is both a recovery capability and a payment deterrent.",
+  s4q1: "France has the second-highest AI attack concern (55%) and one of the lowest AI defense adoption rates (36%) — the widest concern-action gap in the dataset. High concern without corresponding investment creates a risk perception that is not matched by protective capability.",
+  s4q2: "Only 28% report ransomware incidents to law enforcement. The top barrier is fear of unwanted publicity (39%). But double-extortion actors publish data on leak sites regardless of whether the victim reports — so the choice is not report-and-risk-publicity vs. silent-and-safe. It is report-with-intelligence-support vs. silent-with-the-same-publicity-risk.",
+  s5q1: "Unpatched vulnerabilities (52%), cached credentials (48%), and weak high-privilege passwords (47%) are the top three. All three have known countermeasures: patch management + segmentation, Credential Guard + LAPS, and PAM vaulting + JIT access respectively.",
+  s5q2: "Payment decisions made without a pre-defined policy collapse under pressure. 51% say they will never pay; 51% paid. The gap between stated policy and actual behavior is closed by pre-defining the conditions, mandatory steps, authority, and reporting obligations — before the incident creates time pressure.",
+};
+
+// ===== CORE FUNCTIONS =====
+function showPopup(pts) {
+  const el = document.getElementById('points-popup');
+  document.getElementById('popup-pts').textContent = pts;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+function addScore(pts, cat) {
+  score += pts;
+  scoreLog[cat] = (scoreLog[cat]||0) + pts;
+  document.getElementById('sidebar-score').textContent = score;
+  document.getElementById('progress-fill').style.width = Math.min(100,score/2)+'%';
+  if(pts>0) showPopup(pts);
+}
+function startGame() {
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  renderSection(0);
+}
+function goToSection(idx) {
+  currentSection = idx;
+  document.querySelectorAll('.track-item').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  renderSection(idx);
+  document.getElementById('main-content').scrollTop = 0;
+  window.scrollTo(0,0);
+}
+function nextSection() {
+  if(currentSection < 5) goToSection(currentSection+1);
+  else showResults();
+}
+function prevSection() { if(currentSection>0) goToSection(currentSection-1); }
+function markDone() {
+  sectionAttempted[currentSection] = true;
+  document.getElementById('check-'+currentSection).textContent = '✓';
+  document.getElementById('track-'+currentSection).classList.add('completed');
+  const btn = document.getElementById('btn-next');
+  if(btn) btn.disabled = false;
+}
+function checkProgress() {
+  const ids = sectionMCQs[currentSection];
+  const allMCQ = ids ? ids.every(id => mcqAnswered[id]) : true;
+  if(currentSection===0 && allMCQ && msSubmitted) markDone();
+  else if(currentSection===1 && allMCQ && matching1.submitted) markDone();
+  else if(currentSection===4 && allMCQ && matching2.submitted) markDone();
+  else if(currentSection===5 && allMCQ && saSubmitted) markDone();
+  else if([2,3].includes(currentSection) && allMCQ) markDone();
+}
+function renderSection(idx) {
+  const secs = [sec0,sec1,sec2,sec3,sec4,sec5];
+  document.getElementById('main-content').innerHTML = secs[idx]();
+  const btn = document.getElementById('btn-next');
+  if(btn) btn.disabled = !sectionAttempted[idx];
+}
+function navHTML(label) {
+  return `<div class="nav-row">
+    <button class="nav-btn" onclick="prevSection()" ${currentSection===0?'disabled':''}>&#8592; Back</button>
+    <span class="nav-section">${label}</span>
+    <button class="nav-btn primary" id="btn-next" onclick="nextSection()" ${sectionAttempted[currentSection]?'':'disabled'}>${currentSection===5?'View Results':'Next &rarr;'}</button>
+  </div>`;
+}
+function mcqHTML(id, qnum, question, options, correctIdx) {
+  return `<div class="question-block" id="qblock-${id}">
+    <div class="q-num">Question ${qnum} — 10 pts</div>
+    <div class="q-text">${question}</div>
+    <div class="options" id="opts-${id}">
+      ${options.map((o,i)=>`<button class="option-btn" onclick="answerMCQ('${id}',${i},${correctIdx})">${String.fromCharCode(65+i)}) ${o}</button>`).join('')}
+    </div>
+    <div class="feedback-box" id="fb-${id}"></div>
+  </div>`;
+}
+function answerMCQ(id, chosen, correct) {
+  if(mcqAnswered[id]) return;
+  mcqAnswered[id] = true;
+  const opts = document.querySelectorAll(`#opts-${id} .option-btn`);
+  const fb = document.getElementById(`fb-${id}`);
+  opts.forEach((b,i)=>{ b.disabled=true; if(i===correct) b.classList.add('correct'); else if(i===chosen) b.classList.add('wrong'); });
+  const isRight = chosen===correct;
+  fb.className = 'feedback-box show '+(isRight?'correct':'wrong');
+  fb.innerHTML = (isRight?'<strong>Correct.</strong> ':'<strong>Incorrect.</strong> ')+(window.feedbacks[id]||'');
+  if(isRight) addScore(10,'mcq');
+  checkProgress();
+}
+function discussHTML(q, expert) {
+  const uid = 'disc'+Math.random().toString(36).slice(2,8);
+  return `<div class="discussion-block">
+    <span class="disc-tag">Discussion Prompt</span>
+    <div class="disc-q">${q}</div>
+    <button class="expert-toggle" onclick="toggleExpert('${uid}')">Show Expert Perspective</button>
+    <div class="expert-answer" id="${uid}">${expert}</div>
+  </div>`;
+}
+function toggleExpert(id) { document.getElementById(id).classList.toggle('show'); }
+
+// ===== SECTION 0: SECURITY GAP =====
+function sec0() {
+  return `<div class="section-header">
+    <div class="section-num">Section 1 of 6</div>
+    <h2>The Ransomware Security Gap</h2>
+  </div>
+  <div class="stat-highlight">
+    <div class="stat-hl"><div class="sh-val">88%</div><div class="sh-lbl">Organizations hit by ransomware in past 12 months</div></div>
+    <div class="stat-hl"><div class="sh-val">54%</div><div class="sh-lbl">Believe they are a target — down from 68% in 2021</div></div>
+    <div class="stat-hl"><div class="sh-val">51%</div><div class="sh-lbl">Concerned about AI-generated attacks</div></div>
+    <div class="stat-hl"><div class="sh-val">42%</div><div class="sh-lbl">Have adopted AI in defense</div></div>
+  </div>
+  <div class="data-card">
+    <div class="data-label">Key Finding: The Confidence Gap</div>
+    88% of organizations are being attacked, yet only 54% believe they are a target — down from 68% in 2021. Organizations are experiencing more attacks while simultaneously becoming <strong>less convinced they are at risk</strong>. This confidence-attack gap is a structural vulnerability: lower perceived risk leads to lower investment in prevention and readiness.
+  </div>
+  ${mcqHTML('s0q1','1','88% of organizations surveyed experienced ransomware. Yet only 54% believe their organization is a target. What does this confidence-attack gap represent?',[
+    'Evidence that the survey respondents are overstating attack frequency',
+    'A statistical anomaly with no operational significance',
+    'A structural risk — organizations that don\'t believe they are targets invest less in readiness, making them easier targets',
+    'A sign that ransomware is becoming less effective',
+  ],2)}
+  ${mcqHTML('s0q2','2','51% of organizations are highly concerned about AI-generated ransomware attacks. Only 42% have specifically adopted AI in defense. What is the operational implication of this gap?',[
+    'The 9-point gap is too small to be operationally significant',
+    'Attackers are advancing AI capabilities faster than defenders are deploying AI defenses — creating a structural disadvantage that requires a specific roadmap to close',
+    'Defenders should wait for AI tools to mature before adopting them',
+    'The concern is overblown — AI-generated attacks are not materially different from standard ransomware',
+  ],1)}
+  <div class="multiselect-block" id="ms-block">
+    <div class="q-num">Multi-Select — 20 pts</div>
+    <div class="q-text">The study identifies that only 27% of organizations use segmentation/microsegmentation, while 92% have centralized accountability for ransomware. Which statements are supported by the study data?</div>
+    <div class="q-hint">Select all that apply, then submit.</div>
+    <div id="ms-options">
+      <label class="checkbox-option"><input type="checkbox" id="ms0"><label for="ms0">Segmentation is the most underdeployed high-impact control in the dataset — 73% of organizations lack it</label></label>
+      <label class="checkbox-option"><input type="checkbox" id="ms1"><label for="ms1">Centralized accountability (92%) correlates with clearer decision authority in incident response</label></label>
+      <label class="checkbox-option"><input type="checkbox" id="ms2"><label for="ms2">MFA and automated patching are necessary but are not sufficient on their own to prevent lateral movement blast radius</label></label>
+      <label class="checkbox-option"><input type="checkbox" id="ms3"><label for="ms3">The cloud is the most vulnerable attack surface according to 49% of respondents, followed by endpoints at 45%</label></label>
+      <label class="checkbox-option"><input type="checkbox" id="ms4"><label for="ms4">Segmentation adoption has no relationship to ransomware outcomes according to the study</label></label>
+      <label class="checkbox-option"><input type="checkbox" id="ms5"><label for="ms5">Phishing and RDP being top initial access vectors means that perimeter firewall upgrades alone close the primary risk</label></label>
+    </div>
+    <button class="submit-btn" id="ms-submit-btn" onclick="submitMS()">Submit Answer</button>
+    <div class="feedback-box" id="ms-feedback"></div>
+  </div>
+  ${discussHTML(
+    'Your security budget review requires you to justify investment in microsegmentation versus adding another SIEM tool. Using the Ponemon data, make the quantitative case for microsegmentation.',
+    `<strong>The quantitative case:</strong> Lateral movement — the mechanism that converts a single compromised endpoint into an enterprise-wide encryption event — is the primary driver of attack scope. The study shows lateral movement via unpatched vulnerabilities increased 19 points (33% to 52%) in three years. Segmentation is the control that limits blast radius even when lateral movement cannot be prevented outright.<br><br>Only 27% of organizations deploy it — meaning 73% of your peer organizations are running without the primary blast-radius limiter. A SIEM increases detection capability; segmentation limits the consequence of detection failures. Both matter, but segmentation addresses a larger and faster-growing gap in the data.`
+  )}
+  ${navHTML('Section 1 of 6')}`;
+}
+
+// ===== SECTION 1: COST BREAKDOWN =====
+function sec1() {
+  const terms = ['Reputation & brand damage','Legal & regulatory actions','Information misuse response','Technical support & forensics','Revenue / income lost','Users\' idle time & productivity'];
+  const slots2024 = ['Rank 1 — Highest cost in 2024','Rank 2','Rank 3','Rank 4','Rank 5','Rank 6 — Lowest cost in 2024'];
+  window._m1terms = terms;
+  window._m1slots = slots2024;
+  return `<div class="section-header">
+    <div class="section-num">Section 2 of 6</div>
+    <h2>Breaking Down the Cost of a Ransomware Attack</h2>
+  </div>
+  <div class="stat-highlight">
+    <div class="stat-hl"><div class="sh-val">$146K</div><div class="sh-lbl">Avg cost to contain &amp; remediate — 2024</div></div>
+    <div class="stat-hl"><div class="sh-val">132 hrs</div><div class="sh-lbl">Avg containment time — down from 190 hrs in 2021</div></div>
+    <div class="stat-hl"><div class="sh-val">17.5</div><div class="sh-lbl">Avg staff &amp; third parties involved — up from 14 in 2021</div></div>
+    <div class="stat-hl"><div class="sh-val">58%</div><div class="sh-lbl">Had to shut down operations — up from 45% in 2021</div></div>
+  </div>
+  ${mcqHTML('s1q1','1','The study tracks six cost categories ranked by financial impact. Which cost category moved from #6 (least significant) in 2021 to #1 (most significant) in 2024?',[
+    'Reputation and brand damage because of IT security failure',
+    'Legal and regulatory actions',
+    'Revenues and income lost because of IT security failures',
+    'Technical support and forensics costs',
+  ],0)}
+  ${mcqHTML('s1q2','2','Revenue loss from ransomware attacks changed significantly between 2021 and 2024. Which statement accurately reflects the study data?',[
+    'Revenue loss nearly doubled — from 22% of respondents reporting significant revenue loss in 2021 to 40% in 2024',
+    'Revenue loss only affects large enterprises and is not tracked by the study',
+    'Revenue loss remained stable — approximately 22% of organizations affected in both years',
+    'Revenue loss decreased as organizations improved their recovery capabilities',
+  ],0)}
+  <div class="matching-block" id="matching1-block">
+    <div class="q-num">Matching — Cost Category Rankings — 20 pts</div>
+    <h3>Match each cost category to its 2024 ranking (1 = highest financial impact).</h3>
+    <div class="m-hint">Click a cost category on the left, then click the matching rank slot on the right.</div>
+    <div class="matching-cols">
+      <div>
+        <div class="matching-col-label">Cost Category</div>
+        ${terms.map((t,i)=>`<div class="term-chip" id="m1t-${i}" onclick="selectM1(${i})">${t}</div>`).join('')}
+      </div>
+      <div>
+        <div class="matching-col-label">2024 Rank</div>
+        ${slots2024.map((s,i)=>`<div class="slot" id="m1s-${i}" onclick="assignM1(${i})"><span class="slot-def">${s}</span></div>`).join('')}
+      </div>
+    </div>
+    <button class="submit-btn" id="m1-submit-btn" onclick="submitM1()">Submit Matching</button>
+    <div class="feedback-box" id="m1-feedback"></div>
+  </div>
+  ${discussHTML(
+    'Your CISO wants to build a crisis communications retainer. The CFO says "we can handle comms in-house." Using the Ponemon cost data, how do you make the case for the retainer?',
+    `<strong>Data-backed case:</strong> Brand damage is the #1 cost category in 2024 — not legal fees, not ransom. 35% of ransomware victims reported brand damage as a consequence (up from 21% in 2021). Brand recovery is measured in months to years — not the days-to-weeks timeline of technical remediation.<br><br>A crisis communications retainer provides: pre-approved holding statements that can be activated in the first hour (no in-house approval cycle), media relations experience specific to security incidents, and public affairs capabilities for concurrent regulatory disclosure. In-house comms teams handling a security crisis cold — while also managing normal business communications — produce slower, less polished responses. The cost of the retainer is a fraction of the documented brand damage cost.`
+  )}
+  ${navHTML('Section 2 of 6')}`;
+}
+
+// ===== SECTION 2: LATERAL MOVEMENT =====
+function sec2() {
+  return `<div class="section-header">
+    <div class="section-num">Section 3 of 6</div>
+    <h2>Lateral Movement, Response Barriers &amp; Extortion</h2>
+  </div>
+  <div class="data-card">
+    <div class="data-label">Three Lateral Movement Techniques — 2024 vs 2021</div>
+    <table class="data-table">
+      <tr><th>Technique</th><th>2024</th><th>2021</th><th>Change</th></tr>
+      <tr><td>Unpatched vulnerabilities</td><td class="highlight">52%</td><td>33%</td><td class="highlight">+19 pts</td></tr>
+      <tr><td>Cached credential attacks</td><td class="highlight">48%</td><td>42%</td><td class="highlight">+6 pts</td></tr>
+      <tr><td>Weak high-privilege passwords</td><td class="highlight">47%</td><td class="dimmed">N/A</td><td class="dimmed">—</td></tr>
+    </table>
+    <strong>Response barriers:</strong> 50% cite insider negligence · 44% not prepared to rapidly contain an attack<br>
+    <strong>Law enforcement reporting:</strong> Only 28% reported to law enforcement — fear of publicity (39%), need to pay quickly (38%), fear of retaliation (38%)
+  </div>
+  ${mcqHTML('s2q1','1','Unpatched vulnerabilities as a lateral movement vector increased from 33% to 52% of respondents between 2021 and 2024 — a 19-point jump. What does this trend indicate?',[
+    'Ransomware actors have shifted away from phishing to vulnerability exploitation as their primary initial access vector',
+    'The increase is explained by larger sample size in 2024 versus 2021',
+    'The growing CVE ecosystem gives attackers an expanding library of lateral movement tools, and enterprise patch management is not keeping pace',
+    'Patching is no longer an effective defense against ransomware',
+  ],2)}
+  ${mcqHTML('s2q2','2','Only 27% of organizations deploy network segmentation or microsegmentation. Given the lateral movement data, what is the primary consequence of this gap?',[
+    'Organizations without segmentation cannot detect ransomware activity',
+    'Segmentation is only relevant for organizations with more than 1,000 endpoints',
+    'Segmentation primarily affects initial access — not lateral movement after initial compromise',
+    'Without segmentation, a single compromised endpoint can reach the full network — allowing attackers to encrypt 60%+ of systems rather than a contained subset',
+  ],3)}
+  ${discussHTML(
+    '50% of respondents cite insider negligence as a response barrier. 44% are not prepared to rapidly contain an attack. Are these the same problem? How would you address them separately?',
+    `<strong>They are different problems with different solutions:</strong><br><br><strong>Insider negligence</strong> is a training and culture problem. Negligent users fail to report suspicious activity, click phishing links, and use weak credentials. The solution is continuous behavioral training — not annual awareness tests. Measure behaviors (did the user report this suspicious email?) not test scores (did the user pass the phishing simulation?). The help-desk social engineering scenario from Module 6 illustrates exactly this failure mode.<br><br><strong>Unpreparedness to rapidly contain</strong> is a process and governance problem. Even trained security teams cannot contain attacks effectively without: pre-delegated isolation authority, a tested IR runbook, pre-built bridge/comms structure, and pre-defined decision thresholds. The tabletop exercises in Module 6 address this gap directly. The two problems look similar — "people problem" — but require completely different investments.`
+  )}
+  ${navHTML('Section 3 of 6')}`;
+}
+
+// ===== SECTION 3: PAYMENT DECISIONS =====
+function sec3() {
+  return `<div class="section-header">
+    <div class="section-num">Section 4 of 6</div>
+    <h2>Payment Decisions &amp; Recovery Outcomes</h2>
+  </div>
+  <div class="stat-highlight">
+    <div class="stat-hl"><div class="sh-val">51%</div><div class="sh-lbl">Paid the ransom (2024)</div></div>
+    <div class="stat-hl"><div class="sh-val">13%</div><div class="sh-lbl">Recovered ALL data after paying</div></div>
+    <div class="stat-hl"><div class="sh-val">40%</div><div class="sh-lbl">Data still leaked despite paying</div></div>
+    <div class="stat-hl"><div class="sh-val">32%</div><div class="sh-lbl">Faced additional demands after paying</div></div>
+  </div>
+  <div class="data-card">
+    <div class="data-label">Why Organizations Paid vs. Didn't Pay</div>
+    <strong>Didn't pay (49%):</strong> Data wasn't critical (49%) · Effective backup strategy (48%) · Policy against paying (38%) · LE/insurer advice (30%)<br><br>
+    <strong>Paid (51%):</strong> Didn't want data leaked (47%) · Couldn't afford downtime (47%) · Believed payment = faster recovery (31%) · Insurance covered it (28%)
+  </div>
+  ${mcqHTML('s3q1','1','51% of organizations paid the ransom in 2024. What was the outcome for those who paid?',[
+    'Only 13% recovered all their data; 40% saw data leaked despite payment; 32% faced additional demands',
+    'All paying organizations received working decryption keys, but some data was still misused',
+    '75% recovered all encrypted data after payment',
+    'Outcomes were consistent with what was negotiated — 90%+ recovered the data they paid for',
+  ],0)}
+  ${mcqHTML('s3q2','2','48% of organizations that did NOT pay the ransom cite an effective backup strategy as the reason. What does this finding imply for security investment prioritization?',[
+    'Organizations with backups should not pay regardless of recovery time requirements',
+    'Backup investment should be deprioritized in favor of detection capabilities',
+    'Backup strategy is the most controllable pre-incident factor in avoiding ransom payment — and should be benchmarked against the standard of "good enough to resist payment pressure"',
+    'The 48% figure suggests backups are only relevant for half of attack scenarios',
+  ],2)}
+  ${discussHTML(
+    'Your CEO asks: "If 51% of organizations pay the ransom, is that just the cost of doing business?" How do you reframe that question using the Ponemon data?',
+    `<strong>Reframe:</strong> "51% paid" is the input. The output is what matters: only 13% recovered all their data. 40% saw their data leaked despite payment. 32% faced additional extortion. The average demand was $1.2M — meaning the expected cost-per-successful-full-recovery is approximately $9.2M in ransom payments alone, before remediation, brand damage, legal costs, and OFAC exposure.<br><br>Payment is not "the cost of doing business" — it is a $1.2M gamble with 1-in-8 odds of achieving its stated objective, with OFAC compliance obligations regardless of outcome, and with a 32% probability of financing a repeat attack. The correct question is not "should we be willing to pay?" — it is "what backup architecture investment would eliminate the payment decision entirely?"`
+  )}
+  ${navHTML('Section 4 of 6')}`;
+}
+
+// ===== SECTION 4: COUNTRY DIFFERENCES =====
+function sec4() {
+  const countries = ['U.S.','Japan','France','Australia'];
+  const aiAdopt = ['52% — highest globally','47% — second highest','36% — second lowest','35% — lowest globally'];
+  window._m2countries = countries;
+  window._m2slots = aiAdopt;
+  return `<div class="section-header">
+    <div class="section-num">Section 5 of 6</div>
+    <h2>Country Differences &amp; Global Threat Landscape</h2>
+  </div>
+  <div class="data-card">
+    <div class="data-label">AI Attack Concern by Country (7+/10 scale)</div>
+    <table class="data-table">
+      <tr><th>Country</th><th>AI Attack Concern</th><th>AI Defense Adoption</th><th>Gap</th></tr>
+      <tr><td>Germany</td><td class="highlight">56% — Highest</td><td>Not disclosed</td><td>—</td></tr>
+      <tr><td>France</td><td class="highlight">55%</td><td class="highlight">36%</td><td class="highlight">−19 pts (widest)</td></tr>
+      <tr><td>Global Average</td><td>51%</td><td>42%</td><td>−9 pts</td></tr>
+      <tr><td>U.S.</td><td>~51%</td><td class="highlight">52% — Highest</td><td>+1 pt</td></tr>
+      <tr><td>U.K.</td><td>46%</td><td>Not disclosed</td><td>—</td></tr>
+      <tr><td>Australia</td><td>46%</td><td class="highlight">35% — Lowest</td><td>−11 pts</td></tr>
+    </table>
+  </div>
+  ${mcqHTML('s4q1','1','France has 55% AI attack concern (second highest) but only 36% AI defense adoption (second lowest). What does this concern-action gap represent?',[
+    'The gap is typical for European markets and not operationally significant',
+    'The concern figure includes ransomware generally, not just AI-generated attacks, so the comparison is invalid',
+    'French organizations are overestimating the AI threat relative to actual attack patterns',
+    'France has the widest concern-action gap in the dataset — high threat awareness without corresponding defensive capability deployment, which may reflect budget constraints, regulatory uncertainty, or procurement lag',
+  ],3)}
+  ${mcqHTML('s4q2','2','Only 28% of organizations report ransomware incidents to law enforcement, primarily citing fear of unwanted publicity. What is the flaw in this reasoning for organizations facing double-extortion?',[
+    'The reasoning is sound — law enforcement reporting always triggers mandatory press releases',
+    'Law enforcement reporting is optional and provides no operational benefit to the victim',
+    'Law enforcement only has value for organizations in critical infrastructure sectors',
+    'Double-extortion actors publish data on leak sites regardless of whether the victim reports — so the choice is not report-and-risk-publicity vs. silent-and-safe; it is report-with-intelligence-support vs. silent-with-the-same-publicity-risk',
+  ],3)}
+  <div class="matching-block" id="matching2-block">
+    <div class="q-num">Matching — Country AI Defense Adoption — 20 pts</div>
+    <h3>Match each country to its AI defense adoption rate.</h3>
+    <div class="m-hint">Click a country on the left, then click the matching adoption rate on the right.</div>
+    <div class="matching-cols">
+      <div>
+        <div class="matching-col-label">Country</div>
+        ${countries.map((c,i)=>`<div class="term-chip" id="m2t-${i}" onclick="selectM2(${i})">${c}</div>`).join('')}
+      </div>
+      <div>
+        <div class="matching-col-label">AI Defense Adoption</div>
+        ${aiAdopt.map((s,i)=>`<div class="slot" id="m2s-${i}" onclick="assignM2(${i})"><span class="slot-def">${s}</span></div>`).join('')}
+      </div>
+    </div>
+    <button class="submit-btn" id="m2-submit-btn" onclick="submitM2()">Submit Matching</button>
+    <div class="feedback-box" id="m2-feedback"></div>
+  </div>
+  ${discussHTML(
+    'Your organization has a critical vendor in France and a subsidiary in Australia. Both have lower AI defense adoption than your U.S. headquarters. How does this affect your third-party risk posture?',
+    `<strong>Supply chain risk is inherited.</strong> A supply chain compromise that enters through a vendor with lower detection capability can propagate to your organization regardless of your own defensive posture. This is exactly the LogiSoft scenario from Module 6: the entry point was the vendor's security posture, not the victim's.<br><br><strong>Specific actions:</strong><br>(1) Add country-level AI detection capability to your TPRM assessment criteria — not just org-level controls.<br>(2) Request SOC2 Type II reports or equivalent that evidence the vendor's detection and response program.<br>(3) For the France vendor (55% concerned, 36% adopted): specifically assess whether their detection would catch AI-assisted phishing, which they are more concerned about than they are equipped to handle.<br>(4) For the Australian subsidiary: consider whether supplemental monitoring from headquarters (e.g., shared SIEM, joint threat intelligence) can compensate for the local adoption gap.`
+  )}
+  ${navHTML('Section 5 of 6')}`;
+}
+
+// ===== SECTION 5: STRATEGIC READINESS =====
+function sec5() {
+  const saItems = [
+    'AI-assisted alert triage deployed and reducing analyst queue time',
+    'Network segmentation or microsegmentation in place for identity infrastructure and backup management plane',
+    'Crisis communications playbook with pre-approved holding statements (3 scenarios) tested in the past 12 months',
+    'Backup architecture verified: immutable retention configured, repository isolated, restore tested quarterly with documented RTO',
+    'FBI/CISA relationship established pre-incident (InfraGard or sector working group participation)',
+    'Continuous security awareness program with behavioral metrics — not just annual test pass rates',
+    'Payment decision policy documented at board level with OFAC screening and CIRCIA reporting steps pre-defined',
+    'Tabletop exercise (Module 6 or equivalent) run in the past 12 months with written after-action review',
+    'CIRCIA and applicable breach notification obligations assessed and documented by legal counsel',
+    'Third-party risk assessments include country-level AI defense maturity for critical vendors',
+  ];
+  window._saItems = saItems;
+  return `<div class="section-header">
+    <div class="section-num">Section 6 of 6</div>
+    <h2>Strategic Readiness &amp; Self-Assessment</h2>
+  </div>
+  <div class="data-card">
+    <div class="data-label">Seven Strategic Priorities — Mapped to Study Findings</div>
+    <strong>1. Close the AI defense gap</strong> — 51% concerned, only 42% adopted<br>
+    <strong>2. Deploy segmentation at scale</strong> — only 27% use it; unpatched lateral movement +19 points<br>
+    <strong>3. Invest in communications preparedness</strong> — brand damage is now the #1 cost<br>
+    <strong>4. Achieve immutable, tested backup architecture</strong> — 48% didn't pay because of backups<br>
+    <strong>5. Increase law enforcement engagement</strong> — only 28% report, forgoing intelligence and support<br>
+    <strong>6. Build behavioral security awareness</strong> — 50% cite insider negligence as response barrier<br>
+    <strong>7. Pre-define payment decision policy</strong> — 51% say never pay, 51% paid; close the gap before the crisis
+  </div>
+  ${mcqHTML('s5q1','1','The study identifies three lateral movement techniques with known countermeasures. Which set correctly matches all three techniques to their primary countermeasures?',[
+    'All three techniques require EDR deployment as the primary countermeasure',
+    'Unpatched vulnerabilities → patch management + segmentation; cached credentials → Credential Guard + LAPS; weak high-privilege passwords → PAM vaulting + just-in-time access',
+    'Phishing → MFA; RDP → firewall; cached credentials → antivirus',
+    'Unpatched systems → vulnerability scanner; credentials → password policy; weak passwords → MFA only',
+  ],1)}
+  ${mcqHTML('s5q2','2','51% of organizations say they will never pay the ransom. Yet 51% actually paid in 2024. What is the most effective way to close this stated-policy vs. actual-behavior gap?',[
+    'Reinforce the "never pay" policy annually in security awareness training',
+    'Remove payment capability from operational teams so the decision cannot be made without board involvement',
+    'Pre-define the payment decision policy in writing at the board level — including conditions, mandatory steps (OFAC screening, legal authorization, insurer notification), decision authority thresholds, and CIRCIA reporting obligation — before the incident creates time pressure',
+    'The gap is unavoidable — actual crisis conditions will always override pre-incident policies',
+  ],2)}
+  <div class="self-assess-block">
+    <div class="q-num">Self-Assessment Bonus — up to 20 pts</div>
+    <h3>Strategic Readiness Checklist</h3>
+    <div class="sa-hint">Check every item your organization currently has fully in place. 7 or more items earns 20 bonus points.</div>
+    ${saItems.map((item,i)=>`<div class="sa-item"><input type="checkbox" id="sa${i}"><label for="sa${i}">${item}</label></div>`).join('')}
+    <button class="submit-btn" style="margin-top:14px;" id="sa-submit-btn" onclick="submitSA()">Submit Readiness Check</button>
+    <div class="feedback-box" id="sa-feedback"></div>
+  </div>
+  ${discussHTML(
+    'Using the Ponemon data, build a three-bullet executive briefing for your board. One bullet on threat reality, one on current gap, one on investment ask.',
+    `<strong>Threat reality:</strong> 88% of organizations with dedicated IT and security staff experienced ransomware in the past 12 months. The average demand is $1.2M. Of those who paid, only 13% recovered all their data. Reputation and brand damage — not legal fees — is now the #1 financial consequence.<br><br><strong>Current gap:</strong> Our assessment against the Ponemon benchmarks identifies [X] of 10 readiness criteria not yet fully implemented, including [highest-priority gap]. Specifically, [segmentation coverage / backup immutability / payment policy / communications playbook] does not meet the standard evidenced in the study as the key differentiator between paying and not paying.<br><br><strong>Investment ask:</strong> A [$X] investment in [segmentation / backup architecture / crisis communications retainer / tabletop program] would close the gaps with the highest statistical impact on whether we become one of the 48% who didn't pay because of effective architecture — rather than one of the 51% who paid and recovered only 13% of their data.`
+  )}
+  ${navHTML('Section 6 of 6')}`;
+}
+
+// ===== MULTI-SELECT =====
+function submitMS() {
+  if(msSubmitted) return;
+  msSubmitted = true;
+  const correct = new Set([0,1,2,3]);
+  const wrong = new Set([4,5]);
+  let allRight=true, anyWrong=false, correctCount=0;
+  for(let i=0;i<6;i++) {
+    const cb = document.getElementById('ms'+i);
+    const wrap = cb.closest('.checkbox-option');
+    cb.disabled = true;
+    if(correct.has(i)&&cb.checked){wrap.classList.add('cb-correct');correctCount++;}
+    else if(correct.has(i)&&!cb.checked){wrap.classList.add('cb-wrong');allRight=false;}
+    else if(wrong.has(i)&&cb.checked){wrap.classList.add('cb-wrong');anyWrong=true;}
+    else if(wrong.has(i)&&!cb.checked){wrap.classList.add('cb-correct');}
+  }
+  document.getElementById('ms-submit-btn').disabled = true;
+  const fb = document.getElementById('ms-feedback');
+  let pts=0;
+  if(allRight&&!anyWrong){pts=20;fb.className='feedback-box show correct';fb.innerHTML='<strong>Perfect — 20 pts.</strong> All four correct statements identified. The segmentation gap (27%), centralized accountability (92%), MFA-as-necessary-but-not-sufficient, and cloud/endpoint attack surface are all directly supported by the study data.';}
+  else if(correctCount>=3&&!anyWrong){pts=10;fb.className='feedback-box show neutral';fb.innerHTML='<strong>Partial — 10 pts.</strong> Good instincts. Review the segmentation finding: 73% of organizations lack it and it is the highest-impact underdeployed control in the dataset.';}
+  else{fb.className='feedback-box show wrong';fb.innerHTML='<strong>Needs review — 0 pts.</strong> Segmentation adoption (27%) has a direct relationship to blast radius outcomes. Phishing and RDP being top vectors means endpoint/identity controls matter alongside perimeter controls — not instead of them.';}
+  if(pts>0) addScore(pts,'ms');
+  fb.classList.add('show');
+  checkProgress();
+}
+
+// ===== MATCHING 1 =====
+let m1sel = null, m1assign = {};
+function selectM1(i) {
+  if(matching1.submitted) return;
+  document.querySelectorAll('[id^="m1t-"]').forEach(el=>el.classList.remove('selected'));
+  if(m1sel===i){m1sel=null;return;}
+  m1sel=i;
+  document.getElementById('m1t-'+i).classList.add('selected');
+}
+function assignM1(si) {
+  if(matching1.submitted||m1sel===null) return;
+  for(let k in m1assign){if(m1assign[k]===m1sel){delete m1assign[k];document.getElementById('m1s-'+k).innerHTML=`<span class="slot-def">${window._m1slots[k]}</span>`;document.getElementById('m1s-'+k).classList.remove('filled');}}
+  if(m1assign[si]!==undefined){document.getElementById('m1t-'+m1assign[si]).classList.remove('used');}
+  m1assign[si]=m1sel;
+  document.getElementById('m1s-'+si).innerHTML=`<span class="slot-def" style="color:var(--muted);font-size:10px;">${window._m1slots[si]}</span><span style="color:var(--text);font-size:12px;">${window._m1terms[m1sel]}</span>`;
+  document.getElementById('m1s-'+si).classList.add('filled');
+  document.getElementById('m1t-'+m1sel).classList.add('used');
+  document.getElementById('m1t-'+m1sel).classList.remove('selected');
+  m1sel=null;
+}
+function submitM1() {
+  if(matching1.submitted) return;
+  matching1.submitted=true;
+  document.getElementById('m1-submit-btn').disabled=true;
+  let correct=0;
+  for(let s=0;s<6;s++) {
+    const assigned=m1assign[s];
+    const slot=document.getElementById('m1s-'+s);
+    if(assigned===s){correct++;slot.classList.add('slot-correct');if(assigned!==undefined)document.getElementById('m1t-'+assigned).classList.add('matched-correct');}
+    else{slot.classList.add('slot-wrong');if(assigned!==undefined)document.getElementById('m1t-'+assigned).classList.add('matched-wrong');}
+  }
+  const fb=document.getElementById('m1-feedback');
+  fb.classList.add('show');
+  let pts=0;
+  if(correct===6){pts=20;fb.className='feedback-box show correct';fb.innerHTML=`<strong>Perfect — 20 pts.</strong> All six cost categories correctly ranked. The critical shift: brand damage moved from #6 to #1; legal costs dropped from #1 to #2. Revenue loss (now #5) doubled in prevalence without rising in relative severity ranking.`;}
+  else if(correct>=4){pts=10;fb.className='feedback-box show neutral';fb.innerHTML=`<strong>Partial — 10 pts.</strong> ${correct}/6 correct. Key: brand damage is now #1 (was #6); legal actions dropped to #2 (was #1); idle time moved from #2 to #6.`;}
+  else{fb.className='feedback-box show wrong';fb.innerHTML=`<strong>${correct}/6 correct — 0 pts.</strong> 2024 ranking: (1) Brand damage, (2) Legal, (3) Information misuse, (4) Technical/forensics, (5) Revenue, (6) Idle time.`;}
+  if(pts>0) addScore(pts,'m1');
+  checkProgress();
+}
+
+// ===== MATCHING 2 =====
+let m2sel = null, m2assign = {};
+function selectM2(i) {
+  if(matching2.submitted) return;
+  document.querySelectorAll('[id^="m2t-"]').forEach(el=>el.classList.remove('selected'));
+  if(m2sel===i){m2sel=null;return;}
+  m2sel=i;
+  document.getElementById('m2t-'+i).classList.add('selected');
+}
+function assignM2(si) {
+  if(matching2.submitted||m2sel===null) return;
+  for(let k in m2assign){if(m2assign[k]===m2sel){delete m2assign[k];document.getElementById('m2s-'+k).innerHTML=`<span class="slot-def">${window._m2slots[k]}</span>`;document.getElementById('m2s-'+k).classList.remove('filled');}}
+  if(m2assign[si]!==undefined){document.getElementById('m2t-'+m2assign[si]).classList.remove('used');}
+  m2assign[si]=m2sel;
+  document.getElementById('m2s-'+si).innerHTML=`<span class="slot-def" style="color:var(--muted);font-size:10px;">${window._m2slots[si]}</span><span style="color:var(--text);font-size:12px;">${window._m2countries[m2sel]}</span>`;
+  document.getElementById('m2s-'+si).classList.add('filled');
+  document.getElementById('m2t-'+m2sel).classList.add('used');
+  document.getElementById('m2t-'+m2sel).classList.remove('selected');
+  m2sel=null;
+}
+function submitM2() {
+  if(matching2.submitted) return;
+  matching2.submitted=true;
+  document.getElementById('m2-submit-btn').disabled=true;
+  let correct=0;
+  for(let s=0;s<4;s++) {
+    const assigned=m2assign[s];
+    const slot=document.getElementById('m2s-'+s);
+    if(assigned===s){correct++;slot.classList.add('slot-correct');if(assigned!==undefined)document.getElementById('m2t-'+assigned).classList.add('matched-correct');}
+    else{slot.classList.add('slot-wrong');if(assigned!==undefined)document.getElementById('m2t-'+assigned).classList.add('matched-wrong');}
+  }
+  const fb=document.getElementById('m2-feedback');
+  fb.classList.add('show');
+  let pts=0;
+  if(correct===4){pts=20;fb.className='feedback-box show correct';fb.innerHTML=`<strong>Perfect — 20 pts.</strong> U.S. leads at 52%, Japan second at 47%, France at 36%, Australia lowest at 35%. The France-Australia gap relative to the U.S. represents the primary supply-chain AI defense risk for U.S.-headquartered organizations.`;}
+  else if(correct>=3){pts=10;fb.className='feedback-box show neutral';fb.innerHTML=`<strong>Partial — 10 pts.</strong> ${correct}/4 correct. U.S.=52%, Japan=47%, France=36%, Australia=35%.`;}
+  else{fb.className='feedback-box show wrong';fb.innerHTML=`<strong>${correct}/4 correct — 0 pts.</strong> Correct: U.S.=52% (highest), Japan=47%, France=36%, Australia=35% (lowest).`;}
+  if(pts>0) addScore(pts,'m2');
+  checkProgress();
+}
+
+// ===== SELF ASSESS =====
+function submitSA() {
+  if(saSubmitted) return;
+  saSubmitted=true;
+  document.getElementById('sa-submit-btn').disabled=true;
+  let checked=0;
+  for(let i=0;i<10;i++){if(document.getElementById('sa'+i).checked)checked++;document.getElementById('sa'+i).disabled=true;}
+  const fb=document.getElementById('sa-feedback');
+  fb.classList.add('show');
+  let pts=0;
+  if(checked>=7){pts=20;fb.className='feedback-box show correct';fb.innerHTML=`<strong>+20 pts bonus.</strong> ${checked}/10 controls in place — strong posture. The gaps you identified are your Ponemon-evidenced priority roadmap.`;}
+  else if(checked>=5){pts=10;fb.className='feedback-box show neutral';fb.innerHTML=`<strong>+10 pts.</strong> ${checked}/10 controls in place. Focus first on the items with the largest Ponemon impact: segmentation (27% deployed), backup architecture (48% payment avoidance), and communications preparedness (#1 cost category).`;}
+  else{fb.className='feedback-box show wrong';fb.innerHTML=`<strong>0 pts — ${checked}/10 items in place.</strong> ${10-checked} gaps identified — each directly evidenced by the study. Use these gaps as your investment case to leadership. The data is the argument.`;}
+  if(pts>0) addScore(pts,'sa');
+  checkProgress();
+}
+
+// ===== RESULTS =====
+function showResults() {
+  document.getElementById('screen-game').classList.remove('active');
+  document.getElementById('screen-results').classList.add('active');
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('br-mcq').textContent = (scoreLog.mcq||0)+' / 120';
+  document.getElementById('br-ms').textContent = (scoreLog.ms||0)+' / 20';
+  document.getElementById('br-m1').textContent = (scoreLog.m1||0)+' / 20';
+  document.getElementById('br-m2').textContent = (scoreLog.m2||0)+' / 20';
+  document.getElementById('br-sa').textContent = (scoreLog.sa||0)+' / 20';
+  let band,title,sub,cls;
+  if(score>=160){band='Chief Risk Officer';title='Chief Risk Officer';sub='You translate data into decisions. These numbers are in your briefings.';cls='grade-a';}
+  else if(score>=120){band='Risk Analyst';title='Risk Analyst';sub='Solid grasp — tighten segmentation and payment policy fluency.';cls='grade-b';}
+  else if(score>=80){band='Developing';title='Developing';sub='Revisit the cost category shifts and payment outcome data.';cls='grade-c';}
+  else{band='Needs Review';title='Needs Review';sub='Return to the study data — the numbers are the argument.';cls='grade-d';}
+  const badge=document.getElementById('grade-badge');
+  badge.textContent=band;badge.className='grade-badge '+cls;
+  document.getElementById('results-title').textContent=title;
+  document.getElementById('results-sub').textContent=sub;
+}
+
+function restart() {
+  score=0;currentSection=0;
+  sectionAttempted=[false,false,false,false,false,false];
+  scoreLog={mcq:0,ms:0,m1:0,m2:0,sa:0};
+  mcqAnswered={};msSubmitted=false;
+  matching1={selected:null,assignments:{},submitted:false};
+  matching2={selected:null,assignments:{},submitted:false};
+  m1sel=null;m1assign={};m2sel=null;m2assign={};
+  saSubmitted=false;
+  document.getElementById('sidebar-score').textContent='0';
+  document.getElementById('progress-fill').style.width='0%';
+  for(let i=0;i<6;i++){document.getElementById('check-'+i).textContent='';document.getElementById('track-'+i).classList.remove('completed','active');}
+  document.getElementById('screen-results').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  goToSection(0);
+}
+</script>
+</body>
+</html>
