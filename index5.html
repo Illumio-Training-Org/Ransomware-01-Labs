@@ -339,7 +339,6 @@ function mcq(id, correct, feedbackRight, feedbackWrong, pts, sectionIdx) {
         addScore(pts, 'mcq');
       } else {
         this.classList.add('wrong');
-        btns.forEach(b => { if (b.dataset.val === correct) b.classList.add('correct'); });
         fb.className = 'feedback show wrong';
         fb.textContent = '✗ ' + feedbackWrong;
       }
