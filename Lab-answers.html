@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ransomware Training — Instructor Answer Guide</title>
+<style>
+  :root {
+    --correct: #1a7a3c;
+    --correct-bg: #e8f5ee;
+    --wrong-bg: #fafafa;
+    --border: #d0d0d0;
+    --accent: #1a3a5c;
+    --lab-header: #1a3a5c;
+    --section-header: #2d5a8e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 11pt;
+    color: #222;
+    background: #fff;
+    padding: 20px 30px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* Cover page */
+  .cover {
+    text-align: center;
+    padding: 80px 40px;
+    border: 3px solid var(--accent);
+    margin-bottom: 40px;
+    break-after: page;
+  }
+  .cover h1 { font-size: 26pt; color: var(--accent); margin-bottom: 12px; }
+  .cover h2 { font-size: 16pt; color: #555; font-weight: normal; margin-bottom: 30px; }
+  .cover .subtitle { font-size: 12pt; color: #777; margin-bottom: 8px; }
+  .cover .warning {
+    margin-top: 40px;
+    padding: 14px 20px;
+    background: #fff8e1;
+    border: 2px solid #f9a825;
+    border-radius: 4px;
+    font-size: 10pt;
+    color: #555;
+  }
+
+  /* TOC */
+  .toc { margin-bottom: 40px; break-after: page; }
+  .toc h2 { font-size: 14pt; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 16px; }
+  .toc ol { padding-left: 24px; }
+  .toc li { margin-bottom: 8px; font-size: 11pt; }
+  .toc .toc-sub { font-size: 10pt; color: #555; margin-left: 16px; }
+
+  /* Lab sections */
+  .lab {
+    break-before: page;
+    margin-bottom: 40px;
+  }
+  .lab-header {
+    background: var(--lab-header);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 4px 4px 0 0;
+    margin-bottom: 0;
+  }
+  .lab-header h2 { font-size: 14pt; margin-bottom: 2px; }
+  .lab-header .lab-desc { font-size: 10pt; opacity: 0.85; }
+
+  .section-block {
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 16px 18px;
+    margin-bottom: 0;
+  }
+  .section-block:last-child { border-radius: 0 0 4px 4px; }
+
+  .section-title {
+    font-size: 11pt;
+    font-weight: bold;
+    color: var(--section-header);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  /* Questions */
+  .question {
+    margin-bottom: 18px;
+    padding: 12px 14px;
+    background: #f9f9f9;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    break-inside: avoid;
+  }
+  .question:last-child { margin-bottom: 0; }
+
+  .q-text {
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 10.5pt;
+    color: #222;
+  }
+  .q-points {
+    font-weight: normal;
+    font-size: 9pt;
+    color: #666;
+    margin-left: 8px;
+  }
+  .q-type {
+    font-size: 8.5pt;
+    color: #888;
+    font-style: italic;
+    margin-bottom: 8px;
+  }
+
+  .options { list-style: none; padding: 0; }
+  .options li {
+    padding: 5px 10px;
+    margin-bottom: 4px;
+    border-radius: 3px;
+    font-size: 10.5pt;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .options li.correct {
+    background: var(--correct-bg);
+    border: 1px solid #9fcdb5;
+    font-weight: bold;
+    color: var(--correct);
+  }
+  .options li.wrong {
+    background: var(--wrong-bg);
+    border: 1px solid #e8e8e8;
+    color: #555;
+  }
+  .check { font-size: 11pt; }
+  .correct .check { color: var(--correct); }
+  .wrong .check { color: #bbb; }
+
+  /* Multi-select */
+  .options li.correct-multi {
+    background: var(--correct-bg);
+    border: 1px solid #9fcdb5;
+    font-weight: bold;
+    color: var(--correct);
+  }
+  .options li.wrong-multi {
+    background: #fff0f0;
+    border: 1px solid #f5c6c6;
+    color: #a33;
+    text-decoration: line-through;
+  }
+
+  /* Matching */
+  .matching-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 10pt;
+  }
+  .matching-table th {
+    background: #e8edf5;
+    color: var(--accent);
+    padding: 7px 10px;
+    text-align: left;
+    border: 1px solid #c8d4e4;
+    font-size: 9.5pt;
+  }
+  .matching-table td {
+    padding: 7px 10px;
+    border: 1px solid #dde3ec;
+    vertical-align: top;
+  }
+  .matching-table tr:nth-child(even) td { background: #f5f7fb; }
+  .matching-arrow { color: var(--correct); font-weight: bold; text-align: center; }
+
+  /* RACI table */
+  .raci-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 10pt;
+  }
+  .raci-table th {
+    background: #e8edf5;
+    color: var(--accent);
+    padding: 7px 10px;
+    text-align: left;
+    border: 1px solid #c8d4e4;
+    font-size: 9.5pt;
+  }
+  .raci-table td {
+    padding: 7px 10px;
+    border: 1px solid #dde3ec;
+  }
+  .raci-table .owner { font-weight: bold; color: var(--correct); }
+
+  /* Notes / instructor tips */
+  .instructor-note {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #fffde7;
+    border-left: 4px solid #f9a825;
+    font-size: 9.5pt;
+    color: #555;
+    border-radius: 0 3px 3px 0;
+  }
+  .instructor-note strong { color: #333; }
+
+  /* Scenario headers in Lab 6 */
+  .scenario-header {
+    font-size: 10.5pt;
+    font-weight: bold;
+    color: var(--section-header);
+    margin: 14px 0 8px;
+    padding: 5px 8px;
+    background: #eef2f8;
+    border-radius: 3px;
+    border-left: 3px solid var(--section-header);
+  }
+
+  @media print {
+    body { padding: 10px 15px; font-size: 10.5pt; }
+    .cover { break-after: page; }
+    .toc { break-after: page; }
+    .lab { break-before: page; }
+    .question { break-inside: avoid; }
+    .matching-table { break-inside: avoid; }
+    a { text-decoration: none; color: inherit; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ COVER -->
+<div class="cover">
+  <h1>Ransomware Training Series</h1>
+  <h2>Instructor Answer & Marker Guide</h2>
+  <div class="subtitle">Labs 1 – 7 · All Questions, Correct Answers Marked</div>
+  <div class="subtitle">Illumio Security Training · Instruqt Platform</div>
+  <div class="warning">
+    <strong>INSTRUCTOR USE ONLY — DO NOT DISTRIBUTE TO PARTICIPANTS</strong><br>
+    This guide contains all correct answers across all seven lab modules. Sharing with participants before or during lab sessions will compromise assessment integrity.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ TOC -->
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><strong>Lab 1</strong> — Module 2: Adversary Tradecraft<br>
+      <span class="toc-sub">11 questions · MCQ, multi-select</span></li>
+    <li><strong>Lab 2</strong> — Module 3: Negotiation Playbook<br>
+      <span class="toc-sub">11 questions + RACI matching</span></li>
+    <li><strong>Lab 3</strong> — Module 4: Recovery Architecture<br>
+      <span class="toc-sub">12 questions + 2 multi-select + backup-tier matching</span></li>
+    <li><strong>Lab 4</strong> — Module 4 Interactive: Recovery Architecture Deep Dive<br>
+      <span class="toc-sub">Supplementary interactive lab (no scored MCQ)</span></li>
+    <li><strong>Lab 5</strong> — Module 5: Legal &amp; Regulatory<br>
+      <span class="toc-sub">10 questions + privilege matching + regulatory deadline matching + multi-select</span></li>
+    <li><strong>Lab 6</strong> — Module 6: Tabletop Scenarios (Northwind Pharma)<br>
+      <span class="toc-sub">6 scenarios · 14 MCQ + 2 multi-select + 2 matching exercises</span></li>
+    <li><strong>Lab 7</strong> — Module 7: Global Cost of Ransomware (Ponemon Institute)<br>
+      <span class="toc-sub">12 questions + 2 multi-select + 2 matching exercises</span></li>
+  </ol>
+  <div class="instructor-note" style="margin-top:20px">
+    <strong>Key conventions:</strong>
+    ✓ = Correct answer (highlighted green). Distractor options shown in grey for context.
+    Multi-select questions show ✓ for correct selections and ✗ for deliberate wrong options (shown in red strikethrough).
+    Matching exercises show the correct left→right pairs in a table.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ LAB 1 -->
+<div class="lab">
+  <div class="lab-header">
+    <h2>Lab 1 — Module 2: Adversary Tradecraft</h2>
+    <div class="lab-desc">Initial access · persistence · privilege escalation · exfiltration · pre-encryption signals</div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 1 — Initial Access &amp; Persistence</div>
+
+    <div class="question">
+      <div class="q-text">Q1. Citrix Bleed (CVE-2023-4966) allowed attackers to bypass MFA. What is the CVE identifier? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. CVE-2023-1234</li>
+        <li class="wrong"><span class="check">○</span> B. CVE-2022-4966</li>
+        <li class="correct"><span class="check">✓</span> C. CVE-2023-4966</li>
+        <li class="wrong"><span class="check">○</span> D. CVE-2023-9966</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q2. Which MFA method is most susceptible to Adversary-in-the-Middle (AitM) proxy attacks? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Push-notification MFA (e.g., Microsoft Authenticator)</li>
+        <li class="wrong"><span class="check">○</span> B. Hardware FIDO2 security key</li>
+        <li class="wrong"><span class="check">○</span> C. Time-based OTP (TOTP)</li>
+        <li class="wrong"><span class="check">○</span> D. Certificate-based smartcard</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> Push MFA proxied in real-time; FIDO2 keys are phishing-resistant because the challenge is domain-bound.</div>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q3. Why do attackers prefer legitimate Remote Access Tools (RATs) over custom malware for persistence? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Signed binaries blend with admin activity and are often allowlisted in EDR</li>
+        <li class="wrong"><span class="check">○</span> B. Custom malware is too slow to deploy at scale</li>
+        <li class="wrong"><span class="check">○</span> C. RATs provide encrypted C2 channels that custom malware cannot</li>
+        <li class="wrong"><span class="check">○</span> D. Antivirus vendors never update signatures for commercial RATs</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 2 — Privilege Escalation &amp; Lateral Movement</div>
+
+    <div class="question">
+      <div class="q-text">Q4. What does PowerShell ScriptBlock logging (Event ID 4104) capture that module logging does not? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. The process that launched PowerShell</li>
+        <li class="correct"><span class="check">✓</span> B. Actual content of commands, including decoded and deobfuscated scripts</li>
+        <li class="wrong"><span class="check">○</span> C. Network connections initiated by the script</li>
+        <li class="wrong"><span class="check">○</span> D. The user account running the process</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> ScriptBlock logging captures the script AFTER PowerShell decodes it — critical for catching encoded/obfuscated payloads.</div>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q5. For a Kerberoasting attack to succeed, what must be true? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. The attacker must have domain admin rights</li>
+        <li class="correct"><span class="check">✓</span> B. A Service Principal Name (SPN) is registered and the account password is weak enough to crack offline</li>
+        <li class="wrong"><span class="check">○</span> C. The Kerberos KDC must be accessible from the internet</li>
+        <li class="wrong"><span class="check">○</span> D. The target account must be in the Domain Admins group</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q6. What does a successful DCSync attack achieve? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Replicates all AD password hashes by mimicking Domain Controller replication traffic</li>
+        <li class="wrong"><span class="check">○</span> B. Synchronises clocks between domain controllers to bypass Kerberos</li>
+        <li class="wrong"><span class="check">○</span> C. Forces a full AD synchronisation, causing a temporary outage</li>
+        <li class="wrong"><span class="check">○</span> D. Overwrites the SYSVOL share to distribute a malicious logon script</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> DCSync uses legitimate MS-DRSR protocol; requires Replicating Directory Changes All privilege. Detection: 4662 events on the DC.</div>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 3 — Pre-Encryption Signals</div>
+
+    <div class="question">
+      <div class="q-text">Q7. Which of the following commands are pre-encryption "preparation" signals? Select ALL that apply. <span class="q-points">(20 pts — multi-select)</span></div>
+      <div class="q-type">Multi-select: 5 correct, 2 wrong distractors</div>
+      <ul class="options">
+        <li class="correct-multi"><span class="check">✓</span> <code>vssadmin delete shadows /all /quiet</code> — deletes Volume Shadow Copies</li>
+        <li class="correct-multi"><span class="check">✓</span> <code>bcdedit /set {default} recoveryenabled No</code> — disables Windows Recovery</li>
+        <li class="correct-multi"><span class="check">✓</span> <code>wbadmin delete catalog -quiet</code> — destroys Windows Server backup catalog</li>
+        <li class="correct-multi"><span class="check">✓</span> <code>wevtutil cl System</code> — clears System event log</li>
+        <li class="correct-multi"><span class="check">✓</span> <code>wevtutil cl Security</code> — clears Security event log</li>
+        <li class="wrong-multi"><span class="check">✗</span> <code>net user /add backup_svc P@ssw0rd</code> — account creation (credential not pre-encryption)</li>
+        <li class="wrong-multi"><span class="check">✗</span> <code>ipconfig /all</code> — reconnaissance, not preparation</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 4 &amp; 5 — Exfiltration &amp; Detection</div>
+
+    <div class="question">
+      <div class="q-text">Q8. What is the most reliable way to detect Rclone exfiltration even when the binary is renamed? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Hash-based detection of the Rclone binary</li>
+        <li class="wrong"><span class="check">○</span> B. Blocking outbound connections to known cloud storage IPs</li>
+        <li class="wrong"><span class="check">○</span> C. Monitoring for rclone.conf file creation</li>
+        <li class="correct"><span class="check">✓</span> D. Command-line argument inspection for copy/sync operations with cloud destinations, regardless of binary name</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> Rclone is routinely renamed (e.g., svchost32.exe). Process name is irrelevant; args like <code>--config</code>, <code>copy</code>, <code>sync</code> with cloud remotes are the signal.</div>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q9. What is the most operationally significant finding about EDR auto-isolation during mass file-rename events? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Auto-isolation is too slow to prevent any encryption</li>
+        <li class="wrong"><span class="check">○</span> B. Auto-isolation causes more data loss than manual response</li>
+        <li class="wrong"><span class="check">○</span> C. File-rename monitoring only works on endpoints, not file servers</li>
+        <li class="correct"><span class="check">✓</span> D. EDR auto-isolation triggered early can save large fractions of file shares before encryption completes</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 6 — Threat Actor Profiles</div>
+
+    <div class="question">
+      <div class="q-text">Q10. What distinguishes Scattered Spider from typical ransomware affiliates? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. They exclusively target critical infrastructure</li>
+        <li class="wrong"><span class="check">○</span> B. They use zero-days for initial access</li>
+        <li class="correct"><span class="check">✓</span> C. Native English speakers who rely on vishing and social engineering rather than technical exploits for initial access</li>
+        <li class="wrong"><span class="check">○</span> D. They are a state-sponsored group with OFAC SDN designations</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> Scattered Spider bypasses technical controls entirely; defence requires process controls — identity verification, help-desk procedures, out-of-band callbacks.</div>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q11. When evaluating detection capability, the "operational answer" is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Whether the tool has the relevant detection signature</li>
+        <li class="correct"><span class="check">✓</span> B. Where the signal lands, who sees it first, and how long until they can act</li>
+        <li class="wrong"><span class="check">○</span> C. The MITRE ATT&amp;CK technique coverage percentage</li>
+        <li class="wrong"><span class="check">○</span> D. Whether the vendor's detection rate exceeds 95% in third-party testing</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ LAB 2 -->
+<div class="lab">
+  <div class="lab-header">
+    <h2>Lab 2 — Module 3: Negotiation Playbook</h2>
+    <div class="lab-desc">Bargaining power · OFAC · payment decisions · negotiator independence</div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 1 — Leverage &amp; Payment Decisions</div>
+
+    <div class="question">
+      <div class="q-text">Q1. What is the single biggest determinant of bargaining power in a ransomware negotiation? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. The company's public profile and media exposure</li>
+        <li class="wrong"><span class="check">○</span> B. The size of the ransom demand relative to annual revenue</li>
+        <li class="correct"><span class="check">✓</span> C. Recovery posture — specifically confidence in backup integrity and restorability</li>
+        <li class="wrong"><span class="check">○</span> D. The jurisdiction of the ransomware operator</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q2. Why does paying the ransom not guarantee data confidentiality? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Operators may leak data anyway, exit-scam, re-extort later, or sell the data downstream</li>
+        <li class="wrong"><span class="check">○</span> B. Law enforcement can seize the data from operator servers post-payment</li>
+        <li class="wrong"><span class="check">○</span> C. The decryption key is sometimes invalid, leading to continued data exposure</li>
+        <li class="wrong"><span class="check">○</span> D. Payment triggers automatic public disclosure under SEC regulations</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q3. When making a counter-offer, why do precise numbers (e.g., $847,000) outperform round numbers (e.g., $850,000)? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Round numbers are seen as bad faith by ransomware operators</li>
+        <li class="wrong"><span class="check">○</span> B. Precise numbers are harder to track in cryptocurrency transactions</li>
+        <li class="wrong"><span class="check">○</span> C. Operators respond faster to precise numbers due to cognitive processing</li>
+        <li class="correct"><span class="check">✓</span> D. Precise numbers signal that analysis has been done — implying less room to move and anchoring the operator's expectations lower</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q4. What is the primary technical risk of using a reverse-engineered or third-party decryptor? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. It may alert the operator that the victim is not negotiating in good faith</li>
+        <li class="wrong"><span class="check">○</span> B. Third-party tools are always slower than operator-provided decryptors</li>
+        <li class="wrong"><span class="check">○</span> C. They require direct internet access, violating containment</li>
+        <li class="correct"><span class="check">✓</span> D. Operator-provided decryptors contain bugs that can destroy data; third-party tools may also contain backdoors</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q5. How should operator-imposed deadlines be treated during active negotiation? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. As anchoring tactics — routinely extended when negotiation is active and professional</li>
+        <li class="wrong"><span class="check">○</span> B. As hard commitments that trigger data publication if missed</li>
+        <li class="wrong"><span class="check">○</span> C. As signals to accelerate payment to avoid data leak</li>
+        <li class="wrong"><span class="check">○</span> D. As evidence that the operator is prepared to walk away</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q6. An operator offers a 40% discount for payment within 48 hours. Your backups appear intact. What is the correct strategy? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Accept immediately — the discount is too valuable to lose</li>
+        <li class="correct"><span class="check">✓</span> B. Use the operator's preference for speed as leverage — stall while recovery proceeds from backups</li>
+        <li class="wrong"><span class="check">○</span> C. Reject the offer and walk away to signal strength</li>
+        <li class="wrong"><span class="check">○</span> D. Pay immediately to protect the discount, then also restore from backups</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 2 — OFAC Compliance</div>
+
+    <div class="question">
+      <div class="q-text">Q7. Under OFAC's strict-liability standard, a ransomware payment to a sanctioned entity is a violation: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Only if the company knew the operator was sanctioned</li>
+        <li class="wrong"><span class="check">○</span> B. Only if the payment exceeded $10,000</li>
+        <li class="wrong"><span class="check">○</span> C. Only if the company had previously received an OFAC advisory</li>
+        <li class="correct"><span class="check">✓</span> D. Even without knowledge and regardless of intent to violate</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> Strict liability is a deliberate policy choice. OFAC provides mitigating factors for voluntary disclosure, cooperation, and use of professional screeners — but not for ignorance.</div>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q8. What does blockchain analytics add to pre-payment OFAC screening? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. It makes cryptocurrency payments traceable and reversible</li>
+        <li class="correct"><span class="check">✓</span> B. Wallet-level clustering that identifies association with sanctioned entities even if the specific wallet is not directly listed on the SDN</li>
+        <li class="wrong"><span class="check">○</span> C. It guarantees OFAC clearance if no direct SDN match is found</li>
+        <li class="wrong"><span class="check">○</span> D. It converts the payment to USD for regulatory reporting purposes</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q9. What is the most effective wording for a walk-away message to the operator? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. "We are unable to meet your terms at this time, but we remain open to further discussion if circumstances change." — Keeps the channel open</li>
+        <li class="wrong"><span class="check">○</span> B. "We will not pay under any circumstances." — Closes negotiation permanently</li>
+        <li class="wrong"><span class="check">○</span> C. "We are referring this matter to the FBI." — May provoke immediate data publication</li>
+        <li class="wrong"><span class="check">○</span> D. No message — simply stop responding</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 3 — Decision Authority: RACI</div>
+
+    <div class="q-text" style="margin-bottom:10px; font-weight:bold;">Decision Authority Matching — Who Owns Each Decision?</div>
+    <table class="raci-table">
+      <tr>
+        <th>Decision</th>
+        <th>Owner</th>
+      </tr>
+      <tr>
+        <td>Engage IR firm and outside counsel</td>
+        <td class="owner">CEO</td>
+      </tr>
+      <tr>
+        <td>Open negotiation channel with operator</td>
+        <td class="owner">CEO</td>
+      </tr>
+      <tr>
+        <td>Authorise payment up to pre-approved sub-limit</td>
+        <td class="owner">CEO</td>
+      </tr>
+      <tr>
+        <td>Authorise payment above sub-limit</td>
+        <td class="owner">Board</td>
+      </tr>
+      <tr>
+        <td>Public / regulatory disclosure</td>
+        <td class="owner">CEO</td>
+      </tr>
+      <tr>
+        <td>Walk away from negotiation</td>
+        <td class="owner">CEO</td>
+      </tr>
+    </table>
+    <div class="instructor-note"><strong>Teaching point:</strong> The board's role is limited to above-sublimit payment authorisation. Everything else sits with the CEO. Pre-defined payment sublimits avoid board delay during acute crisis.</div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 4 — Negotiator Independence</div>
+
+    <div class="question">
+      <div class="q-text">Q10. Why should the professional negotiator be insulated from direct board and CEO contact? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. To maintain legal privilege over negotiation communications</li>
+        <li class="wrong"><span class="check">○</span> B. Because boards and CEOs do not have authority to approve payments</li>
+        <li class="correct"><span class="check">✓</span> C. To insulate the negotiation from CEO panic and board impatience, preserving tactical discipline</li>
+        <li class="wrong"><span class="check">○</span> D. Because operators refuse to negotiate with company executives directly</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q11. Mid-negotiation, the operator suddenly shifts from professional to aggressive, threatening immediate publication. This most likely indicates: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. The operator is about to exit-scam</li>
+        <li class="wrong"><span class="check">○</span> B. A law enforcement seizure operation is underway</li>
+        <li class="wrong"><span class="check">○</span> C. The decryption key has been lost</li>
+        <li class="correct"><span class="check">✓</span> D. An affiliate hand-off to a more senior negotiator — not necessarily an escalation in intent, but a change in style</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ LAB 3 -->
+<div class="lab">
+  <div class="lab-header">
+    <h2>Lab 3 — Module 4: Recovery Architecture</h2>
+    <div class="lab-desc">Dwell time · backup integrity · IRE · restore testing · identity recovery</div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 1 — Dwell Time &amp; Recovery Complexity</div>
+
+    <div class="question">
+      <div class="q-text">Q1. Why does attacker dwell time of 20+ days make recovery significantly harder? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Longer dwell time means more files are encrypted</li>
+        <li class="wrong"><span class="check">○</span> B. Attackers modify the backup software to slow restore speeds</li>
+        <li class="wrong"><span class="check">○</span> C. The longer the dwell, the larger the ransom demand</li>
+        <li class="correct"><span class="check">✓</span> D. Attackers have time to inventory, credential-harvest, and stage destructive actions against backup infrastructure before triggering encryption</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q2. What is typically the most time-consuming step in a ransomware recovery? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Procuring replacement hardware</li>
+        <li class="wrong"><span class="check">○</span> B. Rebuilding Active Directory from scratch</li>
+        <li class="wrong"><span class="check">○</span> C. Transferring backup data over the network</li>
+        <li class="correct"><span class="check">✓</span> D. Validating that restored systems are clean — free of implants, backdoors, and persistence mechanisms</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 2 — Backup Architecture</div>
+
+    <div class="question">
+      <div class="q-text">Q3. Why is the traditional 3-2-1 backup rule insufficient against sophisticated ransomware? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. It does not survive an attacker who has gained privileged access and is actively targeting backup infrastructure</li>
+        <li class="wrong"><span class="check">○</span> B. 3-2-1 only applies to single-site organisations</li>
+        <li class="wrong"><span class="check">○</span> C. The "1 offsite" copy is typically too slow to restore at scale</li>
+        <li class="wrong"><span class="check">○</span> D. Cloud storage does not qualify as a media type under 3-2-1</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q4. What is the single most dangerous architectural failure in backup design? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Backup management server is domain-joined to production Active Directory</li>
+        <li class="wrong"><span class="check">○</span> B. Backups are stored in the same physical data centre as production</li>
+        <li class="wrong"><span class="check">○</span> C. Backup retention is set to 30 days rather than 90</li>
+        <li class="wrong"><span class="check">○</span> D. Cloud backups use the same cloud provider as production workloads</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> Domain-joined backup servers inherit production AD credentials. Attacker with DA rights can authenticate to and destroy backups using legitimate credentials.</div>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q5. What is the primary attack vector against cloud object-lock immutability? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Account-takeover via cloud IAM compromise or root-account abuse to disable or bypass the lock</li>
+        <li class="wrong"><span class="check">○</span> B. Encrypting the objects while leaving the lock metadata intact</li>
+        <li class="wrong"><span class="check">○</span> C. Exfiltrating the data before the lock is applied</li>
+        <li class="wrong"><span class="check">○</span> D. Exploiting the storage provider's API to remove individual objects</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q6. What is the critical test for vendor-native immutability? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. The lock cannot be revoked from the same management console used to manage backups</li>
+        <li class="wrong"><span class="check">○</span> B. The vendor provides a compliance certificate for WORM storage</li>
+        <li class="wrong"><span class="check">○</span> C. The backup software reports "immutable" status on the backup job</li>
+        <li class="wrong"><span class="check">○</span> D. The storage tier is classified as "cold" or "archive"</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 3 — Identity &amp; IRE</div>
+
+    <div class="question">
+      <div class="q-text">Q7. Why is identity recovery the first priority in Wave 1 of a ransomware response? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Without identity, legal counsel cannot be engaged</li>
+        <li class="wrong"><span class="check">○</span> B. Identity systems hold the encryption keys for data recovery</li>
+        <li class="wrong"><span class="check">○</span> C. Active Directory must be rebuilt before any network segmentation can be applied</li>
+        <li class="correct"><span class="check">✓</span> D. Identity is the recovery substrate — everything else (access to backups, restored systems, cloud consoles) depends on authenticated access</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q8. What is the primary purpose of an Isolated Recovery Environment (IRE)? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. A clean location to store evidence for forensic analysis</li>
+        <li class="wrong"><span class="check">○</span> B. A network segment isolated from the internet to prevent data exfiltration</li>
+        <li class="wrong"><span class="check">○</span> C. A secondary data centre for business continuity during an incident</li>
+        <li class="correct"><span class="check">✓</span> D. A clean, network-separated environment for restoring and validating systems before reintroducing them to production</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 4 — Restore Testing &amp; Readiness</div>
+
+    <div class="question">
+      <div class="q-text">Q9. What is the most common "restore gap" organisations discover only during an actual incident? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Backup jobs were failing silently for months</li>
+        <li class="wrong"><span class="check">○</span> B. The backup vendor has gone out of business</li>
+        <li class="wrong"><span class="check">○</span> C. Restore speed is 10× slower than estimated in the BCP</li>
+        <li class="correct"><span class="check">✓</span> D. The organisation cannot fully restore — due to catalog issues, encryption key escrow gaps, or procedures that were never tested end-to-end</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q10. Why must restore testing be conducted in an isolated environment rather than in production? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. To avoid triggering backup licensing restrictions on restore counts</li>
+        <li class="correct"><span class="check">✓</span> B. A compromised or unstable restored image must not be introduced to the live network until validated clean</li>
+        <li class="wrong"><span class="check">○</span> C. Restore operations consume too much bandwidth for a production network</li>
+        <li class="wrong"><span class="check">○</span> D. Insurance policies require isolated testing environments for claim validity</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q11. The critical failure mode for simultaneous destruction of all backup tiers is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. All tiers stored in the same geographic region</li>
+        <li class="wrong"><span class="check">○</span> B. All tiers using the same backup software vendor</li>
+        <li class="wrong"><span class="check">○</span> C. Insufficient retention period across all tiers</li>
+        <li class="correct"><span class="check">✓</span> D. All backup tiers sharing the same identity and authentication plane as production</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q12. Before beginning Wave 2 (application recovery), what must be validated first? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. All endpoints have been reimaged</li>
+        <li class="wrong"><span class="check">○</span> B. Payment decision has been made</li>
+        <li class="correct"><span class="check">✓</span> C. Restored domain controllers are verified clean before being trusted as the identity substrate</li>
+        <li class="wrong"><span class="check">○</span> D. The ransom deadline has passed</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Readiness Self-Assessment — Multi-Select</div>
+    <div class="question">
+      <div class="q-text">Which controls do you have in place? Select all that apply. <span class="q-points">(20 pts — 7 of 8 = full marks)</span></div>
+      <div class="q-type">Self-assessment: no wrong answers — scoring rewards breadth of control coverage</div>
+      <ul class="options">
+        <li class="correct-multi"><span class="check">✓</span> Backups isolated from production AD (separate identity)</li>
+        <li class="correct-multi"><span class="check">✓</span> Immutable / object-locked backup copies with 90+ day retention</li>
+        <li class="correct-multi"><span class="check">✓</span> Air-gapped or offline copy</li>
+        <li class="correct-multi"><span class="check">✓</span> IRE defined and tested</li>
+        <li class="correct-multi"><span class="check">✓</span> Full restore test completed in last 12 months</li>
+        <li class="correct-multi"><span class="check">✓</span> Backup admin credentials separate from production admin credentials</li>
+        <li class="correct-multi"><span class="check">✓</span> Out-of-band backup monitoring (not relying on production monitoring)</li>
+        <li class="correct-multi"><span class="check">✓</span> Written, tested runbook for restore procedures</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Which of the following represent genuine restore gaps? Select all that apply. <span class="q-points">(20 pts — multi-select, 4 correct)</span></div>
+      <div class="q-type">Multi-select: 4 correct, 2 wrong distractors</div>
+      <ul class="options">
+        <li class="correct-multi"><span class="check">✓</span> Backup catalog is not accessible without production AD being available</li>
+        <li class="correct-multi"><span class="check">✓</span> Backup retention period is shorter than typical attacker dwell time</li>
+        <li class="correct-multi"><span class="check">✓</span> Restore procedure has never been tested end-to-end in a real environment</li>
+        <li class="correct-multi"><span class="check">✓</span> Backup admin credentials are shared with production environment admin accounts</li>
+        <li class="wrong-multi"><span class="check">✗</span> Backups stored with a cloud provider different from production cloud</li>
+        <li class="wrong-multi"><span class="check">✗</span> Restore takes longer than 4 hours for critical systems</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Backup Tier Matching</div>
+    <table class="matching-table">
+      <tr>
+        <th>Tier</th>
+        <th class="matching-arrow">→</th>
+        <th>Characteristics</th>
+      </tr>
+      <tr>
+        <td><strong>Tier 1</strong></td>
+        <td class="matching-arrow">→</td>
+        <td>Operational / fast restore. May be reachable from production. Primary backup copy.</td>
+      </tr>
+      <tr>
+        <td><strong>Tier 2</strong></td>
+        <td class="matching-arrow">→</td>
+        <td>Immutable / object-locked. 90+ day retention. Separate identity from production.</td>
+      </tr>
+      <tr>
+        <td><strong>Tier 3</strong></td>
+        <td class="matching-arrow">→</td>
+        <td>Air-gapped or geo-separated. Tested annually. No live network path from production.</td>
+      </tr>
+      <tr>
+        <td><strong>Tier 4</strong></td>
+        <td class="matching-arrow">→</td>
+        <td>Critical cold copy. Weekly or monthly cadence. Last-resort restore point.</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ LAB 4 -->
+<div class="lab">
+  <div class="lab-header">
+    <h2>Lab 4 — Module 4 Interactive: Recovery Architecture Deep Dive</h2>
+    <div class="lab-desc">Supplementary interactive lab — no scored MCQ assessment questions</div>
+  </div>
+  <div class="section-block">
+    <div class="instructor-note" style="margin:0">
+      <strong>Instructor note:</strong> Lab 4 is a supplementary interactive exploration lab covering the same Module 4 content as Lab 3 (Recovery Architecture — Designing for Ransomware Survivability). It uses interactive diagrams, scenario walk-throughs, and guided discovery rather than scored multiple-choice questions. There are no answer keys required for this lab. Refer to Lab 3 answer key for all assessed content on this module.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ LAB 5 -->
+<div class="lab">
+  <div class="lab-header">
+    <h2>Lab 5 — Module 5: Legal &amp; Regulatory</h2>
+    <div class="lab-desc">SEC disclosure · OFAC · HIPAA · state notification · GDPR · attorney–client privilege · CIRCIA</div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 1 — SEC &amp; OFAC</div>
+
+    <div class="question">
+      <div class="q-text">Q1. Under SEC cyber-incident disclosure rules, when does the 4-business-day clock start? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Day the incident is first detected</li>
+        <li class="correct"><span class="check">✓</span> B. Day the company determines the incident is material</li>
+        <li class="wrong"><span class="check">○</span> C. Day the incident is fully contained</li>
+        <li class="wrong"><span class="check">○</span> D. Day the company notifies cyber insurance</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> "Materiality" determination is a legal judgment, not a technical one. Legal counsel should be involved from Day 1 to control when this clock starts.</div>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q2. A company pays a ransom without knowing the operator is on the OFAC SDN list. The legal status of this payment is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Not a violation — intent is required for OFAC enforcement</li>
+        <li class="correct"><span class="check">✓</span> B. A strict-liability violation — intent and willfulness are not required</li>
+        <li class="wrong"><span class="check">○</span> C. A violation only if the FBI was not notified first</li>
+        <li class="wrong"><span class="check">○</span> D. A civil matter only, not subject to criminal referral</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 2 — HIPAA &amp; State Notification</div>
+
+    <div class="question">
+      <div class="q-text">Q3. A covered healthcare entity is breached. Which HIPAA notification obligations apply? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Notify HHS only — individuals are notified automatically</li>
+        <li class="wrong"><span class="check">○</span> B. Notify individuals within 30 days; notify HHS annually</li>
+        <li class="correct"><span class="check">✓</span> C. Notify HHS and affected individuals within 60 days; notify local media for breaches affecting more than 500 individuals in a state</li>
+        <li class="wrong"><span class="check">○</span> D. Notify the FTC and individuals within 72 hours</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q4. A breach affects individuals in 35 US states. How many state breach notification laws may apply? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. One — federal preemption creates a single notification standard</li>
+        <li class="wrong"><span class="check">○</span> B. The state where the company is headquartered only</li>
+        <li class="correct"><span class="check">✓</span> C. Potentially all 35 states simultaneously — each has its own law, timeline, and notification format</li>
+        <li class="wrong"><span class="check">○</span> D. The five most-affected states only</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> There is no federal preemption. 50 states + DC + territories each have distinct laws. Notification counsel is essential for multi-state events.</div>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 3 — GDPR</div>
+
+    <div class="question">
+      <div class="q-text">Q5. Under GDPR Article 33, supervisory authority notification must occur within: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. 24 hours of the incident being detected</li>
+        <li class="wrong"><span class="check">○</span> B. 48 hours of the incident being detected</li>
+        <li class="correct"><span class="check">✓</span> C. 72 hours of becoming aware of the breach</li>
+        <li class="wrong"><span class="check">○</span> D. 30 days of confirming personal data was accessed</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q6. A ransomware operator encrypts systems AND exfiltrates data. Under GDPR, what triggers the notification obligation? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Encryption alone — any loss of availability of personal data</li>
+        <li class="wrong"><span class="check">○</span> B. Confirmation that personal data has been publicly published</li>
+        <li class="correct"><span class="check">✓</span> C. Exfiltration of personal data — ransomware with confirmed exfiltration triggers GDPR notification by default</li>
+        <li class="wrong"><span class="check">○</span> D. Only when the supervisory authority specifically requests notification</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 4 — Attorney–Client Privilege</div>
+
+    <div class="question">
+      <div class="q-text">Privilege Status Matching — Correct classification of each engagement type:</div>
+    </div>
+    <table class="matching-table">
+      <tr>
+        <th>Engagement / Document</th>
+        <th class="matching-arrow">→</th>
+        <th>Privilege Status</th>
+      </tr>
+      <tr>
+        <td>IR forensic report commissioned directly by CISO (no counsel direction)</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Discoverable</strong> — not work product</td>
+      </tr>
+      <tr>
+        <td>IR forensic report commissioned by outside counsel for purpose of legal advice</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>May be privileged</strong> — attorney work product doctrine</td>
+      </tr>
+      <tr>
+        <td>Factual remediation actions taken by IT team</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Not privileged</strong> — operational facts not legal advice</td>
+      </tr>
+      <tr>
+        <td>Communications routed through outside counsel regarding legal strategy</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Protected</strong> — attorney–client privilege / work product</td>
+      </tr>
+    </table>
+
+    <div class="question" style="margin-top:14px">
+      <div class="q-text">Q7. What engagement structure is required for IR forensic work to attract privilege protection? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. IR firm signs a confidentiality agreement with the company</li>
+        <li class="correct"><span class="check">✓</span> B. Legal counsel retains the IR firm, directed for the purpose of providing legal advice</li>
+        <li class="wrong"><span class="check">○</span> C. The IR engagement is classified as "legal hold" in internal systems</li>
+        <li class="wrong"><span class="check">○</span> D. IR findings are delivered only verbally, not in written reports</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q8. Which of the following is NOT protected by attorney–client privilege or work product doctrine? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Counsel's written legal opinion on OFAC exposure</li>
+        <li class="wrong"><span class="check">○</span> B. IR firm's strategic recommendations, commissioned by counsel</li>
+        <li class="wrong"><span class="check">○</span> C. Email thread between in-house and outside counsel on disclosure strategy</li>
+        <li class="correct"><span class="check">✓</span> D. Factual remediation actions taken by the IT team — operational, not legal</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 5 — T+4 Hours: First Actions Multi-Select</div>
+
+    <div class="question">
+      <div class="q-text">Which actions should be taken within the first 4 hours of a confirmed ransomware incident? <span class="q-points">(20 pts — multi-select, 4 correct)</span></div>
+      <div class="q-type">Multi-select: 4 correct, 2 wrong distractors</div>
+      <ul class="options">
+        <li class="correct-multi"><span class="check">✓</span> Notify legal counsel and breach-specialist counsel immediately</li>
+        <li class="correct-multi"><span class="check">✓</span> Begin OFAC SDN screening of any known operator wallet addresses</li>
+        <li class="correct-multi"><span class="check">✓</span> Assess whether the company is a CIRCIA "covered entity" for mandatory reporting</li>
+        <li class="correct-multi"><span class="check">✓</span> Notify the cyber insurer — most policies require prompt notification</li>
+        <li class="wrong-multi"><span class="check">✗</span> Wait for forensic confirmation of data exfiltration before taking any legal action</li>
+        <li class="wrong-multi"><span class="check">✗</span> Publish a public holding statement without legal review</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 6 — Pre-Incident Preparation</div>
+
+    <div class="question">
+      <div class="q-text">Q9. What is the single most effective pre-incident legal preparation step? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Completing a tabletop exercise with the legal team</li>
+        <li class="wrong"><span class="check">○</span> B. Drafting a ransomware payment policy approved by the board</li>
+        <li class="correct"><span class="check">✓</span> C. Retaining breach-specialist counsel pre-incident with day-1 activation protocols already agreed</li>
+        <li class="wrong"><span class="check">○</span> D. Registering with CISA's ransomware notification system</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> Selecting counsel under crisis conditions takes days and may compromise privilege structuring. Pre-retained counsel with activation protocols eliminates this delay.</div>
+    </div>
+
+    <div class="question">
+      <div class="q-text">Q10. The ransomware operator is later identified as a North Korean state affiliate. The primary legal risk is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Criminal liability for the CISO personally</li>
+        <li class="wrong"><span class="check">○</span> B. Automatic SEC disclosure requirement regardless of materiality</li>
+        <li class="correct"><span class="check">✓</span> C. OFAC strict-liability exposure — North Korean state-affiliated actors are designated on the SDN list; payment (if made) is a per se violation</li>
+        <li class="wrong"><span class="check">○</span> D. No additional risk beyond standard ransomware response</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Regulatory Deadline Matching</div>
+    <table class="matching-table">
+      <tr>
+        <th>Regulation / Trigger</th>
+        <th class="matching-arrow">→</th>
+        <th>Deadline</th>
+      </tr>
+      <tr>
+        <td>CIRCIA — cyber incident report to CISA</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>72 hours</strong></td>
+      </tr>
+      <tr>
+        <td>CIRCIA — ransom payment report to CISA</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>24 hours</strong></td>
+      </tr>
+      <tr>
+        <td>SEC Form 8-K material incident disclosure</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>4 business days</strong> from materiality determination</td>
+      </tr>
+      <tr>
+        <td>GDPR Article 33 — supervisory authority</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>72 hours</strong> from awareness</td>
+      </tr>
+      <tr>
+        <td>HIPAA — HHS and individual notification</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>60 days</strong> from discovery</td>
+      </tr>
+    </table>
+    <div class="instructor-note"><strong>Teaching point:</strong> CIRCIA's 24-hour ransom payment clock is the most aggressive regulatory deadline in US law. It begins when payment is made, not when the incident is discovered.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ LAB 6 -->
+<div class="lab">
+  <div class="lab-header">
+    <h2>Lab 6 — Module 6: Tabletop Scenarios (Northwind Pharma)</h2>
+    <div class="lab-desc">6 scenario injects: detection gaps · identity · OFAC · supply chain · comms · GDPR</div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Scenario 0 — Initial Detection</div>
+
+    <div class="question">
+      <div class="q-text">S0-Q1. SOC alert: Linux servers are encrypting. No EDR on Linux. What is the primary concern? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Linux encryption is slower — more time to respond</li>
+        <li class="wrong"><span class="check">○</span> B. Linux is not covered by cyber insurance</li>
+        <li class="correct"><span class="check">✓</span> C. Critical gap — the organisation is flying blind on 100 Linux servers with no telemetry or containment capability</li>
+        <li class="wrong"><span class="check">○</span> D. Linux servers can be safely rebooted to stop encryption</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S0-Q2. Veeam backup server is unreachable. First priority question is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Whether the backup repository is encrypted and whether the catalog is accessible out-of-band</li>
+        <li class="wrong"><span class="check">○</span> B. Whether the Veeam licence is still valid</li>
+        <li class="wrong"><span class="check">○</span> C. Whether Veeam can be reinstalled from media</li>
+        <li class="wrong"><span class="check">○</span> D. Whether the Veeam support contract covers ransomware events</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S0-Multi-Select. T+15 minutes: Which actions are correct? <span class="q-points">(20 pts — multi-select, 4 correct)</span></div>
+      <div class="q-type">Multi-select: 4 correct, 2 wrong distractors</div>
+      <ul class="options">
+        <li class="correct-multi"><span class="check">✓</span> Activate the incident response bridge (all response leads on a call)</li>
+        <li class="correct-multi"><span class="check">✓</span> Conduct segmentation assessment — which systems can be isolated now</li>
+        <li class="correct-multi"><span class="check">✓</span> Preserve EDR telemetry before it is overwritten or destroyed</li>
+        <li class="correct-multi"><span class="check">✓</span> Start the decision log — timestamp every decision and who made it</li>
+        <li class="wrong-multi"><span class="check">✗</span> Contact the Tor chat address found in the ransom note immediately</li>
+        <li class="wrong-multi"><span class="check">✗</span> Begin restoring from backups without validating backup integrity first</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Scenario 1 — Identity &amp; Social Engineering</div>
+
+    <div class="question">
+      <div class="q-text">S1-Q1. Help desk skipped out-of-band verification for a password reset. The control that should have been in place is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Mandatory manager approval for all password resets</li>
+        <li class="correct"><span class="check">✓</span> B. Out-of-band identity verification — call back the employee on a known, pre-registered phone number</li>
+        <li class="wrong"><span class="check">○</span> C. Two-factor authentication on the help-desk portal</li>
+        <li class="wrong"><span class="check">○</span> D. Limiting password resets to business hours only</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S1-Q2. Six accounts were reset over three weeks before encryption. This pattern indicates: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. A widespread phishing campaign in progress</li>
+        <li class="wrong"><span class="check">○</span> B. A misconfigured self-service password reset policy</li>
+        <li class="wrong"><span class="check">○</span> C. Normal help-desk volume during a high-stress period</li>
+        <li class="correct"><span class="check">✓</span> D. A sustained identity-access campaign — the actor was in the access phase for weeks before triggering encryption</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> Six resets is a detection opportunity. Anomalous help-desk requests — especially for privileged accounts — should trigger identity fraud review, not just ticket closure.</div>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Scenario 2 — Insurance &amp; Disclosure</div>
+
+    <div class="question">
+      <div class="q-text">S2-Q1. The cyber insurance application stated "MFA deployed across all remote access." A known MFA exception for a legacy system was not disclosed. The legal risk is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Material misrepresentation — insurer may deny coverage for the claim</li>
+        <li class="wrong"><span class="check">○</span> B. No risk — the exception was a known operational limitation</li>
+        <li class="wrong"><span class="check">○</span> C. Minor warranty breach — coverage reduction proportional to the gap</li>
+        <li class="wrong"><span class="check">○</span> D. Risk only if the legacy system was the confirmed point of entry</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S2-Q2. Outside counsel raises the OFAC question. The CEO asks: "Should we tell OFAC or stay quiet?" The correct answer is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Disclose through legal counsel — voluntary disclosure is a significant OFAC mitigating factor and typically reduces penalties substantially</li>
+        <li class="wrong"><span class="check">○</span> B. Stay quiet — OFAC only acts if it independently discovers the payment</li>
+        <li class="wrong"><span class="check">○</span> C. Disclose only if the payment exceeded $100,000</li>
+        <li class="wrong"><span class="check">○</span> D. Disclose only after the FBI confirms the operator's SDN status</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Scenario 3 — OFAC Sanctions</div>
+
+    <div class="question">
+      <div class="q-text">S3-Q1. Blockchain analytics shows "high confidence" links between the operator wallet and Evil Corp (SDN-listed). The correct assessment is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Significant OFAC risk — "high confidence" association with SDN-listed entity creates strict-liability exposure; payment should not proceed without legal sign-off</li>
+        <li class="wrong"><span class="check">○</span> B. Low risk — the specific wallet is not directly on the SDN list</li>
+        <li class="wrong"><span class="check">○</span> C. No risk — Evil Corp designations apply to named individuals, not affiliated wallets</li>
+        <li class="wrong"><span class="check">○</span> D. Moderate risk — mitigated by the fact that payment has not yet occurred</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S3-Q2. The CFO asks: "What's the chance we get prosecuted if we pay?" The correct reframe is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. "Very low — OFAC rarely prosecutes ransomware victims"</li>
+        <li class="wrong"><span class="check">○</span> B. "Zero — we haven't paid yet, so there's nothing to prosecute"</li>
+        <li class="correct"><span class="check">✓</span> C. "The better question is: what is our civil penalty exposure, and what mitigating factors can we put in place now to reduce it?"</li>
+        <li class="wrong"><span class="check">○</span> D. "Prosecution risk is irrelevant — focus on recovery, not compliance"</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> Framing as prosecution probability encourages the wrong mental model. OFAC enforcement is largely civil; the relevant metric is penalty calculation and available mitigating factors.</div>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Scenario 3 — OFAC Mitigating Factors Matching</div>
+    <div class="q-text" style="margin-bottom:10px; font-weight:bold;">Match each action to its OFAC mitigating factor category. <span class="q-points">(20 pts)</span></div>
+    <table class="matching-table">
+      <tr>
+        <th>Action Taken</th>
+        <th class="matching-arrow">→</th>
+        <th>OFAC Mitigating Factor</th>
+      </tr>
+      <tr>
+        <td>Using an IR firm that independently screens against the SDN list before advising on payment</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Professional negotiators with sanctions screening</strong></td>
+      </tr>
+      <tr>
+        <td>Contacting FBI and CISA promptly after the incident is confirmed</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Timely law enforcement reporting</strong></td>
+      </tr>
+      <tr>
+        <td>Providing full, accurate information to OFAC during any enforcement inquiry</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Cooperation with investigation</strong></td>
+      </tr>
+      <tr>
+        <td>Proactively reporting the potential sanctions issue to OFAC before enforcement action is initiated</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Voluntary self-disclosure</strong></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Scenario 4 — Supply Chain</div>
+
+    <div class="question">
+      <div class="q-text">S4-Q1. A vendor (LogiSoft) sends a vague notification: "some customers may have been affected." The correct response is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Treat as potential impact — review systems connected to LogiSoft, contact them with a formal RFI requesting scope and IOCs</li>
+        <li class="wrong"><span class="check">○</span> B. Wait for LogiSoft to confirm whether Northwind is affected before acting</li>
+        <li class="wrong"><span class="check">○</span> C. Disconnect all LogiSoft connections immediately and terminate the relationship</li>
+        <li class="wrong"><span class="check">○</span> D. File a claim with cyber insurer immediately for the LogiSoft incident</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S4-Q2. LogiSoft's CI/CD pipeline was compromised. They push an "emergency patched" update. Your response is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Do not deploy. Require independent verification of the build pipeline integrity, code signing chain, and independent security review of the update before deployment</li>
+        <li class="wrong"><span class="check">○</span> B. Deploy immediately — the update may contain the fix for the breach</li>
+        <li class="wrong"><span class="check">○</span> C. Deploy in staging only, then production if no alerts fire within 24 hours</li>
+        <li class="wrong"><span class="check">○</span> D. Contact CISA to verify the update before deploying</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Scenario 5 — Communications &amp; GDPR</div>
+
+    <div class="question">
+      <div class="q-text">S5-Q1. A TV station emails requesting comment. No holding statement has been prepared. The correct response is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. No comment — silence is the safest legal position</li>
+        <li class="wrong"><span class="check">○</span> B. Full disclosure — transparency builds public trust</li>
+        <li class="wrong"><span class="check">○</span> C. Deny the incident until confirmed by forensics</li>
+        <li class="correct"><span class="check">✓</span> D. Issue a brief holding statement: acknowledge you are investigating an incident, working with experts, and will provide updates as the situation develops</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> "No comment" is often reported as "refused to comment" — which itself becomes the story. A neutral holding statement acknowledges reality without making claims that could be wrong or legally problematic.</div>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S5-Q2. General Counsel identifies that EU residents' data may have been exfiltrated. The critical timing issue is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. GDPR notification is not required if the company is not incorporated in the EU</li>
+        <li class="wrong"><span class="check">○</span> B. The 72-hour GDPR clock starts now, when EU exposure is identified</li>
+        <li class="wrong"><span class="check">○</span> C. GDPR only applies if more than 100 EU residents are affected</li>
+        <li class="correct"><span class="check">✓</span> D. The GDPR 72-hour clock may have started at original discovery of the breach — not at the point when EU data exposure was identified — creating a potential notification deadline that has already begun</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Northwind Profile Gaps — Matching</div>
+    <div class="q-text" style="margin-bottom:10px; font-weight:bold;">Match each policy/control gap to the incident consequence it directly caused. <span class="q-points">(20 pts)</span></div>
+    <table class="matching-table">
+      <tr>
+        <th>Gap in Policy / Control</th>
+        <th class="matching-arrow">→</th>
+        <th>Incident Consequence</th>
+      </tr>
+      <tr>
+        <td>No mandatory CEO escalation threshold in IR policy</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>CEO was uninformed for 48 hours</strong> — decision-making paralysed</td>
+      </tr>
+      <tr>
+        <td>No EDR deployed on Linux servers</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Akira encrypted Linux servers undetected</strong> — no telemetry or isolation capability</td>
+      </tr>
+      <tr>
+        <td>No pre-payment SDN screening process</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>OFAC sanctions exposure</strong> — Evil Corp wallet association discovered only after payment nearly authorised</td>
+      </tr>
+      <tr>
+        <td>Veeam immutable retention not configured</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Backup found unreachable at T+40m</strong> — no clean recovery point</td>
+      </tr>
+      <tr>
+        <td>No out-of-band identity verification process for help-desk resets</td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Social engineering reset succeeded</strong> — attacker gained access via identity manipulation</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ LAB 7 -->
+<div class="lab">
+  <div class="lab-header">
+    <h2>Lab 7 — Module 7: Global Cost of Ransomware (Ponemon Institute)</h2>
+    <div class="lab-desc">Attack rates · AI defense · cost categories · segmentation · payment outcomes · country comparisons</div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 0 — Attack Landscape</div>
+
+    <div class="question">
+      <div class="q-text">S0-Q1. 88% of organisations were attacked; only 54% believe they're likely targets. The structural implication is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. The remaining 12% have effective defences — study their controls</li>
+        <li class="wrong"><span class="check">○</span> B. Organisations overestimate their security posture on average</li>
+        <li class="correct"><span class="check">✓</span> C. Structural risk — organisations that don't believe they're targets invest less in defences, making them easier targets</li>
+        <li class="wrong"><span class="check">○</span> D. Attack statistics are inflated by vendors with a commercial interest</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S0-Q2. 51% are concerned about AI-enabled attacks; only 42% have deployed AI-based defences. The operational significance is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. AI concerns are overblown — the gap will close naturally as products mature</li>
+        <li class="correct"><span class="check">✓</span> B. Attackers are advancing AI capabilities faster than defenders are deploying AI-based defences — a closing but currently negative window</li>
+        <li class="wrong"><span class="check">○</span> C. AI-based defence is too expensive for most organisations</li>
+        <li class="wrong"><span class="check">○</span> D. The 9% gap is not statistically significant</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S0-Multi-Select. Which findings from the Ponemon data are accurate? <span class="q-points">(20 pts — multi-select, 4 correct)</span></div>
+      <div class="q-type">Multi-select: 4 correct, 2 wrong distractors</div>
+      <ul class="options">
+        <li class="correct-multi"><span class="check">✓</span> Segmentation is the most under-deployed control — 73% of organisations lack it</li>
+        <li class="correct-multi"><span class="check">✓</span> Centralised accountability correlates with clearer decision authority during incidents</li>
+        <li class="correct-multi"><span class="check">✓</span> MFA and patching are necessary but not sufficient — Ponemon data shows breached orgs had both</li>
+        <li class="correct-multi"><span class="check">✓</span> Cloud is the #1 attack surface at 49%, followed by endpoints at 45%</li>
+        <li class="wrong-multi"><span class="check">✗</span> Network segmentation has no measurable relationship to breach outcomes</li>
+        <li class="wrong-multi"><span class="check">✗</span> A perimeter firewall alone closes the primary risk surface</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 1 — Cost Categories</div>
+
+    <div class="question">
+      <div class="q-text">S1-Q1. Which cost category jumped from #6 to #1 between the 2021 and 2024 Ponemon surveys? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Reputation and brand damage</li>
+        <li class="wrong"><span class="check">○</span> B. Legal and regulatory actions</li>
+        <li class="wrong"><span class="check">○</span> C. Technical support and forensics</li>
+        <li class="wrong"><span class="check">○</span> D. Revenue and income lost</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S1-Q2. What happened to revenue loss as a reported outcome between the 2021 and 2024 surveys? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Nearly doubled — from 22% reporting significant revenue loss to 40%</li>
+        <li class="wrong"><span class="check">○</span> B. Declined — better cyber insurance coverage offset revenue impact</li>
+        <li class="wrong"><span class="check">○</span> C. Remained flat at approximately 22%</li>
+        <li class="wrong"><span class="check">○</span> D. Tripled — from 15% to 45%</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Cost Rankings Matching — Rank Highest to Lowest Cost</div>
+    <div class="q-text" style="margin-bottom:10px; font-weight:bold;">Place the 6 cost categories in order from highest (Rank 1) to lowest (Rank 6). <span class="q-points">(20 pts)</span></div>
+    <table class="matching-table">
+      <tr>
+        <th>Rank</th>
+        <th class="matching-arrow">→</th>
+        <th>Cost Category</th>
+      </tr>
+      <tr>
+        <td><strong>Rank 1 (Highest)</strong></td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Reputation &amp; brand damage</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Rank 2</strong></td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Legal &amp; regulatory actions</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Rank 3</strong></td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Information misuse response</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Rank 4</strong></td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Technical support &amp; forensics</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Rank 5</strong></td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Revenue / income lost</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Rank 6 (Lowest)</strong></td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Users' idle time &amp; productivity</strong></td>
+      </tr>
+    </table>
+    <div class="instructor-note"><strong>Teaching point:</strong> Reputation damage exceeding direct financial costs is the most counterintuitive finding for finance audiences. Use this to anchor board-level conversations about cyber investment ROI.</div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 2 — Attack Vectors &amp; Defences</div>
+
+    <div class="question">
+      <div class="q-text">S2-Q1. The proportion of attacks exploiting unpatched vulnerabilities rose from 33% to 52%. The best explanation is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Phishing has become less effective, driving attackers to vulnerability exploitation</li>
+        <li class="wrong"><span class="check">○</span> B. Vendors are releasing fewer security patches than in prior years</li>
+        <li class="correct"><span class="check">✓</span> C. Expanding CVE ecosystem — enterprise attack surface is growing faster than patch management processes can keep pace</li>
+        <li class="wrong"><span class="check">○</span> D. Organisations have improved phishing defences, shifting attacker preference</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S2-Q2. Only 27% of organisations use network segmentation. The direct consequence for breach outcomes is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Attackers must use multiple exploits rather than a single point of compromise</li>
+        <li class="wrong"><span class="check">○</span> B. Backup systems are more exposed to direct attack</li>
+        <li class="wrong"><span class="check">○</span> C. Cloud workloads are isolated but on-premises workloads are not</li>
+        <li class="correct"><span class="check">✓</span> D. A single compromised endpoint can reach the full network — Ponemon data shows 60%+ of files encrypted in organisations without segmentation</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 3 — Payment Outcomes</div>
+
+    <div class="question">
+      <div class="q-text">S3-Q1. Among the 51% of organisations that paid the ransom, what were the outcomes? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Only 13% recovered all data; 40% had data leaked despite paying; 32% received additional ransom demands</li>
+        <li class="wrong"><span class="check">○</span> B. 80% recovered all data; 15% experienced additional demands</li>
+        <li class="wrong"><span class="check">○</span> C. Recovery rate was the same as non-paying organisations</li>
+        <li class="wrong"><span class="check">○</span> D. All paying organisations received a working decryptor within 48 hours</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> 40% data leaked + 32% re-extorted = payment provides neither confidentiality nor finality. This is the data anchor for "paying does not solve the problem."</div>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S3-Q2. 48% of organisations that did not pay cited functional backups as the reason. The strategic takeaway is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Cyber insurance is the most effective tool for avoiding payment</li>
+        <li class="wrong"><span class="check">○</span> B. Law enforcement assistance enabled recovery without payment</li>
+        <li class="correct"><span class="check">✓</span> C. Backup posture is the most controllable pre-incident factor — the benchmark question is "are our backups good enough to resist payment pressure?"</li>
+        <li class="wrong"><span class="check">○</span> D. Non-paying organisations simply accepted greater data loss</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 4 — Country AI Defence Matching</div>
+    <div class="q-text" style="margin-bottom:10px; font-weight:bold;">Match each AI defence adoption rate to the correct country. <span class="q-points">(20 pts)</span></div>
+    <table class="matching-table">
+      <tr>
+        <th>AI Defence Adoption Rate</th>
+        <th class="matching-arrow">→</th>
+        <th>Country</th>
+      </tr>
+      <tr>
+        <td><strong>52% — highest globally</strong></td>
+        <td class="matching-arrow">→</td>
+        <td><strong>United States</strong></td>
+      </tr>
+      <tr>
+        <td><strong>47% — second highest</strong></td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Japan</strong></td>
+      </tr>
+      <tr>
+        <td><strong>36% — second lowest</strong></td>
+        <td class="matching-arrow">→</td>
+        <td><strong>France</strong></td>
+      </tr>
+      <tr>
+        <td><strong>35% — lowest globally</strong></td>
+        <td class="matching-arrow">→</td>
+        <td><strong>Australia</strong></td>
+      </tr>
+    </table>
+
+    <div class="question" style="margin-top:14px">
+      <div class="q-text">S4-Q1. France shows 55% concern about AI-enabled attacks but only 36% AI defence adoption. This represents: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. The most mature AI defence posture among surveyed countries</li>
+        <li class="wrong"><span class="check">○</span> B. Evidence that AI-enabled attacks are not a real threat in European markets</li>
+        <li class="wrong"><span class="check">○</span> C. Normal lag between awareness and budget cycle for new technology</li>
+        <li class="correct"><span class="check">✓</span> D. The widest concern-action gap in the survey — high threat awareness without corresponding defensive capability deployed</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S4-Q2. Only 28% of breached organisations report to law enforcement. Why is "stay silent to avoid publicity" the wrong frame? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Law enforcement can guarantee non-disclosure of the incident</li>
+        <li class="wrong"><span class="check">○</span> B. CIRCIA mandates reporting for all organisations regardless of sector</li>
+        <li class="wrong"><span class="check">○</span> C. Operators never publish data when law enforcement is involved</li>
+        <li class="correct"><span class="check">✓</span> D. Double-extortion operators publish data regardless — the choice is not report-vs-silent, it is report-with-intelligence-support vs. silent-with-the-same-publicity-risk</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-title">Section 5 — Countermeasures &amp; Policy</div>
+
+    <div class="question">
+      <div class="q-text">S5-Q1. What are the three correct countermeasure pairings for the most common lateral movement enablers? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Deploy EDR, monitor DNS, and restrict PowerShell execution</li>
+        <li class="correct"><span class="check">✓</span> B. Unpatched vulnerabilities → patching + segmentation; Cached credentials → Credential Guard + LAPS; Weak/shared passwords → PAM vaulting + just-in-time access</li>
+        <li class="wrong"><span class="check">○</span> C. Firewall segmentation, user awareness training, and MFA everywhere</li>
+        <li class="wrong"><span class="check">○</span> D. Zero trust network access, cloud access security broker, and SIEM tuning</li>
+      </ul>
+    </div>
+
+    <div class="question">
+      <div class="q-text">S5-Q2. 51% of respondents say they would "never pay." 51% of organisations that were attacked paid. The policy implication is: <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Organisations should publicly commit to a no-pay policy to deter attackers</li>
+        <li class="wrong"><span class="check">○</span> B. Payment decisions should be delegated to the CISO during incidents</li>
+        <li class="correct"><span class="check">✓</span> C. Pre-define the payment decision criteria and authority at board level — in writing, before an incident — because in-crisis time pressure produces inconsistent decisions regardless of prior stated intent</li>
+        <li class="wrong"><span class="check">○</span> D. The policy position is irrelevant — actual outcomes depend entirely on backup quality</li>
+      </ul>
+      <div class="instructor-note"><strong>Teaching point:</strong> The gap between stated policy and actual behaviour is the most important governance finding in the Ponemon data. A board-approved, written decision framework with pre-defined authority limits closes this gap.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div style="margin-top:40px; padding:16px; border-top:2px solid var(--accent); text-align:center; font-size:9pt; color:#888; break-before:avoid">
+  Ransomware Training Series — Instructor Answer Guide · All Labs 1–7 · Illumio Security Training · Instruqt Platform<br>
+  INSTRUCTOR USE ONLY — DO NOT DISTRIBUTE TO PARTICIPANTS
+</div>
+
+</body>
+</html>
