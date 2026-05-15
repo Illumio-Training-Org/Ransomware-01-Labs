@@ -88,6 +88,7 @@
   .feedback.show { display: block; }
   .feedback.correct { background: rgba(34,197,94,.15); border: 1px solid var(--green); color: var(--green); }
   .feedback.wrong { background: rgba(239,68,68,.1); border: 1px solid var(--red); color: #fca5a5; }
+  .feedback.partial { background: rgba(234,179,8,.1); border: 1px solid var(--yellow); color: var(--yellow); }
 
   /* ACTOR CARDS */
   .actor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 10px; margin-bottom: 16px; }
@@ -792,10 +793,10 @@ function toggleSignal(btn) {
   if (_signals.has(btn)) _signals.delete(btn); else _signals.add(btn);
 }
 function revealSignals() {
-  var correct = 0;
+  var selectedCorrect = 0, selectedWrong = 0;
   _signals.forEach(function(btn) {
-    if (btn.dataset.stype === 'correct') correct++;
-    else correct--;
+    if (btn.dataset.stype === 'correct') selectedCorrect++;
+    else selectedWrong++;
   });
   var allBtns = document.querySelectorAll('#signal-opts button');
   allBtns.forEach(function(b) {
@@ -804,10 +805,15 @@ function revealSignals() {
     else b.classList.add('wrong');
   });
   var fb = document.getElementById('signal-feedback');
-  if (correct >= 3) {
-    fb.innerHTML = '✅ Well spotted. vssadmin deletion, Rclone upload, ScreenConnect anomaly, Kerberos surge, and bcdedit tampering all fire <em>before</em> encryption. Ransom note and high-entropy file I/O arrive with encryption itself — stages 7–8.';
+  if (selectedCorrect === 5 && selectedWrong === 0) {
+    fb.innerHTML = '✅ Perfect. vssadmin deletion, Rclone upload, ScreenConnect anomaly, Kerberos surge, and bcdedit tampering all fire <em>before</em> encryption. Ransom note and high-entropy file I/O arrive with encryption itself — stages 7–8.';
     fb.className = 'feedback show correct';
     addPoints(15);
+  } else if (selectedCorrect >= 1) {
+    var wrongNote = selectedWrong > 0 ? ', but also selected ' + selectedWrong + ' encryption-stage indicator' + (selectedWrong > 1 ? 's' : '') : '';
+    fb.innerHTML = '⚠️ Partially correct — you identified ' + selectedCorrect + ' of 5 pre-encryption signals' + wrongNote + '. The five signals are: vssadmin deletion, Rclone upload to unfamiliar endpoint, ScreenConnect on non-admin device at odd hours, Kerberos ticket surge, and bcdedit /set.';
+    fb.className = 'feedback show partial';
+    addPoints(7);
   } else {
     fb.innerHTML = '❌ The five pre-encryption signals are: vssadmin deletion, Rclone upload to unfamiliar endpoint, ScreenConnect on non-admin device at odd hours, Kerberos ticket surge, and bcdedit /set. Ransom note and high-entropy I/O ARE the encryption event.';
     fb.className = 'feedback show wrong';
