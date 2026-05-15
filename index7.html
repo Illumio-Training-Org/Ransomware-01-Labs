@@ -496,10 +496,13 @@ function sec0() {
 
 // ===== SECTION 1: COST BREAKDOWN =====
 function sec1() {
-  const terms = ['Reputation & brand damage','Legal & regulatory actions','Information misuse response','Technical support & forensics','Revenue / income lost','Users\' idle time & productivity'];
+  const terms = ['Information misuse response','Users\' idle time & productivity','Reputation & brand damage','Revenue / income lost','Legal & regulatory actions','Technical support & forensics'];
   const slots2024 = ['Rank 1 — Highest cost in 2024','Rank 2','Rank 3','Rank 4','Rank 5','Rank 6 — Lowest cost in 2024'];
+  // chip 0→slot2, 1→slot5, 2→slot0, 3→slot4, 4→slot1, 5→slot3
+  const m1correctChip = [2, 4, 0, 5, 3, 1]; // slot s → correct chip index
   window._m1terms = terms;
   window._m1slots = slots2024;
+  window._m1correctChip = m1correctChip;
   return `<div class="section-header">
     <div class="section-num">Section 2 of 6</div>
     <h2>Breaking Down the Cost of a Ransomware Attack</h2>
@@ -621,9 +624,12 @@ function sec3() {
 // ===== SECTION 4: COUNTRY DIFFERENCES =====
 function sec4() {
   const countries = ['U.S.','Japan','France','Australia'];
-  const aiAdopt = ['52% — highest globally','47% — second highest','36% — second lowest','35% — lowest globally'];
+  const aiAdopt = ['36% — second lowest','52% — highest globally','35% — lowest globally','47% — second highest'];
+  // slot 0→term2(France), slot 1→term0(U.S.), slot 2→term3(Australia), slot 3→term1(Japan)
+  const m2correctTerm = [2, 0, 3, 1];
   window._m2countries = countries;
   window._m2slots = aiAdopt;
+  window._m2correctTerm = m2correctTerm;
   return `<div class="section-header">
     <div class="section-num">Section 5 of 6</div>
     <h2>Country Differences &amp; Global Threat Landscape</h2>
@@ -786,8 +792,9 @@ function submitM1() {
   let correct=0;
   for(let s=0;s<6;s++) {
     const assigned=m1assign[s];
+    const correctChip=window._m1correctChip[s];
     const slot=document.getElementById('m1s-'+s);
-    if(assigned===s){correct++;slot.classList.add('slot-correct');if(assigned!==undefined)document.getElementById('m1t-'+assigned).classList.add('matched-correct');}
+    if(assigned===correctChip){correct++;slot.classList.add('slot-correct');if(assigned!==undefined)document.getElementById('m1t-'+assigned).classList.add('matched-correct');}
     else{slot.classList.add('slot-wrong');if(assigned!==undefined)document.getElementById('m1t-'+assigned).classList.add('matched-wrong');}
   }
   const fb=document.getElementById('m1-feedback');
@@ -827,8 +834,9 @@ function submitM2() {
   let correct=0;
   for(let s=0;s<4;s++) {
     const assigned=m2assign[s];
+    const correctTerm=window._m2correctTerm[s];
     const slot=document.getElementById('m2s-'+s);
-    if(assigned===s){correct++;slot.classList.add('slot-correct');if(assigned!==undefined)document.getElementById('m2t-'+assigned).classList.add('matched-correct');}
+    if(assigned===correctTerm){correct++;slot.classList.add('slot-correct');if(assigned!==undefined)document.getElementById('m2t-'+assigned).classList.add('matched-correct');}
     else{slot.classList.add('slot-wrong');if(assigned!==undefined)document.getElementById('m2t-'+assigned).classList.add('matched-wrong');}
   }
   const fb=document.getElementById('m2-feedback');
