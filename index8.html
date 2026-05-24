@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 8 — The Illumio Response | Ransomware Training</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1f2937;
+  --border: #30363d;
+  --accent: #f97316;
+  --accent2: #3b82f6;
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #eab308;
+  --purple: #a855f7;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --card: #1c2128;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ===== SCREENS ===== */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ===== INTRO ===== */
+#screen-intro{
+  background: radial-gradient(ellipse at 25% 35%, #1a0800 0%, #0d1117 55%),
+              radial-gradient(ellipse at 80% 70%, #060d1a 0%, transparent 55%);
+  align-items:center;justify-content:center;padding:40px 20px;
+}
+.intro-wrap{max-width:800px;text-align:center;}
+.intro-badge{display:inline-block;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.35);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:24px;}
+.intro-wrap h1{font-size:clamp(26px,5vw,46px);font-weight:800;line-height:1.15;margin-bottom:14px;}
+.intro-wrap h1 span{color:var(--accent);}
+.intro-sub{font-size:15px;color:var(--muted);line-height:1.7;max-width:600px;margin:0 auto 28px;}
+.source-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;text-align:left;margin-bottom:28px;}
+.source-card h3{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
+.source-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;}
+.source-item{background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);line-height:1.5;}
+.source-item strong{color:var(--text);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.stat-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:32px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center;min-width:110px;}
+.stat-card .val{font-size:24px;font-weight:800;color:var(--accent);}
+.stat-card .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.btn-start{background:var(--accent);color:#000;border:none;border-radius:10px;padding:15px 40px;font-size:16px;font-weight:800;cursor:pointer;transition:all .2s;}
+.btn-start:hover{background:#fb923c;transform:translateY(-1px);box-shadow:0 8px 24px rgba(249,115,22,.35);}
+
+/* ===== GAME ===== */
+#screen-game{flex-direction:row;min-height:100vh;}
+.sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sidebar-logo{padding:0 18px 16px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.sidebar-logo .lab-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.sidebar-logo .lab-title{font-size:14px;font-weight:700;color:var(--text);margin-top:2px;}
+.section-track{flex:1;padding:0 10px;}
+.track-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:background .15s;}
+.track-item:hover{background:var(--surface2);}
+.track-item.active{background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.2);}
+.track-item.completed{opacity:.8;}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.dot-1{background:#f97316;}
+.dot-2{background:#3b82f6;}
+.dot-3{background:#22c55e;}
+.dot-4{background:#eab308;}
+.dot-5{background:#a855f7;}
+.dot-6{background:#ef4444;}
+.track-label{font-size:12px;color:var(--muted);line-height:1.3;flex:1;}
+.track-item.active .track-label{color:var(--text);}
+.track-check{font-size:14px;color:var(--green);}
+.score-box{margin:16px 10px 0;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+.score-box .score-val{font-size:28px;font-weight:800;color:var(--accent);}
+.score-box .score-max{font-size:13px;color:var(--muted);}
+.score-box .score-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-top:2px;}
+.progress-bar-wrap{height:4px;background:var(--border);border-radius:2px;margin:10px 10px 0;overflow:hidden;}
+.progress-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s;}
+
+/* MAIN */
+.main-content{flex:1;padding:36px 40px;overflow-y:auto;max-width:900px;}
+.section-header{margin-bottom:26px;}
+.section-header .section-num{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+.section-header h2{font-size:22px;font-weight:800;line-height:1.3;}
+
+/* DATA CARD */
+.data-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:10px;padding:18px 20px;margin-bottom:20px;font-size:13px;line-height:1.75;color:var(--muted);}
+.data-card strong{color:var(--text);}
+.data-card .data-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;}
+
+/* STAT HIGHLIGHT */
+.stat-highlight{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+.stat-hl{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;flex:1;min-width:120px;text-align:center;}
+.stat-hl .sh-val{font-size:28px;font-weight:800;color:var(--accent);line-height:1.1;}
+.stat-hl .sh-lbl{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;}
+
+/* MCQ */
+.question-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px;}
+.question-block .q-num{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.question-block .q-text{font-size:14px;font-weight:600;line-height:1.55;margin-bottom:14px;}
+.options{display:flex;flex-direction:column;gap:8px;}
+.option-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;text-align:left;font-size:13px;color:var(--text);cursor:pointer;transition:all .15s;line-height:1.5;}
+.option-btn:hover:not(:disabled){background:var(--surface);border-color:var(--accent2);}
+.option-btn.correct{background:rgba(34,197,94,.1);border-color:var(--green);color:var(--green);}
+.option-btn.wrong{background:rgba(239,68,68,.1);border-color:var(--red);color:var(--red);}
+.option-btn:disabled{cursor:default;}
+.feedback-box{margin-top:12px;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;display:none;}
+.feedback-box.show{display:block;}
+.feedback-box.correct{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:var(--green);}
+.feedback-box.wrong{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--red);}
+.feedback-box.neutral{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);color:#93c5fd;}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:12px;}
+.data-table th{background:var(--accent);color:#000;font-weight:700;padding:8px 12px;text-align:left;}
+.data-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted);}
+.data-table tr:nth-child(even) td{background:rgba(249,115,22,.04);}
+.data-table .highlight{color:var(--accent);font-weight:700;}
+.data-table .dimmed{color:var(--muted);font-size:11px;}
+
+/* MATCHING */
+.matching-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px;}
+.matching-block .q-num{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.matching-block h3{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.matching-block .m-hint{font-size:12px;color:var(--muted);margin-bottom:16px;}
+.matching-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.matching-col-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.term-chip{background:var(--surface2);border:2px solid var(--border);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--text);cursor:pointer;margin-bottom:7px;line-height:1.4;transition:all .15s;user-select:none;}
+.term-chip:hover{border-color:var(--accent2);}
+.term-chip.selected{border-color:var(--accent);background:rgba(249,115,22,.1);color:var(--accent);}
+.term-chip.used{opacity:.4;cursor:default;pointer-events:none;}
+.term-chip.matched-correct{border-color:var(--green);background:rgba(34,197,94,.1);color:var(--green);cursor:default;}
+.term-chip.matched-wrong{border-color:var(--red);background:rgba(239,68,68,.1);color:var(--red);cursor:default;}
+.slot{background:var(--surface2);border:2px dashed var(--border);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--muted);margin-bottom:7px;min-height:42px;line-height:1.4;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;justify-content:center;}
+.slot:hover{border-color:var(--accent2);}
+.slot.filled{border-style:solid;border-color:var(--accent2);color:var(--text);}
+.slot.slot-correct{border-color:var(--green);background:rgba(34,197,94,.08);}
+.slot.slot-wrong{border-color:var(--red);background:rgba(239,68,68,.08);}
+.slot-def{font-size:10px;color:var(--muted);margin-bottom:3px;}
+
+/* DISCUSSION */
+.discussion-block{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+.discussion-block .disc-tag{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--yellow);background:rgba(234,179,8,.1);padding:3px 10px;border-radius:12px;display:inline-block;margin-bottom:10px;}
+.discussion-block .disc-q{font-size:14px;font-weight:600;line-height:1.6;margin-bottom:12px;color:var(--text);}
+.expert-toggle{background:none;border:1px solid var(--border);border-radius:7px;padding:8px 14px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;}
+.expert-toggle:hover{border-color:var(--accent2);color:var(--text);}
+.expert-answer{margin-top:12px;padding:14px 16px;background:var(--card);border-radius:8px;font-size:13px;color:var(--muted);line-height:1.75;display:none;}
+.expert-answer.show{display:block;}
+.expert-answer strong{color:var(--text);}
+
+/* SELF-ASSESS */
+.self-assess-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px;}
+.self-assess-block .q-num{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.self-assess-block h3{font-size:14px;font-weight:700;margin-bottom:4px;}
+.self-assess-block .sa-hint{font-size:12px;color:var(--muted);margin-bottom:14px;}
+.sa-item{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);}
+.sa-item:last-of-type{border-bottom:none;}
+.sa-item input[type=checkbox]{width:15px;height:15px;flex-shrink:0;margin-top:2px;accent-color:var(--green);cursor:pointer;}
+.sa-item label{font-size:13px;color:var(--text);line-height:1.5;cursor:pointer;}
+
+/* NAV */
+.nav-row{display:flex;align-items:center;justify-content:space-between;margin-top:28px;padding-top:22px;border-top:1px solid var(--border);}
+.nav-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 22px;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s;}
+.nav-btn:hover:not(:disabled){background:var(--surface);border-color:var(--accent);}
+.nav-btn:disabled{opacity:.35;cursor:default;}
+.nav-btn.primary{background:var(--accent);border-color:var(--accent);color:#000;}
+.nav-btn.primary:hover:not(:disabled){background:#fb923c;}
+.nav-section{font-size:12px;color:var(--muted);}
+
+/* POINTS POPUP */
+#points-popup{position:fixed;top:22px;right:22px;background:var(--green);color:#000;font-weight:800;font-size:18px;padding:12px 22px;border-radius:12px;z-index:1000;opacity:0;transform:translateY(-14px) scale(.95);transition:all .3s;pointer-events:none;}
+#points-popup.show{opacity:1;transform:translateY(0) scale(1);}
+
+/* RESULTS */
+#screen-results{align-items:center;justify-content:center;padding:48px 24px;flex-direction:column;}
+.results-wrap{max-width:700px;width:100%;text-align:center;}
+.grade-badge{font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:8px 20px;border-radius:20px;display:inline-block;margin-bottom:18px;}
+.grade-a{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+.grade-b{background:rgba(59,130,246,.15);color:#93c5fd;border:1px solid rgba(59,130,246,.3);}
+.grade-c{background:rgba(234,179,8,.15);color:var(--yellow);border:1px solid rgba(234,179,8,.3);}
+.grade-d{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+.results-score-big{font-size:72px;font-weight:900;color:var(--accent);line-height:1;}
+.results-max{font-size:20px;color:var(--muted);margin-bottom:8px;}
+.results-title{font-size:22px;font-weight:800;margin-bottom:8px;}
+.results-sub{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.6;}
+.results-breakdown{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;text-align:left;margin-bottom:24px;}
+.results-breakdown h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.breakdown-row:last-child{border-bottom:none;}
+.breakdown-row .pts{font-weight:700;color:var(--accent);}
+.key-lessons{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;text-align:left;margin-bottom:24px;}
+.key-lessons h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.lesson-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.55;color:var(--muted);}
+.lesson-item:last-child{border-bottom:none;}
+.lesson-item::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;}
+.btn-restart{background:var(--accent);color:#000;border:none;border-radius:10px;padding:14px 36px;font-size:16px;font-weight:800;cursor:pointer;transition:all .2s;}
+.btn-restart:hover{background:#fb923c;}
+
+@media(max-width:700px){
+  #screen-game{flex-direction:column;}
+  .sidebar{width:100%;min-width:0;height:auto;position:static;flex-direction:row;flex-wrap:wrap;padding:12px;border-right:none;border-bottom:1px solid var(--border);}
+  .sidebar-logo{padding:0;border:none;margin:0;flex:0 0 100%;margin-bottom:8px;}
+  .section-track{flex:0 0 100%;display:flex;flex-wrap:wrap;gap:4px;padding:0;}
+  .track-item{flex:0 0 calc(33% - 4px);font-size:11px;padding:6px 8px;}
+  .score-box{flex:0 0 auto;margin:0;}
+  .progress-bar-wrap{display:none;}
+  .main-content{padding:20px 16px;}
+  .matching-cols{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="points-popup">+<span id="popup-pts">10</span> pts</div>
+
+<!-- ========== INTRO ========== -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-wrap">
+    <div class="intro-badge">Ransomware Training Series &bull; Lab 8 of 8</div>
+    <h1>Module 8:<br><span>The Illumio Response</span></h1>
+    <p class="intro-sub">Modules 1-7 described the problem. This capstone lab maps Illumio's breach containment platform back onto every module and answers one question: when the attack the course describes actually happens, what does Illumio change?</p>
+
+    <div class="source-card">
+      <h3>The Platform at a Glance — Four Capabilities</h3>
+      <div class="source-grid">
+        <div class="source-item"><strong>Illumio Segmentation</strong>VEN + PCE, default-deny, ring-fencing (Forrester Leader; Gartner Customers' Choice 2026)</div>
+        <div class="source-item"><strong>Ransomware Protection Dashboard</strong>Protection Coverage Score, Workload Exposure, Top 5 Risky Services</div>
+        <div class="source-item"><strong>Illumio Insights</strong>Agentless AI cloud detection &amp; response on an AI security graph; one-click Quarantine</div>
+        <div class="source-item"><strong>Insights Agent</strong>Persona-based AI agent, 8 personas, MITRE-mapped, in Microsoft Security Copilot</div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="val">4</div><div class="lbl">Illumio capabilities</div></div>
+      <div class="stat-card"><div class="val">7</div><div class="lbl">Course modules answered</div></div>
+      <div class="stat-card"><div class="val">8</div><div class="lbl">Challenges</div></div>
+      <div class="stat-card"><div class="val">200</div><div class="lbl">Points available</div></div>
+    </div>
+
+    <button class="btn-start" onclick="startGame()">Begin Lab 8 &rarr;</button>
+  </div>
+</div>
+
+<!-- ========== GAME ========== -->
+<div id="screen-game" class="screen">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="lab-label">Lab 8</div>
+      <div class="lab-title">The Illumio Response</div>
+    </div>
+    <div class="section-track" id="section-track">
+      <div class="track-item active" onclick="goToSection(0)" id="track-0"><div class="dot dot-1"></div><div class="track-label">Platform Overview</div><span class="track-check" id="check-0"></span></div>
+      <div class="track-item" onclick="goToSection(1)" id="track-1"><div class="dot dot-2"></div><div class="track-label">M1: Foundations</div><span class="track-check" id="check-1"></span></div>
+      <div class="track-item" onclick="goToSection(2)" id="track-2"><div class="dot dot-3"></div><div class="track-label">M2: Tradecraft</div><span class="track-check" id="check-2"></span></div>
+      <div class="track-item" onclick="goToSection(3)" id="track-3"><div class="dot dot-4"></div><div class="track-label">M3: Negotiation</div><span class="track-check" id="check-3"></span></div>
+      <div class="track-item" onclick="goToSection(4)" id="track-4"><div class="dot dot-5"></div><div class="track-label">M4: Recovery</div><span class="track-check" id="check-4"></span></div>
+      <div class="track-item" onclick="goToSection(5)" id="track-5"><div class="dot dot-6"></div><div class="track-label">M5: Legal &amp; Regulatory</div><span class="track-check" id="check-5"></span></div>
+      <div class="track-item" onclick="goToSection(6)" id="track-6"><div class="dot dot-1"></div><div class="track-label">M6: Tabletop</div><span class="track-check" id="check-6"></span></div>
+      <div class="track-item" onclick="goToSection(7)" id="track-7"><div class="dot dot-2"></div><div class="track-label">M7: Global Cost</div><span class="track-check" id="check-7"></span></div>
+    </div>
+    <div class="score-box">
+      <div class="score-val" id="sidebar-score">0</div>
+      <div class="score-max">/ 200 pts</div>
+      <div class="score-lbl">Score</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+  <div class="main-content" id="main-content"></div>
+</div>
+
+<!-- ========== RESULTS ========== -->
+<div id="screen-results" class="screen">
+  <div class="results-wrap">
+    <div id="grade-badge" class="grade-badge grade-a">Breach Containment Architect</div>
+    <div class="results-score-big" id="final-score">0</div>
+    <div class="results-max">/ 200 pts</div>
+    <div class="results-title" id="results-title">Breach Containment Architect</div>
+    <div class="results-sub" id="results-sub">You can map a defender-side control onto the whole ransomware lifecycle.</div>
+    <div class="results-breakdown">
+      <h3>Score Breakdown</h3>
+      <div class="breakdown-row"><span>16 MCQs (10 pts each)</span><span class="pts" id="br-mcq">0 / 160</span></div>
+      <div class="breakdown-row"><span>Matching — Kill-Chain Coverage (Challenge 3)</span><span class="pts" id="br-m1">0 / 20</span></div>
+      <div class="breakdown-row"><span>Illumio Readiness Self-Assessment (Challenge 8)</span><span class="pts" id="br-sa">0 / 20</span></div>
+    </div>
+    <div class="key-lessons">
+      <h3>Key Takeaways</h3>
+      <div class="lesson-item">Illumio is a breach containment platform: it assumes prevention fails and bounds the blast radius.</div>
+      <div class="lesson-item">Its coverage is strongest in the middle of the lifecycle — discovery, lateral movement, and containment.</div>
+      <div class="lesson-item">Only 27% of organisations deploy segmentation — Illumio is, by name, the control that closes that gap.</div>
+      <div class="lesson-item">It reinforces, never replaces, the identity, endpoint, recovery, and legal disciplines around it.</div>
+      <div class="lesson-item">The Protection Coverage Score is the board metric: are we becoming measurably harder to ransom?</div>
+    </div>
+    <button class="btn-restart" onclick="restart()">Restart Lab &rarr;</button>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let score = 0;
+let currentSection = 0;
+let sectionAttempted = [false,false,false,false,false,false,false,false];
+let scoreLog = {mcq:0, m1:0, sa:0};
+let mcqAnswered = {};
+let matching1 = {submitted:false};
+let saSubmitted = false;
+
+const sectionMCQs = {
+  0: ['s0q1','s0q2'],
+  1: ['s1q1','s1q2'],
+  2: ['s2q1','s2q2'],
+  3: ['s3q1','s3q2'],
+  4: ['s4q1','s4q2'],
+  5: ['s5q1','s5q2'],
+  6: ['s6q1','s6q2'],
+  7: ['s7q1','s7q2'],
+};
+
+// ===== FEEDBACKS =====
+window.feedbacks = {
+  s0q1: "Illumio is a breach containment platform. The phrase is deliberate: it assumes some intrusion will succeed and concentrates on making that failure survivable — keeping one compromised host from becoming an enterprise-wide encryption-and-extortion event.",
+  s0q2: "Illumio's contribution is concentrated in the middle of the ransomware lifecycle — discovery, lateral movement, and containment. It is supporting at the edges (initial access, encryption, extortion) and is explicit about handing those off to identity, endpoint, recovery, and legal disciplines.",
+  s1q1: "WannaCry and NotPetya propagated over SMB (port 445) via EternalBlue. The damage was the worm-like spread across flat networks, not the initial infection — which is exactly the lateral movement segmentation removes.",
+  s1q2: "In Module 1's defender-side taxonomy (EDR/XDR, MDR, threat intel, IR firms, backup), Illumio occupies the segmentation / breach-containment slot — the control that limits how far an intrusion travels once the other layers are bypassed.",
+  s2q1: "Stage 4 — Discovery & lateral movement — is the stage Illumio was built for. Host-based policy closes SMB, RDP, WinRM, and NetBIOS at scale, and Insights makes the movement visible in real time.",
+  s2q2: "Credential access (LSASS dumping, DCSync) is local to the host, but Illumio ring-fences the assets credentials unlock — isolating domain controllers so a technique like DCSync needs a network path that no longer exists.",
+  s3q1: "Illumio operates upstream of the negotiation. An attacker's leverage is the product of systems encrypted and data stolen; by containing spread and surfacing exfiltration, Illumio shrinks both — so the attacker enters the negotiation holding less.",
+  s3q2: "Quarantine blocks a suspect workload's inbound and outbound traffic in one click while keeping critical services (DNS, PCE) and SSH access for responders — cutting a live actor's access without disconnecting everything.",
+  s4q1: "Recovery is only trustworthy if the recovery infrastructure survives. Segmentation ring-fences backups, the IRE, and identity (domain controllers) so the same lateral movement that encrypts production cannot reach what you rebuild from.",
+  s4q2: "Recovery time is dominated by how many systems were encrypted. A contained blast radius means fewer systems to restore — the single biggest lever on RTO.",
+  s5q1: "DORA — the EU Digital Operational Resilience Act, in force since January 2025 — is the clearest fit. Illumio Insights includes a dedicated DORA Compliance view, and Network Posture scores traffic against DORA alongside PCI DSS v4.0, ISO/IEC 27001:2022 and NIST CSF v2.0.",
+  s5q2: "The application dependency map and historical flow records help bound the hardest disclosure question: what data could the attacker actually reach? That turns a worst-case scope assumption into evidence — narrowing notifications and supporting insurance.",
+  s6q1: "In the 03:00 detonation, one-click Quarantine / the containment switch isolates affected workloads instantly — and pre-existing segmentation meant the encryptor had fewer hosts to reach in the first place.",
+  s6q2: "Illumio cannot stop the social-engineering of an identity, but ring-fencing means that compromised identity reaches only its own segment, not the whole estate — bounding the blast radius of a failure it did not prevent.",
+  s7q1: "Only 27% of organisations deploy segmentation. The Ponemon study names, in its own words, the exact control category Illumio provides — and frames the other 73% as the addressable gap.",
+  s7q2: "Illumio's ROI is a blast-radius argument: average remediation $146K, 132 hours downtime, 17.5 staff — every figure scales with how many systems the attacker reaches. Contain the spread and you reduce the cost drivers the study ranks at the top.",
+};
+
+// ===== CORE FUNCTIONS =====
+function showPopup(pts) {
+  const el = document.getElementById('points-popup');
+  document.getElementById('popup-pts').textContent = pts;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+function addScore(pts, cat) {
+  score += pts;
+  scoreLog[cat] = (scoreLog[cat]||0) + pts;
+  document.getElementById('sidebar-score').textContent = score;
+  document.getElementById('progress-fill').style.width = Math.min(100,score/2)+'%';
+  if(pts>0) showPopup(pts);
+}
+function startGame() {
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  renderSection(0);
+}
+function goToSection(idx) {
+  currentSection = idx;
+  document.querySelectorAll('.track-item').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  renderSection(idx);
+  document.getElementById('main-content').scrollTop = 0;
+  window.scrollTo(0,0);
+}
+function nextSection() {
+  if(currentSection < 7) goToSection(currentSection+1);
+  else showResults();
+}
+function prevSection() { if(currentSection>0) goToSection(currentSection-1); }
+function markDone() {
+  sectionAttempted[currentSection] = true;
+  document.getElementById('check-'+currentSection).textContent = '✓';
+  document.getElementById('track-'+currentSection).classList.add('completed');
+  const btn = document.getElementById('btn-next');
+  if(btn) btn.disabled = false;
+}
+function checkProgress() {
+  const ids = sectionMCQs[currentSection];
+  const allMCQ = ids ? ids.every(id => mcqAnswered[id]) : true;
+  if(currentSection===2 && allMCQ && matching1.submitted) markDone();
+  else if(currentSection===7 && allMCQ && saSubmitted) markDone();
+  else if(![2,7].includes(currentSection) && allMCQ) markDone();
+}
+function renderSection(idx) {
+  const secs = [sec0,sec1,sec2,sec3,sec4,sec5,sec6,sec7];
+  document.getElementById('main-content').innerHTML = secs[idx]();
+  const btn = document.getElementById('btn-next');
+  if(btn) btn.disabled = !sectionAttempted[idx];
+}
+function navHTML(label) {
+  return `<div class="nav-row">
+    <button class="nav-btn" onclick="prevSection()" ${currentSection===0?'disabled':''}>&#8592; Back</button>
+    <span class="nav-section">${label}</span>
+    <button class="nav-btn primary" id="btn-next" onclick="nextSection()" ${sectionAttempted[currentSection]?'':'disabled'}>${currentSection===7?'View Results':'Next &rarr;'}</button>
+  </div>`;
+}
+function mcqHTML(id, qnum, question, options, correctIdx) {
+  return `<div class="question-block" id="qblock-${id}">
+    <div class="q-num">Question ${qnum} — 10 pts</div>
+    <div class="q-text">${question}</div>
+    <div class="options" id="opts-${id}">
+      ${options.map((o,i)=>`<button class="option-btn" onclick="answerMCQ('${id}',${i},${correctIdx})">${String.fromCharCode(65+i)}) ${o}</button>`).join('')}
+    </div>
+    <div class="feedback-box" id="fb-${id}"></div>
+  </div>`;
+}
+function answerMCQ(id, chosen, correct) {
+  if(mcqAnswered[id]) return;
+  mcqAnswered[id] = true;
+  const opts = document.querySelectorAll(`#opts-${id} .option-btn`);
+  const fb = document.getElementById(`fb-${id}`);
+  opts.forEach((b,i)=>{ b.disabled=true; if(i===correct) b.classList.add('correct'); else if(i===chosen) b.classList.add('wrong'); });
+  const isRight = chosen===correct;
+  fb.className = 'feedback-box show '+(isRight?'correct':'wrong');
+  fb.innerHTML = (isRight?'<strong>Correct.</strong> ':'<strong>Incorrect.</strong> ')+(window.feedbacks[id]||'');
+  if(isRight) addScore(10,'mcq');
+  checkProgress();
+}
+function discussHTML(q, expert) {
+  const uid = 'disc'+Math.random().toString(36).slice(2,8);
+  return `<div class="discussion-block">
+    <span class="disc-tag">Discussion Prompt</span>
+    <div class="disc-q">${q}</div>
+    <button class="expert-toggle" onclick="toggleExpert('${uid}')">Show Expert Perspective</button>
+    <div class="expert-answer" id="${uid}">${expert}</div>
+  </div>`;
+}
+function toggleExpert(id) { document.getElementById(id).classList.toggle('show'); }
+
+// ===== SECTION 0: PLATFORM OVERVIEW =====
+function sec0() {
+  return `<div class="section-header">
+    <div class="section-num">Challenge 1 of 8</div>
+    <h2>The Illumio Breach Containment Platform</h2>
+  </div>
+  <div class="stat-highlight">
+    <div class="stat-hl"><div class="sh-val">See</div><div class="sh-lbl">VEN + PCE build a live application dependency map</div></div>
+    <div class="stat-hl"><div class="sh-val">Segment</div><div class="sh-lbl">Default-deny, label-based policy; ring-fence critical assets</div></div>
+    <div class="stat-hl"><div class="sh-val">Block</div><div class="sh-lbl">Close RDP, SMB, WinRM at scale via the host firewall</div></div>
+    <div class="stat-hl"><div class="sh-val">Contain</div><div class="sh-lbl">One-click Quarantine on a shared policy plane</div></div>
+  </div>
+  <div class="data-card">
+    <div class="data-label">The Frame That Matters Most</div>
+    Illumio is best understood as a <strong>breach containment platform</strong>. It assumes prevention will sometimes fail and concentrates on making that failure survivable — stopping a single compromised host from becoming an enterprise-wide encryption-and-extortion event. That philosophy lines up with the arc of this course, which spends most of its time on what happens <strong>after</strong> initial access.
+  </div>
+  ${mcqHTML('s0q1','1','How is Illumio best understood within a ransomware defence strategy?',[
+    'A breach containment platform that assumes prevention will sometimes fail and bounds the blast radius of an intrusion',
+    'A next-generation firewall that replaces the network perimeter',
+    'An EDR/XDR product that detects malware on the endpoint',
+    'A backup and recovery product that restores data after encryption',
+  ],0)}
+  ${mcqHTML('s0q2','2','Across the ransomware lifecycle, where is Illumio’s contribution strongest?',[
+    'Initial access — blocking the phishing email and the exposed RDP portal',
+    'Encryption itself — stopping the ransomware binary from running',
+    'The middle of the lifecycle — discovery, lateral movement, and containment',
+    'Extortion and negotiation — handling the ransom demand',
+  ],2)}
+  <div class="data-card">
+    <div class="data-label">The Four Capabilities (used throughout this lab)</div>
+    <strong>1. Illumio Segmentation (Core &amp; Endpoint)</strong> — VEN agent + Policy Compute Engine; default-deny, label-based policy; ring-fencing.<br>
+    <strong>2. Ransomware Protection Dashboard</strong> — Protection Coverage Score, Workload Exposure tiers, Top 5 Risky Services, Recommended Actions.<br>
+    <strong>3. Illumio Insights</strong> — agentless AI cloud detection &amp; response on an AI security graph; Insights Hub, Risky Traffic, Malicious IP, External Data Transfer, Network Posture, Shadow LLMs; one-click Quarantine.<br>
+    <strong>4. Insights Agent</strong> — persona-based AI agent (8 personas), MITRE ATT&amp;CK-mapped, ServiceNow ticketing, available in Microsoft Security Copilot.
+  </div>
+  ${discussHTML(
+    'A colleague says "we have EDR and a SIEM — why do we need Illumio too?" Using the breach containment frame, how do you answer?',
+    `<strong>Different jobs.</strong> EDR watches the endpoint; SIEM correlates logs; backup restores after the fact. None of them is architecturally responsible for stopping an intrusion from reaching the <em>next</em> host. That is the segmentation/containment layer, and it is where Illumio sits.<br><br>The honest framing: Illumio does not replace any of those tools — it makes them more effective by ensuring that a detection failure or a missed alert becomes a contained incident instead of an enterprise-wide outage. It is the control whose entire job is to make lateral movement — the attacker's most reliable tactic — stop working.`
+  )}
+  ${navHTML('Challenge 1 of 8')}`;
+}
+
+// ===== SECTION 1: MODULE 1 — FOUNDATIONS =====
+function sec1() {
+  return `<div class="section-header">
+    <div class="section-num">Challenge 2 of 8</div>
+    <h2>The Response to Module 1 — Foundations &amp; Ecosystem</h2>
+  </div>
+  <div class="data-card">
+    <div class="data-label">The Recurring Lesson of Module 1</div>
+    The incidents that hurt most — WannaCry and NotPetya in 2017, and the big-game-hunting families since — did their damage by <strong>spreading</strong>, not merely by landing. Module 1's history is, in effect, a catalogue of the lateral-movement techniques Illumio is designed to neutralise.
+  </div>
+  ${mcqHTML('s1q1','1','WannaCry and NotPetya caused enterprise-wide damage primarily through which mechanism?',[
+    'Encrypting a single high-value server and demanding payment',
+    'Phishing emails that each individually compromised one user',
+    'Exploiting a cloud misconfiguration to access object storage',
+    'Spreading over SMB (port 445) via EternalBlue — worm-like lateral movement, not the initial infection',
+  ],3)}
+  ${mcqHTML('s1q2','2','In the defender-side ecosystem Module 1 describes, which role does Illumio occupy?',[
+    'Threat intelligence — providing indicators of compromise',
+    'The segmentation / breach-containment layer that limits how far an intrusion travels once other layers are bypassed',
+    'Endpoint detection and response — analysing process behaviour',
+    'Incident response retainer — leading the forensic investigation',
+  ],1)}
+  <div class="data-card">
+    <div class="data-label">The Risky Ports Connection</div>
+    Illumio's own Risky Ports reference flags <strong>MSRPC 135, SMB 445, RDP 3389, and WinRM 5985/5986</strong> as the critical, block-on-sight ports — naming WannaCry, NotPetya, Conti, LockBit, EternalBlue and BlueKeep explicitly. The notable incidents from Module 1 are the same ports at the top of Illumio's "block immediately" list.
+  </div>
+  ${discussHTML(
+    'Using the Module 1 incident list, how would you make the ecosystem feel concrete when introducing segmentation to a sceptical audience?',
+    `<strong>Run it as a "would segmentation have changed this?" exercise.</strong> For SMB/RDP-spread events (WannaCry, NotPetya, most big-game-hunting cases) the answer is yes — closing those pathways between workloads removes the worm's road. For the initial phish or the unpatched edge device, the honest answer is "not the entry, but the spread."<br><br>That distinction is the whole pitch: Illumio does not promise to stop every intrusion; it promises that the intrusion stays small. The decade of incidents in Module 1 is the evidence that unconstrained east-west movement is what turns a breach into a catastrophe.`
+  )}
+  ${navHTML('Challenge 2 of 8')}`;
+}
+
+// ===== SECTION 2: MODULE 2 — TRADECRAFT (with matching) =====
+function sec2() {
+  const terms = [
+    'Strongest fit — host policy closes SMB/RDP/WinRM at scale',
+    'Out of scope — an identity, patching, and phishing problem',
+    'Blast radius already set — fewer reachable systems means less to encrypt',
+    'Ring-fence the domain controller so the technique has no path',
+    'Quarantine can still cut a live actor’s access and limit further theft',
+    'Insights External Data Transfer surfaces unusual outbound volume',
+  ];
+  const slots = [
+    'Initial access (stage 1)',
+    'Credential access (stage 3)',
+    'Discovery &amp; lateral movement (stage 4)',
+    'Exfiltration (stage 6)',
+    'Encryption / Impact (stage 7)',
+    'Extortion (stage 8)',
+  ];
+  // slot s -> correct chip index
+  const m1correctChip = [1, 3, 0, 5, 2, 4];
+  window._m1terms = terms;
+  window._m1slots = slots;
+  window._m1correctChip = m1correctChip;
+  return `<div class="section-header">
+    <div class="section-num">Challenge 3 of 8</div>
+    <h2>The Response to Module 2 — Adversary Tradecraft</h2>
+  </div>
+  <div class="data-card">
+    <div class="data-label">Kill-Chain Coverage — Honest by Design</div>
+    Illumio's coverage across the eight-stage kill chain is deliberately uneven. It is <strong>strong at stage 4 (discovery &amp; lateral movement)</strong> and <strong>stage 5 (defence evasion)</strong>, and supporting at the edges. Naming where it is weak is more useful than implying it is everywhere.
+  </div>
+  ${mcqHTML('s2q1','1','Which kill-chain stage is the one Illumio was specifically built to win?',[
+    'Discovery &amp; lateral movement (stage 4)',
+    'Initial access (stage 1)',
+    'Execution &amp; persistence (stage 2)',
+    'Encryption / Impact (stage 7)',
+  ],0)}
+  ${mcqHTML('s2q2','2','Credential access (e.g. DCSync) is local to the host. How does Illumio still help at this stage?',[
+    'It scans memory for credential-dumping tools like Mimikatz',
+    'It rotates Active Directory passwords automatically',
+    'It blocks the encryption payload from executing',
+    'It ring-fences the domain controller so the technique needs a network path that no longer exists',
+  ],3)}
+  <div class="matching-block" id="matching1-block">
+    <div class="q-num">Matching — Kill-Chain Stage to Illumio's Role — 20 pts</div>
+    <h3>Match each kill-chain stage to Illumio's role at that stage.</h3>
+    <div class="m-hint">Click an Illumio role on the left, then click the matching kill-chain stage on the right.</div>
+    <div class="matching-cols">
+      <div>
+        <div class="matching-col-label">Illumio's role</div>
+        ${terms.map((t,i)=>`<div class="term-chip" id="m1t-${i}" onclick="selectM1(${i})">${t}</div>`).join('')}
+      </div>
+      <div>
+        <div class="matching-col-label">Kill-chain stage</div>
+        ${slots.map((s,i)=>`<div class="slot" id="m1s-${i}" onclick="assignM1(${i})"><span class="slot-def">${s}</span></div>`).join('')}
+      </div>
+    </div>
+    <button class="submit-btn" id="m1-submit-btn" onclick="submitM1()">Submit Matching</button>
+    <div class="feedback-box" id="m1-feedback"></div>
+  </div>
+  ${discussHTML(
+    'How does Insights Agent turn the eight-stage theory of Module 2 into something an analyst can act on?',
+    `<strong>It compiles one MITRE-mapped narrative.</strong> The Threat Hunting persona pulls suspicious activity from Resource Traffic, Risky Traffic, Malicious IP Threats, External Data Transfer, Country Insights, and Firewall Insights and assembles it into a single report, tagged with the same MITRE ATT&CK techniques Module 2 taught — with ranked recommended actions and ServiceNow ticketing.<br><br>The teaching value: run the kill chain first, then show the Insights Agent report. Learners recognise the tactics immediately, and the recommended action points at the same ports the segmentation policy should close.`
+  )}
+  ${navHTML('Challenge 3 of 8')}`;
+}
+
+// ===== SECTION 3: MODULE 3 — NEGOTIATION =====
+function sec3() {
+  return `<div class="section-header">
+    <div class="section-num">Challenge 4 of 8</div>
+    <h2>The Response to Module 3 — Negotiation</h2>
+  </div>
+  <div class="data-card">
+    <div class="data-label">Coverage: Supporting (and honest about it)</div>
+    Illumio is not a negotiation tool. Its contribution is <strong>upstream</strong> of the negotiation: an attacker's leverage is the product of how many systems they encrypted and how much data they stole — and Illumio shrinks both before the first message is sent.
+  </div>
+  ${mcqHTML('s3q1','1','How does Illumio change the dynamics of a ransomware negotiation?',[
+    'It provides a professional negotiator and communication scripts',
+    'It automatically screens the ransom wallet for OFAC sanctions',
+    'Upstream — by limiting how much was encrypted and exfiltrated, it weakens the attacker’s leverage before talks begin',
+    'It decrypts files so payment is never necessary',
+  ],2)}
+  ${mcqHTML('s3q2','2','During a live incident, what does one-click Quarantine do?',[
+    'It blocks a suspect workload’s traffic while keeping critical services (DNS, PCE) and SSH access for responders',
+    'It shuts down the entire network until the threat is cleared',
+    'It pays the ransom from an escrow account to buy time',
+    'It deletes the encrypted files to deny the attacker leverage',
+  ],0)}
+  ${discussHTML(
+    'Your CEO asks whether Illumio "helps us negotiate." How do you answer honestly?',
+    `<strong>No — and that is the point.</strong> Illumio will not draft the holding statement, screen the wallet, or run the negotiation. What it does is change the conditions the negotiation happens under. By containing spread, fewer systems are down (less pressure to pay for availability); by surfacing and cutting external data transfer, less data is stolen (a weaker double-extortion threat).<br><br>The negotiating position you want is "most of our estate never went down, and we can show what data was and wasn't reachable." Illumio is how you arrive at the table holding the stronger hand — while the Module 3 playbook still runs in full.`
+  )}
+  ${navHTML('Challenge 4 of 8')}`;
+}
+
+// ===== SECTION 4: MODULE 4 — RECOVERY =====
+function sec4() {
+  return `<div class="section-header">
+    <div class="section-num">Challenge 5 of 8</div>
+    <h2>The Response to Module 4 — Recovery Architecture</h2>
+  </div>
+  <div class="data-card">
+    <div class="data-label">One of Illumio's Strongest Supporting Roles</div>
+    Recovery is only fast and trustworthy if the recovery infrastructure itself <strong>survives the attack</strong>. Attackers target the recovery capability first — encrypting or deleting backups so payment becomes the only option. Segmentation is how that is prevented.
+  </div>
+  ${mcqHTML('s4q1','1','Why is segmentation central to a trustworthy recovery architecture?',[
+    'It compresses backups so they restore faster',
+    'It replaces the need for immutable storage',
+    'It encrypts the backups so the attacker cannot read them',
+    'It ring-fences backups, the IRE, and identity infrastructure so the same lateral movement that encrypts production cannot reach what you rebuild from',
+  ],3)}
+  ${mcqHTML('s4q2','2','What is the single biggest lever on recovery time (RTO) that containment provides?',[
+    'Faster disk throughput during the restore',
+    'Fewer encrypted systems to restore — a smaller blast radius',
+    'Automatic failover to a cloud region',
+    'Pre-staged decryption keys',
+  ],1)}
+  <div class="data-card">
+    <div class="data-label">Quarantine During the Restore</div>
+    As systems come back online, Quarantine and enforced segmentation prevent a still-dormant foothold from re-spreading into freshly restored hosts — Module 4's "re-infection during Wave 2/3" risk. Because Quarantine preserves responder access, forensic work can continue on a contained host rather than a disconnected one.
+  </div>
+  ${discussHTML(
+    'How would you tie Illumio’s recovery role to the Module 7 cost data?',
+    `<strong>Downtime scales with systems-encrypted.</strong> The Ponemon study puts average downtime at 132 hours — and that number is a function of how many systems must be rebuilt. Containment changes that number directly: a contained incident might be tens of hosts instead of thousands.<br><br>So blast-radius containment is simultaneously a security control and a recovery-cost control. The ring-fenced backup/IRE/identity plane is the guarantee that the restore is clean; the smaller blast radius is what makes it fast. Illumio does not replace the backup product or the runbook — it protects the architecture Module 4 designed and shrinks the job.`
+  )}
+  ${navHTML('Challenge 5 of 8')}`;
+}
+
+// ===== SECTION 5: MODULE 5 — LEGAL & REGULATORY =====
+function sec5() {
+  return `<div class="section-header">
+    <div class="section-num">Challenge 6 of 8</div>
+    <h2>The Response to Module 5 — Legal &amp; Regulatory</h2>
+  </div>
+  <div class="data-card">
+    <div class="data-label">Coverage: Supporting — Evidence, Not Advice</div>
+    Illumio does not give legal advice, but it produces the <strong>evidence</strong> those obligations turn on. Network Posture Insights continuously grades the environment against PCI DSS v4.0, ISO/IEC 27001:2022, NIST CSF v2.0 and DORA — and a dedicated DORA Compliance view supports EU financial-sector resilience reporting.
+  </div>
+  ${mcqHTML('s5q1','1','Which regulation is Illumio’s clearest fit, with a dedicated compliance view in Insights?',[
+    'HIPAA (US healthcare privacy)',
+    'CCPA (California Consumer Privacy Act)',
+    'DORA — the EU Digital Operational Resilience Act for financial entities',
+    'PCI DSS (payment card industry)',
+  ],2)}
+  ${mcqHTML('s5q2','2','Which hard disclosure question do Illumio’s flow records and dependency map help answer?',[
+    'Whether the ransom payment violates OFAC sanctions',
+    'Which law firm should lead the privileged investigation',
+    'How long the organisation has before the SEC filing deadline',
+    'What data the attacker could actually reach — bounding the breach scope',
+  ],3)}
+  <div class="data-card">
+    <div class="data-label">Posture Evidence for Insurance</div>
+    Segmentation is increasingly a precondition on cyber-insurance applications. A green <strong>Protection Coverage Score</strong> is an attestable, time-stamped control that supports both the application and a later claim — continuous evidence rather than a point-in-time questionnaire answer.
+  </div>
+  ${discussHTML(
+    'Why is bounding "what was reached" one of the highest-value legal outputs in a ransomware incident?',
+    `<strong>It shrinks the notification population.</strong> Without flow evidence, organisations often have to assume worst-case scope — every system was theoretically reachable — which drives the broadest, costliest notifications. Illumio's application dependency map and historical flow records narrow that to "here is what a compromised host could and could not reach."<br><br>A precise scope determination reduces regulatory exposure, supports a defensible privilege position, and lowers the cost of disclosure. Illumio does not file the notification or advise on privilege — it supplies the control-and-scope evidence the legal process in Module 5 depends on.`
+  )}
+  ${navHTML('Challenge 6 of 8')}`;
+}
+
+// ===== SECTION 6: MODULE 6 — TABLETOP =====
+function sec6() {
+  return `<div class="section-header">
+    <div class="section-num">Challenge 7 of 8</div>
+    <h2>The Response to Module 6 — Tabletop Scenarios</h2>
+  </div>
+  <div class="data-card">
+    <div class="data-label">Six Northwind Scenarios — Each With an Inflection Point</div>
+    <table class="data-table">
+      <tr><th>Scenario</th><th>Illumio inflection point</th><th>Strength</th></tr>
+      <tr><td>1. The 03:00 Detonation</td><td>One-click Quarantine isolates affected workloads instantly</td><td class="highlight">Decisive</td></tr>
+      <tr><td>2. The Help-Desk Call</td><td>Ring-fencing limits a socially-engineered identity to its segment</td><td>Supporting</td></tr>
+      <tr><td>3. The Insurance Question</td><td>Coverage Score / Network Posture as documented evidence</td><td>Supporting</td></tr>
+      <tr><td>4. The Sanctioned Actor</td><td>Containment buys time to run sanctions screening</td><td>Supporting</td></tr>
+      <tr><td>5. The Supply Chain Compromise</td><td>Segment MSP/SaaS connectivity; watch in Firewall Insights</td><td class="highlight">Decisive</td></tr>
+      <tr><td>6. The Public Records Crisis</td><td>External Data Transfer flags the exfiltration before the leak</td><td class="highlight">Decisive</td></tr>
+    </table>
+  </div>
+  ${mcqHTML('s6q1','1','In the 03:00 Detonation scenario, what is the Illumio inflection point?',[
+    'One-click Quarantine isolates affected workloads before the encryptor finishes spreading — and prior segmentation gave it fewer hosts to reach',
+    'A pre-negotiated ransom discount with the operator',
+    'An automatic insurance payout to fund recovery',
+    'A cloud failover that swaps to a clean region',
+  ],0)}
+  ${mcqHTML('s6q2','2','The Help-Desk Call is a social-engineering compromise Illumio cannot prevent. How does it still limit the damage?',[
+    'It detects the help-desk phone call and blocks it',
+    'It forces a password reset across the entire domain',
+    'Ring-fencing means the compromised identity reaches only its own segment, not the whole estate',
+    'It pays the ransom to contain the incident quickly',
+  ],2)}
+  ${discussHTML(
+    'How does adding an "Illumio inflection point" change a tabletop exercise?',
+    `<strong>It turns awareness into gap-finding.</strong> After each Module 6 scenario, project the inflection point and ask the group: "would this control have been in place for us? If not, why not?" That single question converts the tabletop from a discussion into a control-validation exercise.<br><br>Be candid about the supporting scenarios (2, 3, 4): the primary controls there are identity, insurance, and legal, and Illumio is a supporting actor that bounds damage and supplies evidence. The output of the exercise should be a list of "controls we have / controls we lack" mapped to scenarios — a direct input to the investment case in the final challenge.`
+  )}
+  ${navHTML('Challenge 7 of 8')}`;
+}
+
+// ===== SECTION 7: MODULE 7 — GLOBAL COST (with self-assess) =====
+function sec7() {
+  const saItems = [
+    'Application dependency map built — you can answer "what talks to what" for critical apps',
+    'RDP (3389), SMB (445), and WinRM (5985/5986) denied between workloads by default',
+    'Domain controllers and identity infrastructure ring-fenced',
+    'Backups, the backup management plane, and the IRE isolated by host-based policy',
+    'Ransomware Protection Dashboard in use; Protection Coverage Score tracked and trending toward green',
+    'Illumio Insights (or equivalent CDR) monitoring lateral movement and malicious-IP traffic',
+    'External data-transfer monitoring in place to surface exfiltration early',
+    'One-click Quarantine / containment runbook tested in a tabletop',
+    'Network Posture / compliance scoring mapped to your regime (PCI, ISO 27001, NIST CSF, DORA)',
+    'Protection Coverage Score included in board / leadership reporting',
+  ];
+  window._saItems = saItems;
+  return `<div class="section-header">
+    <div class="section-num">Challenge 8 of 8</div>
+    <h2>The Response to Module 7 — Global Cost</h2>
+  </div>
+  <div class="stat-highlight">
+    <div class="stat-hl"><div class="sh-val">27%</div><div class="sh-lbl">Deploy segmentation — Illumio names this gap</div></div>
+    <div class="stat-hl"><div class="sh-val">+19 pts</div><div class="sh-lbl">Unpatched-vuln lateral movement — contained regardless of patch state</div></div>
+    <div class="stat-hl"><div class="sh-val">#1 cost</div><div class="sh-lbl">Reputation/brand damage; 40% leaked even after paying</div></div>
+    <div class="stat-hl"><div class="sh-val">9 pt</div><div class="sh-lbl">AI defence gap — answered by Insights &amp; Insights Agent</div></div>
+  </div>
+  ${mcqHTML('s7q1','1','Which Ponemon (2025) statistic most directly names the control category Illumio provides?',[
+    '88% experienced a ransomware attack in the past 12 months',
+    'Only 27% of organisations deploy segmentation / microsegmentation',
+    '51% of organisations paid the ransom',
+    'The average ransom demand was $1.2M',
+  ],1)}
+  ${mcqHTML('s7q2','2','What is Illumio’s core ROI argument against the Ponemon cost data?',[
+    'It eliminates the need for cyber insurance entirely',
+    'It guarantees the ransom will never have to be paid',
+    'It reduces the headcount needed in the SOC by automating all triage',
+    'A blast-radius argument — average remediation ($146K), downtime (132 hrs) and staff (17.5) all scale with how many systems the attacker reaches, so containment reduces the cost drivers',
+  ],3)}
+  <div class="data-card">
+    <div class="data-label">The Board Metric</div>
+    The <strong>Protection Coverage Score</strong> gives leadership the single, trendable number the study implies is missing — a defensible answer to "are we becoming measurably harder to ransom?" Module 7's data justifies the investment; the Coverage Score trend proves it is working.
+  </div>
+  <div class="self-assess-block">
+    <div class="q-num">Illumio Readiness Self-Assessment — up to 20 pts</div>
+    <h3>Breach Containment Readiness Checklist</h3>
+    <div class="sa-hint">Check every item your organisation currently has fully in place. 3+ items = 3 pts · 5+ items = 10 pts · 7+ items = 20 pts.</div>
+    ${saItems.map((item,i)=>`<div class="sa-item"><input type="checkbox" id="sa${i}"><label for="sa${i}">${item}</label></div>`).join('')}
+    <button class="submit-btn" style="margin-top:14px;" id="sa-submit-btn" onclick="submitSA()">Submit Readiness Check</button>
+    <div class="feedback-box" id="sa-feedback"></div>
+  </div>
+  ${discussHTML(
+    'Build a three-bullet board briefing that connects the Ponemon data to an Illumio investment decision.',
+    `<strong>Threat reality:</strong> 88% of organisations were hit in the past 12 months; reputation/brand damage is now the #1 cost; 40% who paid still had data leaked. The damage is driven by spread.<br><br><strong>Current gap:</strong> Only 27% of organisations deploy segmentation — the control that limits spread. Our Protection Coverage Score baseline is [X]; our readiness self-assessment identifies [N] gaps, each tied to a Ponemon finding.<br><br><strong>The ask:</strong> Invest in segmentation to move out of the 73% without it. The case is avoided-breach economics (the basis of Forrester's Total Economic Impact analysis): the average incident costs $146K and 132 hours, and both scale with spread — we are buying a smaller number, tracked quarter over quarter by the Coverage Score.`
+  )}
+  ${navHTML('Challenge 8 of 8')}`;
+}
+
+// ===== MATCHING 1 (kill-chain coverage) =====
+let m1sel = null, m1assign = {};
+function selectM1(i) {
+  if(matching1.submitted) return;
+  document.querySelectorAll('[id^="m1t-"]').forEach(el=>el.classList.remove('selected'));
+  if(m1sel===i){m1sel=null;return;}
+  m1sel=i;
+  document.getElementById('m1t-'+i).classList.add('selected');
+}
+function assignM1(si) {
+  if(matching1.submitted||m1sel===null) return;
+  for(let k in m1assign){if(m1assign[k]===m1sel){delete m1assign[k];document.getElementById('m1s-'+k).innerHTML=`<span class="slot-def">${window._m1slots[k]}</span>`;document.getElementById('m1s-'+k).classList.remove('filled');}}
+  if(m1assign[si]!==undefined){document.getElementById('m1t-'+m1assign[si]).classList.remove('used');}
+  m1assign[si]=m1sel;
+  document.getElementById('m1s-'+si).innerHTML=`<span class="slot-def" style="color:var(--muted);font-size:10px;">${window._m1slots[si]}</span><span style="color:var(--text);font-size:12px;">${window._m1terms[m1sel]}</span>`;
+  document.getElementById('m1s-'+si).classList.add('filled');
+  document.getElementById('m1t-'+m1sel).classList.add('used');
+  document.getElementById('m1t-'+m1sel).classList.remove('selected');
+  m1sel=null;
+}
+function submitM1() {
+  if(matching1.submitted) return;
+  matching1.submitted=true;
+  document.getElementById('m1-submit-btn').disabled=true;
+  let correct=0;
+  for(let s=0;s<6;s++) {
+    const assigned=m1assign[s];
+    const correctChip=window._m1correctChip[s];
+    const slot=document.getElementById('m1s-'+s);
+    if(assigned===correctChip){correct++;slot.classList.add('slot-correct');if(assigned!==undefined)document.getElementById('m1t-'+assigned).classList.add('matched-correct');}
+    else{slot.classList.add('slot-wrong');if(assigned!==undefined)document.getElementById('m1t-'+assigned).classList.add('matched-wrong');}
+  }
+  const fb=document.getElementById('m1-feedback');
+  fb.classList.add('show');
+  let pts=0;
+  if(correct===6){pts=20;fb.className='feedback-box show correct';fb.innerHTML=`<strong>Perfect — 20 pts.</strong> Illumio is strongest at discovery &amp; lateral movement, supporting via ring-fencing and exfiltration detection, and out of scope only at initial access. The pattern is the whole module: strong in the middle, honest at the edges.`;}
+  else if(correct>=4){pts=10;fb.className='feedback-box show neutral';fb.innerHTML=`<strong>Partial — 10 pts.</strong> ${correct}/6 correct. Remember: stage 4 (lateral movement) is the strongest fit; initial access is out of scope; extortion is where Quarantine still cuts a live actor's access.`;}
+  else{fb.className='feedback-box show wrong';fb.innerHTML=`<strong>${correct}/6 correct — 0 pts.</strong> Lateral movement = strongest; credential access = ring-fence the DC; exfiltration = External Data Transfer; encryption = blast radius already set; extortion = Quarantine; initial access = out of scope.`;}
+  if(pts>0) addScore(pts,'m1');
+  checkProgress();
+}
+
+// ===== SELF ASSESS =====
+function submitSA() {
+  if(saSubmitted) return;
+  saSubmitted=true;
+  document.getElementById('sa-submit-btn').disabled=true;
+  let checked=0;
+  for(let i=0;i<10;i++){if(document.getElementById('sa'+i).checked)checked++;document.getElementById('sa'+i).disabled=true;}
+  const fb=document.getElementById('sa-feedback');
+  fb.classList.add('show');
+  let pts=0;
+  if(checked>=7){pts=20;fb.className='feedback-box show correct';fb.innerHTML=`<strong>+20 pts bonus.</strong> ${checked}/10 controls in place — a strong breach-containment posture. The gaps you identified are your prioritised roadmap.`;}
+  else if(checked>=5){pts=10;fb.className='feedback-box show neutral';fb.innerHTML=`<strong>+10 pts.</strong> ${checked}/10 in place. Prioritise the highest-leverage gaps first: ring-fencing identity and backups, denying RDP/SMB/WinRM by default, and tracking the Protection Coverage Score.`;}
+  else if(checked>=3){pts=3;fb.className='feedback-box show neutral';fb.innerHTML=`<strong>+3 pts.</strong> ${checked}/10 in place — a start, but significant gaps remain. Focus first on the foundational controls: deny RDP/SMB/WinRM by default and ring-fence domain controllers and backups.`;}
+  else{fb.className='feedback-box show wrong';fb.innerHTML=`<strong>0 pts — ${checked}/10 in place.</strong> ${10-checked} gaps identified — each is a concrete step toward moving out of the 73% of organisations without segmentation. Use them as the investment case.`;}
+  if(pts>0) addScore(pts,'sa');
+  checkProgress();
+}
+
+// ===== RESULTS =====
+function showResults() {
+  document.getElementById('screen-game').classList.remove('active');
+  document.getElementById('screen-results').classList.add('active');
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('br-mcq').textContent = (scoreLog.mcq||0)+' / 160';
+  document.getElementById('br-m1').textContent = (scoreLog.m1||0)+' / 20';
+  document.getElementById('br-sa').textContent = (scoreLog.sa||0)+' / 20';
+  let band,title,sub,cls;
+  if(score>=160){band='Breach Containment Architect';title='Breach Containment Architect';sub='You can map a defender-side control onto the whole ransomware lifecycle — strengths and honest limits alike.';cls='grade-a';}
+  else if(score>=120){band='Segmentation Practitioner';title='Segmentation Practitioner';sub='Solid grasp — tighten the kill-chain coverage map and the regulatory/ROI framing.';cls='grade-b';}
+  else if(score>=80){band='Developing';title='Developing';sub='Revisit where Illumio is strong (lateral movement, containment) versus supporting (negotiation, legal).';cls='grade-c';}
+  else{band='Needs Review';title='Needs Review';sub='Return to the platform overview — breach containment is the frame for the whole module.';cls='grade-d';}
+  const badge=document.getElementById('grade-badge');
+  badge.textContent=band;badge.className='grade-badge '+cls;
+  document.getElementById('results-title').textContent=title;
+  document.getElementById('results-sub').textContent=sub;
+}
+
+function restart() {
+  score=0;currentSection=0;
+  sectionAttempted=[false,false,false,false,false,false,false,false];
+  scoreLog={mcq:0,m1:0,sa:0};
+  mcqAnswered={};
+  matching1={submitted:false};
+  m1sel=null;m1assign={};
+  saSubmitted=false;
+  document.getElementById('sidebar-score').textContent='0';
+  document.getElementById('progress-fill').style.width='0%';
+  for(let i=0;i<8;i++){document.getElementById('check-'+i).textContent='';document.getElementById('track-'+i).classList.remove('completed','active');}
+  document.getElementById('screen-results').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  goToSection(0);
+}
+</script>
+</body>
+</html>
