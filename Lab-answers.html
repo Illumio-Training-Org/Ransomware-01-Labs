@@ -241,7 +241,7 @@
 <div class="cover">
   <h1>Ransomware Training Series</h1>
   <h2>Instructor Answer & Marker Guide</h2>
-  <div class="subtitle">Labs 1 – 7 · All Questions, Correct Answers Marked</div>
+  <div class="subtitle">Labs 1 – 8 · All Questions, Correct Answers Marked</div>
   <div class="subtitle">Illumio Security Training · Instruqt Platform</div>
   <div class="warning">
     <strong>INSTRUCTOR USE ONLY — DO NOT DISTRIBUTE TO PARTICIPANTS</strong><br>
@@ -267,6 +267,8 @@
       <span class="toc-sub">6 scenarios · 14 MCQ + 2 multi-select + 2 matching exercises</span></li>
     <li><strong>Lab 7</strong> — Module 7: Global Cost of Ransomware (Ponemon Institute)<br>
       <span class="toc-sub">12 questions + 2 multi-select + 2 matching exercises</span></li>
+    <li><strong>Lab 8</strong> — Module 8: The Illumio Response<br>
+      <span class="toc-sub">16 MCQ + kill-chain coverage matching + readiness self-assessment</span></li>
   </ol>
   <div class="instructor-note" style="margin-top:20px">
     <strong>Key conventions:</strong>
@@ -1694,9 +1696,216 @@
   </div>
 </div>
 
+<div class="lab">
+  <div class="lab-header">
+    <h2>Lab 8 — Module 8: The Illumio Response</h2>
+    <div class="lab-desc">Breach containment platform · the Illumio response to Modules 1–7 · kill-chain coverage matching · readiness self-assessment</div>
+  </div>
+  <div class="section-block">
+    <div class="section-title">Challenge 1 — The Illumio Breach Containment Platform</div>
+    <div class="question">
+      <div class="q-text">C1-Q1. How is Illumio best understood within a ransomware defence strategy? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. A breach containment platform that assumes prevention will sometimes fail and bounds the blast radius of an intrusion</li>
+        <li class="wrong"><span class="check">○</span> B. A next-generation firewall that replaces the network perimeter</li>
+        <li class="wrong"><span class="check">○</span> C. An EDR/XDR product that detects malware on the endpoint</li>
+        <li class="wrong"><span class="check">○</span> D. A backup and recovery product that restores data after encryption</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> Illumio is a breach containment platform. The phrase is deliberate: it assumes some intrusion will succeed and concentrates on making that failure survivable — keeping one compromised host from becoming an enterprise-wide encryption-and-extortion event.</div>
+    </div>
+    <div class="question">
+      <div class="q-text">C1-Q2. Across the ransomware lifecycle, where is Illumio’s contribution strongest? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Initial access — blocking the phishing email and the exposed RDP portal</li>
+        <li class="wrong"><span class="check">○</span> B. Encryption itself — stopping the ransomware binary from running</li>
+        <li class="correct"><span class="check">✓</span> C. The middle of the lifecycle — discovery, lateral movement, and containment</li>
+        <li class="wrong"><span class="check">○</span> D. Extortion and negotiation — handling the ransom demand</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> Illumio's contribution is concentrated in the middle of the ransomware lifecycle — discovery, lateral movement, and containment. It is supporting at the edges (initial access, encryption, extortion) and is explicit about handing those off to identity, endpoint, recovery, and legal disciplines.</div>
+    </div>
+  </div>
+  <div class="section-block">
+    <div class="section-title">Challenge 2 — The Response to Module 1: Foundations &amp; Ecosystem</div>
+    <div class="question">
+      <div class="q-text">C2-Q1. WannaCry and NotPetya caused enterprise-wide damage primarily through which mechanism? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Encrypting a single high-value server and demanding payment</li>
+        <li class="wrong"><span class="check">○</span> B. Phishing emails that each individually compromised one user</li>
+        <li class="wrong"><span class="check">○</span> C. Exploiting a cloud misconfiguration to access object storage</li>
+        <li class="correct"><span class="check">✓</span> D. Spreading over SMB (port 445) via EternalBlue — worm-like lateral movement, not the initial infection</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> WannaCry and NotPetya propagated over SMB (port 445) via EternalBlue. The damage was the worm-like spread across flat networks, not the initial infection — which is exactly the lateral movement segmentation removes.</div>
+    </div>
+    <div class="question">
+      <div class="q-text">C2-Q2. In the defender-side ecosystem Module 1 describes, which role does Illumio occupy? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Threat intelligence — providing indicators of compromise</li>
+        <li class="correct"><span class="check">✓</span> B. The segmentation / breach-containment layer that limits how far an intrusion travels once other layers are bypassed</li>
+        <li class="wrong"><span class="check">○</span> C. Endpoint detection and response — analysing process behaviour</li>
+        <li class="wrong"><span class="check">○</span> D. Incident response retainer — leading the forensic investigation</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> In Module 1's defender-side taxonomy (EDR/XDR, MDR, threat intel, IR firms, backup), Illumio occupies the segmentation / breach-containment slot — the control that limits how far an intrusion travels once the other layers are bypassed.</div>
+    </div>
+  </div>
+  <div class="section-block">
+    <div class="section-title">Challenge 3 — The Response to Module 2: Adversary Tradecraft</div>
+    <div class="question">
+      <div class="q-text">C3-Q1. Which kill-chain stage is the one Illumio was specifically built to win? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. Discovery &amp;amp; lateral movement (stage 4)</li>
+        <li class="wrong"><span class="check">○</span> B. Initial access (stage 1)</li>
+        <li class="wrong"><span class="check">○</span> C. Execution &amp;amp; persistence (stage 2)</li>
+        <li class="wrong"><span class="check">○</span> D. Encryption / Impact (stage 7)</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> Stage 4 — Discovery &amp; lateral movement — is the stage Illumio was built for. Host-based policy closes SMB, RDP, WinRM, and NetBIOS at scale, and Insights makes the movement visible in real time.</div>
+    </div>
+    <div class="question">
+      <div class="q-text">C3-Q2. Credential access (e.g. DCSync) is local to the host. How does Illumio still help at this stage? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. It scans memory for credential-dumping tools like Mimikatz</li>
+        <li class="wrong"><span class="check">○</span> B. It rotates Active Directory passwords automatically</li>
+        <li class="wrong"><span class="check">○</span> C. It blocks the encryption payload from executing</li>
+        <li class="correct"><span class="check">✓</span> D. It ring-fences the domain controller so the technique needs a network path that no longer exists</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> Credential access (LSASS dumping, DCSync) is local to the host, but Illumio ring-fences the assets credentials unlock — isolating domain controllers so a technique like DCSync needs a network path that no longer exists.</div>
+    </div>
+    <div class="question">
+      <div class="q-text">C3-Matching. Match each kill-chain stage to Illumio’s role. <span class="q-points">(20 pts — all 6 correct)</span></div>
+      <ul class="options">
+        <li class="correct-multi"><span class="check">✓</span> <strong>Initial access (stage 1)</strong> → Out of scope — an identity, patching, and phishing problem</li>
+        <li class="correct-multi"><span class="check">✓</span> <strong>Credential access (stage 3)</strong> → Ring-fence the domain controller so the technique has no path</li>
+        <li class="correct-multi"><span class="check">✓</span> <strong>Discovery &amp; lateral movement (stage 4)</strong> → Strongest fit — host policy closes SMB/RDP/WinRM at scale</li>
+        <li class="correct-multi"><span class="check">✓</span> <strong>Exfiltration (stage 6)</strong> → Insights External Data Transfer surfaces unusual outbound volume</li>
+        <li class="correct-multi"><span class="check">✓</span> <strong>Encryption / Impact (stage 7)</strong> → Blast radius already set — fewer reachable systems means less to encrypt</li>
+        <li class="correct-multi"><span class="check">✓</span> <strong>Extortion (stage 8)</strong> → Quarantine can still cut a live actor’s access and limit further theft</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> Illumio is strongest at discovery &amp; lateral movement (stage 4), supporting via ring-fencing and exfiltration detection, and out of scope only at initial access. 6/6 = 20 pts; 4–5 = 10 pts; ≤3 = 0 pts.</div>
+    </div>
+  </div>
+  <div class="section-block">
+    <div class="section-title">Challenge 4 — The Response to Module 3: Negotiation</div>
+    <div class="question">
+      <div class="q-text">C4-Q1. How does Illumio change the dynamics of a ransomware negotiation? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. It provides a professional negotiator and communication scripts</li>
+        <li class="wrong"><span class="check">○</span> B. It automatically screens the ransom wallet for OFAC sanctions</li>
+        <li class="correct"><span class="check">✓</span> C. Upstream — by limiting how much was encrypted and exfiltrated, it weakens the attacker’s leverage before talks begin</li>
+        <li class="wrong"><span class="check">○</span> D. It decrypts files so payment is never necessary</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> Illumio operates upstream of the negotiation. An attacker's leverage is the product of systems encrypted and data stolen; by containing spread and surfacing exfiltration, Illumio shrinks both — so the attacker enters the negotiation holding less.</div>
+    </div>
+    <div class="question">
+      <div class="q-text">C4-Q2. During a live incident, what does one-click Quarantine do? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. It blocks a suspect workload’s traffic while keeping critical services (DNS, PCE) and SSH access for responders</li>
+        <li class="wrong"><span class="check">○</span> B. It shuts down the entire network until the threat is cleared</li>
+        <li class="wrong"><span class="check">○</span> C. It pays the ransom from an escrow account to buy time</li>
+        <li class="wrong"><span class="check">○</span> D. It deletes the encrypted files to deny the attacker leverage</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> Quarantine blocks a suspect workload's inbound and outbound traffic in one click while keeping critical services (DNS, PCE) and SSH access for responders — cutting a live actor's access without disconnecting everything.</div>
+    </div>
+  </div>
+  <div class="section-block">
+    <div class="section-title">Challenge 5 — The Response to Module 4: Recovery Architecture</div>
+    <div class="question">
+      <div class="q-text">C5-Q1. Why is segmentation central to a trustworthy recovery architecture? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. It compresses backups so they restore faster</li>
+        <li class="wrong"><span class="check">○</span> B. It replaces the need for immutable storage</li>
+        <li class="wrong"><span class="check">○</span> C. It encrypts the backups so the attacker cannot read them</li>
+        <li class="correct"><span class="check">✓</span> D. It ring-fences backups, the IRE, and identity infrastructure so the same lateral movement that encrypts production cannot reach what you rebuild from</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> Recovery is only trustworthy if the recovery infrastructure survives. Segmentation ring-fences backups, the IRE, and identity (domain controllers) so the same lateral movement that encrypts production cannot reach what you rebuild from.</div>
+    </div>
+    <div class="question">
+      <div class="q-text">C5-Q2. What is the single biggest lever on recovery time (RTO) that containment provides? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Faster disk throughput during the restore</li>
+        <li class="correct"><span class="check">✓</span> B. Fewer encrypted systems to restore — a smaller blast radius</li>
+        <li class="wrong"><span class="check">○</span> C. Automatic failover to a cloud region</li>
+        <li class="wrong"><span class="check">○</span> D. Pre-staged decryption keys</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> Recovery time is dominated by how many systems were encrypted. A contained blast radius means fewer systems to restore — the single biggest lever on RTO.</div>
+    </div>
+  </div>
+  <div class="section-block">
+    <div class="section-title">Challenge 6 — The Response to Module 5: Legal &amp; Regulatory</div>
+    <div class="question">
+      <div class="q-text">C6-Q1. Which regulation is Illumio’s clearest fit, with a dedicated compliance view in Insights? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. HIPAA (US healthcare privacy)</li>
+        <li class="wrong"><span class="check">○</span> B. CCPA (California Consumer Privacy Act)</li>
+        <li class="correct"><span class="check">✓</span> C. DORA — the EU Digital Operational Resilience Act for financial entities</li>
+        <li class="wrong"><span class="check">○</span> D. PCI DSS (payment card industry)</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> DORA — the EU Digital Operational Resilience Act, in force since January 2025 — is the clearest fit. Illumio Insights includes a dedicated DORA Compliance view, and Network Posture scores traffic against DORA alongside PCI DSS v4.0, ISO/IEC 27001:2022 and NIST CSF v2.0.</div>
+    </div>
+    <div class="question">
+      <div class="q-text">C6-Q2. Which hard disclosure question do Illumio’s flow records and dependency map help answer? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. Whether the ransom payment violates OFAC sanctions</li>
+        <li class="wrong"><span class="check">○</span> B. Which law firm should lead the privileged investigation</li>
+        <li class="wrong"><span class="check">○</span> C. How long the organisation has before the SEC filing deadline</li>
+        <li class="correct"><span class="check">✓</span> D. What data the attacker could actually reach — bounding the breach scope</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> The application dependency map and historical flow records help bound the hardest disclosure question: what data could the attacker actually reach? That turns a worst-case scope assumption into evidence — narrowing notifications and supporting insurance.</div>
+    </div>
+  </div>
+  <div class="section-block">
+    <div class="section-title">Challenge 7 — The Response to Module 6: Tabletop Scenarios</div>
+    <div class="question">
+      <div class="q-text">C7-Q1. In the 03:00 Detonation scenario, what is the Illumio inflection point? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="correct"><span class="check">✓</span> A. One-click Quarantine isolates affected workloads before the encryptor finishes spreading — and prior segmentation gave it fewer hosts to reach</li>
+        <li class="wrong"><span class="check">○</span> B. A pre-negotiated ransom discount with the operator</li>
+        <li class="wrong"><span class="check">○</span> C. An automatic insurance payout to fund recovery</li>
+        <li class="wrong"><span class="check">○</span> D. A cloud failover that swaps to a clean region</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> In the 03:00 detonation, one-click Quarantine / the containment switch isolates affected workloads instantly — and pre-existing segmentation meant the encryptor had fewer hosts to reach in the first place.</div>
+    </div>
+    <div class="question">
+      <div class="q-text">C7-Q2. The Help-Desk Call is a social-engineering compromise Illumio cannot prevent. How does it still limit the damage? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. It detects the help-desk phone call and blocks it</li>
+        <li class="wrong"><span class="check">○</span> B. It forces a password reset across the entire domain</li>
+        <li class="correct"><span class="check">✓</span> C. Ring-fencing means the compromised identity reaches only its own segment, not the whole estate</li>
+        <li class="wrong"><span class="check">○</span> D. It pays the ransom to contain the incident quickly</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> Illumio cannot stop the social-engineering of an identity, but ring-fencing means that compromised identity reaches only its own segment, not the whole estate — bounding the blast radius of a failure it did not prevent.</div>
+    </div>
+  </div>
+  <div class="section-block">
+    <div class="section-title">Challenge 8 — The Response to Module 7: Global Cost</div>
+    <div class="question">
+      <div class="q-text">C8-Q1. Which Ponemon (2025) statistic most directly names the control category Illumio provides? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. 88% experienced a ransomware attack in the past 12 months</li>
+        <li class="correct"><span class="check">✓</span> B. Only 27% of organisations deploy segmentation / microsegmentation</li>
+        <li class="wrong"><span class="check">○</span> C. 51% of organisations paid the ransom</li>
+        <li class="wrong"><span class="check">○</span> D. The average ransom demand was $1.2M</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> Only 27% of organisations deploy segmentation. The Ponemon study names, in its own words, the exact control category Illumio provides — and frames the other 73% as the addressable gap.</div>
+    </div>
+    <div class="question">
+      <div class="q-text">C8-Q2. What is Illumio’s core ROI argument against the Ponemon cost data? <span class="q-points">(10 pts)</span></div>
+      <ul class="options">
+        <li class="wrong"><span class="check">○</span> A. It eliminates the need for cyber insurance entirely</li>
+        <li class="wrong"><span class="check">○</span> B. It guarantees the ransom will never have to be paid</li>
+        <li class="wrong"><span class="check">○</span> C. It reduces the headcount needed in the SOC by automating all triage</li>
+        <li class="correct"><span class="check">✓</span> D. A blast-radius argument — average remediation ($146K), downtime (132 hrs) and staff (17.5) all scale with how many systems the attacker reaches, so containment reduces the cost drivers</li>
+      </ul>
+      <div class="instructor-note"><strong>Answer rationale:</strong> Illumio's ROI is a blast-radius argument: average remediation $146K, 132 hours downtime, 17.5 staff — every figure scales with how many systems the attacker reaches. Contain the spread and you reduce the cost drivers the study ranks at the top.</div>
+    </div>
+    <div class="question">
+      <div class="q-text">C8-Self-Assessment. Illumio Readiness Checklist (10 items). <span class="q-points">(20 pts bonus)</span></div>
+      <div class="instructor-note"><strong>Marking:</strong> Not a right/wrong item — a self-scored readiness check. 7 or more of 10 controls in place = 20 pts; 5–6 = 10 pts; 3–4 = 3 pts; ≤2 = 0 pts. Items: dependency map built; RDP/SMB/WinRM denied by default; domain controllers ring-fenced; backups/IRE isolated; Protection Coverage Score tracked; Insights monitoring lateral movement/malicious IPs; external data-transfer monitoring; Quarantine runbook tested; Network Posture / compliance scoring mapped (PCI, ISO 27001, NIST CSF, DORA); Coverage Score in board reporting.</div>
+    </div>
+  </div>
+</div>
+
 <!-- Footer -->
 <div style="margin-top:40px; padding:16px; border-top:2px solid var(--accent); text-align:center; font-size:9pt; color:#888; break-before:avoid">
-  Ransomware Training Series — Instructor Answer Guide · All Labs 1–7 · Illumio Security Training · Instruqt Platform<br>
+  Ransomware Training Series — Instructor Answer Guide · All Labs 1–8 · Illumio Security Training · Instruqt Platform<br>
   INSTRUCTOR USE ONLY — DO NOT DISTRIBUTE TO PARTICIPANTS
 </div>
 
